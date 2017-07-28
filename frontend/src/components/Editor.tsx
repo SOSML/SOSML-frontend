@@ -97,7 +97,7 @@ class Editor extends React.Component<any, State> {
             style={style} placeholder="Dateiname"/>
             <div className="miniSpacer" />
             <Button bsSize="small" bsStyle="primary" onClick={this.handleSave}>
-            <Glyphicon glyph={'floppy-disk'} /> Speichern
+            <Glyphicon glyph={'floppy-disk'} /> Save
             </Button>
             </Form>
         );
