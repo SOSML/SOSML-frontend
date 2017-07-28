@@ -57,7 +57,7 @@ class Files extends React.Component<any, State> {
                     <td>
                         <Link to={'/file/' + file.name}>{file.name}</Link>
                     </td>
-                    <td>Lokal</td>
+                    <td>Local</td>
                     <td>
                         <Button bsStyle="primary" onClick={this.downloadHandlerFor(file.name)}>
                             <Glyphicon glyph={'download-alt'} /> Herunterladen
@@ -106,8 +106,8 @@ class Files extends React.Component<any, State> {
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Typ</th>
-                            <th>Aktionen</th>
+                            <th>Type</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
