@@ -190,28 +190,29 @@ class IncrementalInterpretationHelper {
                         partial = '';
                     } else {
                         let ret = this.evaluate(previousState, partial);
-                        if (ret[1] === ErrorType.INCOMPLETE) {
+                        if (ret.result === ErrorType.INCOMPLETE) {
                             this.addIncompleteSemicolon(semiPos);
                             partial += ';';
-                        } else if (ret[1] === ErrorType.OK) {
-                            this.addSemicolon(semiPos, ret[0], codemirror.markText(lastPos, semiPos, 'eval-success'));
+                        } else if (ret.result === ErrorType.OK) {
+                            this.addSemicolon(semiPos, ret.state, codemirror.markText(lastPos, semiPos, 'eval-success'),
+                                ret.warnings);
                             lastPos = this.copyPos(semiPos);
                             lastPos.ch++;
-                            previousState = ret[0];
+                            previousState = ret.state;
 
                             partial = '';
-                        } else if (ret[1] === ErrorType.SML) {
+                        } else if (ret.result === ErrorType.SML) {
                             // TODO
-                            this.addSMLErrorSemicolon(semiPos, ret[2],
+                            this.addSMLErrorSemicolon(semiPos, ret.error,
                                 codemirror.markText(lastPos, semiPos, 'eval-fail'));
                             lastPos = this.copyPos(semiPos);
                             lastPos.ch++;
-                            previousState = ret[0];
+                            previousState = ret.state;
 
                             partial = '';
                         } else {
                             // TODO: mark error position with red color
-                            let errorMessage = this.getErrorMessage(ret[2], partial, lastPos);
+                            let errorMessage = this.getErrorMessage(ret.error, partial, lastPos);
                             this.addErrorSemicolon(semiPos, errorMessage,
                                 codemirror.markText(lastPos, semiPos, 'eval-fail'));
                             lastPos = this.copyPos(semiPos);
@@ -233,7 +234,7 @@ class IncrementalInterpretationHelper {
         // console.log(this);
     }
 
-    private evaluate(oldState: any, partial: string): [any, ErrorType, any] {
+    private evaluate(oldState: any, partial: string): { [name: string]: any } {
         let ret: any;
         try {
             if (oldState === null) {
@@ -245,15 +246,35 @@ class IncrementalInterpretationHelper {
             // TODO: switch over e's type
             // console.log(e);
             if (this.getPrototypeName(e) === 'IncompleteError') {
-                return [null, ErrorType.INCOMPLETE, e];
+                return {
+                    state: null,
+                    result: ErrorType.INCOMPLETE,
+                    error: e,
+                    warnings: []
+                };
             } else {
-                return [null, ErrorType.INTERPRETER, e];
+                return {
+                    state: null,
+                    result: ErrorType.INTERPRETER,
+                    error: e,
+                    warnings: []
+                };
             }
         }
-        if (ret[1]) {
-            return [ret[0], ErrorType.SML, ret[2]];
+        if (ret.evaluationErrored) {
+            return {
+                state: ret.state,
+                result: ErrorType.SML,
+                error: ret.error,
+                warnings: ret.warnings
+            };
         } else {
-            return [ret[0], ErrorType.OK, null];
+            return {
+                state: ret.state,
+                result: ErrorType.OK,
+                error: null,
+                warnings: ret.warnings
+            };
         }
     }
 
@@ -290,7 +311,7 @@ class IncrementalInterpretationHelper {
         return [pos.line + 1, pos.ch + 1];
     }
 
-    private addSemicolon(pos: any, newState: any, marker: any) {
+    private addSemicolon(pos: any, newState: any, marker: any, warnings: any) {
         this.semicoli.push(pos);
         let baseIndex = this.findBaseIndex(this.data.length - 1);
         let baseStateId = this.initialState.id + 1;
@@ -301,7 +322,7 @@ class IncrementalInterpretationHelper {
             state: newState,
             marker: marker,
             error: false,
-            output: this.computeNewStateOutput(newState, baseStateId)
+            output: this.computeNewStateOutput(newState, baseStateId, warnings)
         });
     }
 
@@ -341,12 +362,15 @@ class IncrementalInterpretationHelper {
         });
     }
 
-    private computeNewStateOutput(state: any, id: number) {
+    private computeNewStateOutput(state: any, id: number, warnings: any[]) {
         let res = this.computeNewStateOutputInternal(state, id);
         if (state.getDynamicValue('__stdout', false, id) !== undefined) {
-            res += '\n' + state.getDynamicValue('__stdout', false, id).value + '\n';
+            res += '\n' + state.getDynamicValue('__stdout', false, id).value;
         }
-        return res;
+        for (let val of warnings) {
+            res += '\n' + val.message;
+        }
+        return res + '\n';
     }
 
     private computeNewStateOutputInternal(state: any, id: number) {
@@ -364,8 +388,8 @@ class IncrementalInterpretationHelper {
                     if (state.getDynamicValue(i, false) === undefined) {
                         continue;
                     }
-                    output += this.printBinding(state, [i, state.getDynamicValue(i, false),
-                        state.getStaticValue( i, false )]);
+                    output += this.printBinding(state, [i, state.getDynamicValue(i),
+                        state.getStaticValue(i)]);
                     output += '\n';
                 }
             }
@@ -374,10 +398,16 @@ class IncrementalInterpretationHelper {
         return output;
     }
 
-    private printBinding(state: any, bnd: [any, any, any]) {
+    private printBinding(state: any, bnd: [any, any[], any[]]) {
         let res = '> ';
 
-        let protoName = this.getPrototypeName(bnd[1]);
+        let value = bnd[1][0];
+        let type: any = bnd[2];
+        if (type) {
+            type = type[0];
+        }
+
+        let protoName = this.getPrototypeName(value);
         if (protoName === 'ValueConstructor') {
             res += 'con';
         } else if (protoName === 'ExceptionConstructor') {
@@ -386,14 +416,14 @@ class IncrementalInterpretationHelper {
             res += 'val';
         }
 
-        if (bnd[1]) {
-            res += ' ' + bnd[0] + ' = ' + bnd[1].prettyPrint(state);
+        if (value) {
+            res += ' ' + bnd[0] + ' = ' + value.prettyPrint(state);
         } else {
             return res + ' ' + bnd[0] + ' = undefined;';
         }
 
-        if (bnd[2]) {
-            return res + ': ' + bnd[2].prettyPrint() + ';';
+        if (type) {
+            return res + ': ' + type.prettyPrint() + ';';
         } else {
             return res + ': undefined;';
         }

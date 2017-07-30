@@ -101,7 +101,7 @@ export class API {
         // TODO: return new interpreter
         let untypedWindow: any = window;
         if (untypedWindow.Interpreter) { // It's loaded!
-            return untypedWindow.Interpreter.Interpreter;
+            return untypedWindow.Interpreter;
         } else {
             return {
                 interpret: function(partial: string, oldState: any): [any, boolean, any] {

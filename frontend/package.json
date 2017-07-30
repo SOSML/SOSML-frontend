@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@types/jest": "^19.2.3",
     "@types/node": "^7.0.21",
     "@types/react": "^15.0.24",
     "@types/react-bootstrap": "0.0.49",
@@ -19,8 +18,6 @@
     "react-splitter-layout": "^0.2.1"
   },
   "devDependencies": {
-    "@types/enzyme": "^2.8.0",
-    "enzyme": "^2.8.2",
     "react-addons-test-utils": "^15.5.1",
     "app-root-path": "^2.0.1",
     "autoprefixer": "6.7.2",
@@ -37,7 +34,6 @@
     "fs-extra": "0.30.0",
     "html-webpack-plugin": "2.24.0",
     "http-proxy-middleware": "0.17.3",
-    "jest": "18.1.0",
     "json-loader": "0.5.4",
     "object-assign": "4.1.1",
     "postcss-loader": "1.2.2",
@@ -58,38 +54,6 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "cilint": "tslint -c tslint.json 'src/**/*.ts*'",
-    "citest": "node scripts/test.js --env=jsdom --coverage --expand --verbose",
-    "test": "node scripts/test.js --env=jsdom --notify --watch"
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}"
-    ],
-    "setupFiles": [
-      "<rootDir>/config/polyfills.js"
-    ],
-    "testPathIgnorePatterns": [
-      "<rootDir>[/\\\\](build|docs|node_modules|scripts)[/\\\\]"
-    ],
-    "testEnvironment": "node",
-    "testURL": "http://localhost",
-    "transform": {
-      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^.+\\.tsx?$": "<rootDir>/config/jest/typescriptTransform.js",
-      "^(?!.*\\.(css|json)$)": "<rootDir>/config/jest/fileTransform.js"
-    },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
-    ],
-    "moduleNameMapper": {
-      "^react-native$": "react-native-web"
-    },
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "testRegex": "(/test/.*|\\.(test|spec))\\.(ts|tsx|js)$"
+    "cilint": "tslint -c tslint.json 'src/**/*.ts*'"
   }
 }
