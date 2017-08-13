@@ -6,8 +6,3 @@ form {
 .inlineBlock {
     display: inline-block;
 }
-
-.miniSpacer {
-    display: inline-block;
-    margin-left: 0.4em;
-}

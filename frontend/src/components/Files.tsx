@@ -5,6 +5,8 @@ import { File, Database, API } from '../API';
 import './Files.css';
 import { Link } from 'react-router-dom';
 
+const FileSaver = require('file-saver');
+
 const EXAMPLES_LOADING = 0;
 const EXAMPLES_LOADED = 1;
 const EXAMPLES_FAILED = 2;
@@ -31,7 +33,7 @@ class Files extends React.Component<any, State> {
     }
 
     render() {
-        let handlerFor = (fileName: string) => {
+        let deleteHandlerFor = (fileName: string) => {
             return (evt: any) => {
                 Database.getInstance().then((db: Database) => {
                     return db.deleteFile(fileName);
@@ -39,6 +41,16 @@ class Files extends React.Component<any, State> {
                     if (ok) {
                         this.refreshFiles();
                     }
+                });
+            };
+        };
+        let downloadHandlerFor = (fileName: string) => {
+            return (evt: any) => {
+                Database.getInstance().then((db: Database) => {
+                    return db.getFile(fileName);
+                }).then((content: string) => {
+                    let blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+                    FileSaver.saveAs(blob, fileName);
                 });
             };
         };
@@ -50,7 +62,13 @@ class Files extends React.Component<any, State> {
                     </td>
                     <td>Lokal</td>
                     <td>
-                        <Button bsStyle="danger" onClick={handlerFor(file.name)} ><Glyphicon glyph={'trash'} /></Button>
+                        <Button bsStyle="danger" onClick={deleteHandlerFor(file.name)} >
+                            <Glyphicon glyph={'trash'} />
+                        </Button>
+                        <div className="miniSpacer" />
+                        <Button bsStyle="primary" onClick={downloadHandlerFor(file.name)}>
+                            <Glyphicon glyph={'save-file'} />
+                        </Button>
                     </td>
                 </tr>
             );
