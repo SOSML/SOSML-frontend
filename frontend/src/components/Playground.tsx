@@ -28,6 +28,7 @@ interface Props {
 }
 
 const SHARE_LINK_ERROR = ':ERROR';
+const OUTPUT_HIGHLIGHT_WORDS = ['val', 'con', 'exn'];
 
 class Playground extends React.Component<Props, State> {
     constructor(props: any) {
@@ -53,9 +54,39 @@ class Playground extends React.Component<Props, State> {
     render() {
         let lines: string[] = this.state.output.split('\n');
         var key = 0;
-        let lineItems = lines.map((line) =>
-            <div key={line + (key++)}>{line}</div>
-        );
+        let lineItems = lines.map((line) => {
+            let start = 0;
+            let items: any[] = [];
+            while (true) {
+                let indexList = OUTPUT_HIGHLIGHT_WORDS.map((x: string) => {
+                    return line.indexOf(x, start);
+                });
+                let index = indexList[0];
+                let ii = 0;
+                for (let i = 0; i < indexList.length; i++) {
+                    if (indexList[i] !== -1 && (indexList[i] < index || index === -1)) {
+                        index = indexList[i];
+                        ii = i;
+                    }
+                }
+                if (index !== -1) {
+                    let len = OUTPUT_HIGHLIGHT_WORDS[ii].length;
+                    let before = line.substring(start, index);
+                    if (before.length > 0) {
+                        items.push(before);
+                    }
+                    start = index + len;
+                    items.push(<b key={start}>{OUTPUT_HIGHLIGHT_WORDS[ii]}</b>);
+                } else {
+                    let after = line.substring(start);
+                    if (after.length > 0) {
+                        items.push(after);
+                    }
+                    break;
+                }
+            }
+            return <div key={line + (key++)}>{items}</div>;
+        });
         let code: string = this.props.initialCode;
         let evaluateIn: string = (this.state.useServer) ? 'Ausführen auf dem Server' : 'Ausführen im Browser';
         let executeOnServer: JSX.Element | undefined;

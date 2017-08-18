@@ -29,3 +29,11 @@
     display: inline-block;
     float: right;
 }
+
+.headerButtons input {
+    height: 30px;
+}
+
+.headerButtons button {
+    height: 30px;
+}

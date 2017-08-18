@@ -17,3 +17,8 @@
 nav {
     margin-bottom: 3px !important;
 }
+
+.miniSpacer {
+    display: inline-block;
+    margin-left: 0.4em;
+}
