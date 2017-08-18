@@ -18,6 +18,7 @@ type 'a env = id -> 'a (* environments *)
 exception Unbound of id
 fun empty x = raise Unbound x
 fun update env x a y = if y=x then a else env y
+exception Error of string
 ;
 
 datatype value =
