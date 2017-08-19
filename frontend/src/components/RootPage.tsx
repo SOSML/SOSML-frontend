@@ -29,6 +29,11 @@ class RootPage extends React.Component<any, any> {
                     <Route path="/file/:name" component={FileIntermediate} />
                     <Route path="/examplefile/:name" component={FileIntermediate} />
                     <Route path="/share/:hash" component={Editor} />
+
+                    <div className="footer">
+                        SOSML version *.*. &lt;Licensing stuff&gt;.
+                        Report Issues &lt;here&gt;.
+                    </div>
                 </div>
             </Router>);
     }

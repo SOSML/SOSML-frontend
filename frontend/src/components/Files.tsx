@@ -50,6 +50,9 @@ class Files extends React.Component<any, State> {
                     return db.getFile(fileName);
                 }).then((content: string) => {
                     let blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+                    if (fileName.indexOf('.') === -1) {
+                        fileName = fileName + '.sml';
+                    }
                     FileSaver.saveAs(blob, fileName);
                 });
             };
@@ -108,7 +111,7 @@ class Files extends React.Component<any, State> {
         }
 
         return (
-            <Grid>
+            <Grid className="flexy">
                 <Table>
                     <thead>
                         <tr>
