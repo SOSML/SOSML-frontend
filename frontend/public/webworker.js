@@ -154,6 +154,7 @@ class Communication {
         if (Communication.freeIds.size > 0) {
             let it = Communication.freeIds.values();
             id = it.next().value;
+            Communication.freeIds.delete(id);
         }
         else {
             id = Communication.nextId++;
@@ -487,13 +488,10 @@ class IncrementalInterpretation {
     }
     computeNewStateOutput(state, id, warnings) {
         let res = this.computeNewStateOutputInternal(state, id);
-        if (state.getDynamicValue('__stdout', false, id) !== undefined) {
-            res += '\n' + state.getDynamicValue('__stdout', false, id).value;
-        }
         for (let val of warnings) {
-            res += '\n' + val.message;
+            res += val.message;
         }
-        return res + '\n';
+        return res;
     }
     computeNewStateOutputInternal(state, id) {
         if (state.id < id) {
@@ -515,7 +513,6 @@ class IncrementalInterpretation {
                     output += '\n';
                 }
             }
-            output += '\n';
         }
         return output;
     }

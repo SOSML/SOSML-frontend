@@ -85,7 +85,11 @@ class Playground extends React.Component<Props, State> {
                     break;
                 }
             }
-            return <div key={line + (key++)}>{items}</div>;
+            if (items.length === 0) {
+                return <div key={line + (key++)}><div className="miniSpacer" /></div>;
+            } else {
+                return <div key={line + (key++)}>{items}</div>;
+            }
         });
         let code: string = this.props.initialCode;
         let evaluateIn: string = (this.state.useServer) ? 'Ausführen auf dem Server' : 'Ausführen im Browser';

@@ -31,7 +31,9 @@ class RootPage extends React.Component<any, any> {
                     <Route path="/share/:hash" component={Editor} />
 
                     <div className="footer">
-                        © 2017 <a href="https://github.com/SOSML">The SOSML developers</a> | <a href="https://github.com/SOSML/SOSML">Sources on GitHub</a> | <a href="https://github.com/SOSML/SOSML/issues">Report a Bug</a>
+                        © 2017 <a href="https://github.com/SOSML">The SOSML developers</a> |
+                        <a href="https://github.com/SOSML/SOSML">Sources on GitHub</a> |
+                        <a href="https://github.com/SOSML/SOSML/issues">Report a Bug</a>
                     </div>
                 </div>
             </Router>);
