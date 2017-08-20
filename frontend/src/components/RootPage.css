@@ -24,5 +24,7 @@ nav {
 }
 
 .footer {
-    background-color: #ddd;
+    background-color: #ffffff;
+    padding-right: 10px;
+    text-align: right;
 }
