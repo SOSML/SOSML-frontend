@@ -429,11 +429,12 @@ class IncrementalInterpretation {
     getErrorMessage(error, partial, startPos) {
         if (error.position !== undefined) {
             let position = this.calculateErrorPos(partial, startPos, error.position);
-            return 'Zeile ' + position[0] + ' Spalte ' + position[1] + ': ' +
-                this.getPrototypeName(error) + ': ' + error.message;
+            return 'Zeile ' + position[0] + ' Spalte ' + position[1] + ': \\*' +
+                this.getPrototypeName(error) + '\\*: ' + this.outputEscape(error.message);
         }
         else {
-            return 'Unbekannte Position: ' + this.getPrototypeName(error) + ': ' + error.message;
+            return 'Unbekannte Position: ' + this.getPrototypeName(error) + ': ' +
+                this.outputEscape(error.message);
         }
     }
     calculateErrorPos(partial, startPos, offset) {
@@ -486,10 +487,10 @@ class IncrementalInterpretation {
         this.semicoli.push(pos);
         let outputErr;
         if (error.prettyPrint) {
-            outputErr = 'Uncaught SML exception: ' + error.prettyPrint() + '\n';
+            outputErr = '\\*Uncaught SML exception\\*: ' + this.outputEscape(error.prettyPrint()) + '\n';
         }
         else {
-            outputErr = 'Unknown Uncaught SML exception\n';
+            outputErr = '\\*Unknown Uncaught SML exception\\*\n';
         }
         this.data.push({
             state: null,
@@ -498,11 +499,14 @@ class IncrementalInterpretation {
             output: outputErr
         });
     }
+    outputEscape(str) {
+        return str.replace(/\\/g, "\\\\");
+    }
     computeNewStateOutput(state, id, warnings) {
         let res = this.computeNewStateOutputInternal(state, id);
         let needNewline = false;
         for (let val of warnings) {
-            res += val.message;
+            res += this.outputEscape(val.message);
             needNewline = !val.message.endsWith('\n');
         }
         if (needNewline) {
@@ -541,6 +545,7 @@ class IncrementalInterpretation {
             type = type[0];
         }
         let protoName = this.getPrototypeName(value);
+        res += '\\*';
         if (protoName === 'ValueConstructor') {
             res += 'con';
         }
@@ -550,14 +555,15 @@ class IncrementalInterpretation {
         else {
             res += 'val';
         }
+        res += '\\*';
         if (value) {
-            res += ' ' + bnd[0] + ' = ' + value.prettyPrint(state);
+            res += ' ' + bnd[0] + ' = ' + this.outputEscape(value.prettyPrint(state));
         }
         else {
             return res + ' ' + bnd[0] + ' = undefined;';
         }
         if (type) {
-            return res + ': ' + type.prettyPrint() + ';';
+            return res + ': \\_' + this.outputEscape(type.prettyPrint()) + '\\_;';
         }
         else {
             return res + ': undefined;';
