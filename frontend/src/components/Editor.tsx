@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import Playground from './Playground';
-import { Form , Alert, Button } from 'react-bootstrap';
+import { Form , Alert, Button, Glyphicon } from 'react-bootstrap';
 import { Database, API } from '../API';
 import './Editor.css';
 
@@ -106,7 +106,7 @@ class Editor extends React.Component<any, State> {
                         style={style} />
                     <div className="miniSpacer" />
                     <Button bsSize="small" bsStyle="primary" onClick={this.handleSave}>
-                        Speichern
+                        <Glyphicon glyph={'floppy-disk'} /> Speichern
                     </Button>
                 </Form>
             );

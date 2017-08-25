@@ -50,7 +50,7 @@ class Files extends React.Component<any, State> {
                     return db.getFile(fileName);
                 }).then((content: string) => {
                     let blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
-                    FileSaver.saveAs(blob, fileName);
+                    FileSaver.saveAs(blob, fileName + '.sml');
                 });
             };
         };
@@ -67,7 +67,11 @@ class Files extends React.Component<any, State> {
                         </Button>
                         <div className="miniSpacer" />
                         <Button bsStyle="primary" onClick={downloadHandlerFor(file.name)}>
-                            <Glyphicon glyph={'save-file'} />
+                            <Glyphicon glyph={'download-alt'} /> Herunterladen
+                        </Button>
+                        <div className="miniSpacer" />
+                        <Button bsStyle="primary">
+                            <Glyphicon glyph={'share'} /> Teilen
                         </Button>
                     </td>
                 </tr>

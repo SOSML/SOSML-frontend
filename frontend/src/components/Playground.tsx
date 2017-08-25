@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import MiniWindow from './MiniWindow';
 import CodeMirrorWrapper from './CodeMirrorWrapper';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Modal , Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import {API as WebserverAPI} from '../API';
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
@@ -94,7 +94,9 @@ class Playground extends React.Component<Props, State> {
             executeOnServer = (
                 <div className="inlineBlock">
                     <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="primary" onClick={this.handleRun}>Ausführen</Button>
+                    <Button bsSize="small" bsStyle="primary" onClick={this.handleRun}>
+                        <Glyphicon glyph={'play'} /> Ausführen
+                    </Button>
                 </div>
             );
         }
@@ -137,7 +139,9 @@ class Playground extends React.Component<Props, State> {
             shareElements = (
                 <div className="inlineBlock">
                     <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="primary" onClick={this.handleShare}>Teilen</Button>
+                    <Button bsSize="small" bsStyle="primary" onClick={this.handleShare}>
+                        <Glyphicon glyph={'share'} /> Teilen
+                    </Button>
                 </div>
             );
         }

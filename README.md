@@ -8,7 +8,7 @@ Node.JS version 8 or higher and NPM version 5 or higher need to be installed on 
 
 ## Build the interpreter and frontend
 
-After cloning the repository, first enter the `frontend` directory.
+After cloning the repository, first enter the `interpreter` directory.
 In the directory, execute `npm install` and then `npm run build`.
 
 This will create the `build` directory containing a file `interpreter.js`.
