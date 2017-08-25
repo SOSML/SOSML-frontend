@@ -27,10 +27,17 @@ class Communication {
         delete Communication.handlers[type];
     }
 
-    static setOutput(output: string) {
+    static sendPartialOutput(output: string) {
         untypedGlobal.postMessage({
-            type: 'output',
+            type: 'partial',
             data: output
+        });
+    }
+
+    static sendOutputFinished() {
+        untypedGlobal.postMessage({
+            type: 'finished',
+            data: ''
         });
     }
 
@@ -198,17 +205,18 @@ class IncrementalInterpretation {
             remainingText = remainingText.substr(1);
             basePos.ch = basePos.ch + 1;
         }
+        this.sendFinishedData(baseIndex);
         this.reEvaluateFrom(basePos, baseIndex, anchor, remainingText);
-        this.recomputeOutput();
+        Communication.sendOutputFinished();
     }
 
-    private recomputeOutput() {
+    private sendFinishedData(upTo: number) {
         let out = '';
-        for (let i = 0; i < this.data.length; i++) {
+        for (let i = 0; i <= upTo; i++) {
             out += this.data[i].output;
         }
 
-        Communication.setOutput(out);
+        Communication.sendPartialOutput(out);
     }
 
     private copyPos(pos: any): any {
@@ -279,6 +287,11 @@ class IncrementalInterpretation {
                             errorEncountered = true;
 
                             partial = '';
+                        }
+                        // Send partial
+                        if (this.data.length > 0) {
+                            let output = this.data[this.data.length - 1].output;
+                            Communication.sendPartialOutput(output);
                         }
                     }
                 } else { // no need
@@ -422,8 +435,13 @@ class IncrementalInterpretation {
 
     private computeNewStateOutput(state: any, id: number, warnings: any[]) {
         let res = this.computeNewStateOutputInternal(state, id);
+        let needNewline = false;
         for (let val of warnings) {
             res += val.message;
+            needNewline = !val.message.endsWith('\n');
+        }
+        if (needNewline) {
+            res += '\n';
         }
         return res;
     }

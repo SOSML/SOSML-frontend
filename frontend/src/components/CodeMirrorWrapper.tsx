@@ -36,6 +36,7 @@ class IncrementalInterpretationHelper {
     codemirror: CodeMirrorSubset;
     workerTimeout: any;
     wasTerminated: boolean;
+    partialOutput: string;
 
     constructor(outputCallback: (code: string) => any) {
         this.disabled = false;
@@ -46,6 +47,7 @@ class IncrementalInterpretationHelper {
         this.worker.onmessage = this.onWorkerMessage.bind(this);
         this.workerTimeout = null;
         this.wasTerminated = false;
+        this.partialOutput = '';
     }
 
     restartWorker() {
@@ -71,14 +73,13 @@ class IncrementalInterpretationHelper {
                 this.markers[id].clear();
                 delete this.markers[id];
             }
-        } else if (message.type === 'output') {
-            this.outputCallback(message.data);
-            if (this.workerTimeout !== null) {
-                clearTimeout(this.workerTimeout);
-                this.workerTimeout = null;
-            }
-        } else if (message.type === 'ping') {
-            // The worker is letting us know that he is not dead
+        } else if (message.type === 'partial') {
+            this.partialOutput += message.data;
+            this.outputCallback(this.partialOutput);
+            this.startTimeout();
+        } else if (message.type === 'ping' || message.type === 'finished') {
+            // The worker is letting us know that he is not dead or finished
+            this.partialOutput = '';
             if (this.workerTimeout !== null) {
                 clearTimeout(this.workerTimeout);
                 this.workerTimeout = null;
@@ -121,15 +122,21 @@ class IncrementalInterpretationHelper {
                 'removed': removed
             }
         });
+        this.startTimeout();
+    }
+
+    private startTimeout() {
         if (this.workerTimeout !== null) {
             clearTimeout(this.workerTimeout);
         }
         this.workerTimeout = setTimeout(() => {
             this.restartWorker();
-            this.outputCallback('Die Ausführung wurde unterbrochen, da sie zu lange gedauert hat.');
+            this.outputCallback(this.partialOutput +
+                '\nDie Ausführung wurde unterbrochen, da sie zu lange gedauert hat.');
             this.workerTimeout = null;
             this.clearAllMarkers();
             this.wasTerminated = true;
+            this.partialOutput = '';
         }, 5400);
     }
 
