@@ -16,7 +16,7 @@ export interface File {
 }
 
 export class API {
-    static EMULATE: boolean = false;
+    static EMULATE: boolean = true;
 
     static fallbackInterpreter(code: string): Promise<string> {
         if (API.EMULATE) {
