@@ -22,3 +22,9 @@ nav {
     display: inline-block;
     margin-left: 0.4em;
 }
+
+.footer {
+    background-color: #ffffff;
+    padding-right: 10px;
+    text-align: right;
+}

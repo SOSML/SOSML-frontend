@@ -28,7 +28,7 @@ interface Props {
 }
 
 const SHARE_LINK_ERROR = ':ERROR';
-const OUTPUT_HIGHLIGHT_WORDS = ['val', 'con', 'exn'];
+const OUTPUT_MARKUP_SPECIALS = ['\\*', '\\_'];
 
 class Playground extends React.Component<Props, State> {
     constructor(props: any) {
@@ -55,37 +55,7 @@ class Playground extends React.Component<Props, State> {
         let lines: string[] = this.state.output.split('\n');
         var key = 0;
         let lineItems = lines.map((line) => {
-            let start = 0;
-            let items: any[] = [];
-            while (true) {
-                let indexList = OUTPUT_HIGHLIGHT_WORDS.map((x: string) => {
-                    return line.indexOf(x, start);
-                });
-                let index = indexList[0];
-                let ii = 0;
-                for (let i = 0; i < indexList.length; i++) {
-                    if (indexList[i] !== -1 && (indexList[i] < index || index === -1)) {
-                        index = indexList[i];
-                        ii = i;
-                    }
-                }
-                if (index !== -1) {
-                    let len = OUTPUT_HIGHLIGHT_WORDS[ii].length;
-                    let before = line.substring(start, index);
-                    if (before.length > 0) {
-                        items.push(before);
-                    }
-                    start = index + len;
-                    items.push(<b key={start}>{OUTPUT_HIGHLIGHT_WORDS[ii]}</b>);
-                } else {
-                    let after = line.substring(start);
-                    if (after.length > 0) {
-                        items.push(after);
-                    }
-                    break;
-                }
-            }
-            return <div key={line + (key++)}>{items}</div>;
+            return this.parseLine(line, key++);
         });
         let code: string = this.props.initialCode;
         let evaluateIn: string = (this.state.useServer) ? 'Ausführen auf dem Server' : 'Ausführen im Browser';
@@ -213,7 +183,7 @@ class Playground extends React.Component<Props, State> {
 
     handleRun() {
         WebserverAPI.fallbackInterpreter(this.state.code).then((val) => {
-            this.setState({output: val});
+            this.setState({output: val.replace(/\\/g, '\\\\')});
         }).catch(() => {
             this.setState({output: 'Fehler: konnte keine Verbindung zum Server herstellen'});
         });
@@ -249,6 +219,54 @@ class Playground extends React.Component<Props, State> {
         this.setState(prevState => {
             return {useServer: !prevState.useServer, output: ''};
         });
+    }
+
+    private parseLine(line: string, key: number): JSX.Element {
+        let start = 0;
+        let items: any[] = [];
+        while (true) {
+            let indexList = OUTPUT_MARKUP_SPECIALS.map((x: string) => {
+                return line.indexOf(x, start);
+            });
+            let index = indexList[0];
+            let ii = 0;
+            for (let i = 0; i < indexList.length; i++) {
+                if (indexList[i] !== -1 && (indexList[i] < index || index === -1)) {
+                    index = indexList[i];
+                    ii = i;
+                }
+            }
+            if (index !== -1) {
+                let current = OUTPUT_MARKUP_SPECIALS[ii];
+                let before = line.substring(start, index);
+                if (before.length > 0) {
+                    items.push(before.replace(/\\\\/g, '\\'));
+                }
+                let next = line.indexOf(current, index + 2);
+                if (next === -1) {
+                    next = line.length - 1;
+                }
+                let content = line.substring(index + 2, next)
+                    .replace(/\\\\/g, '\\');
+                if (current === '\\*') {
+                    items.push(<b key={start}>{content}</b>);
+                } else {
+                    items.push(<i key={start}>{content}</i>);
+                }
+                start = next + 2;
+            } else {
+                let after = line.substring(start);
+                if (after.length > 0) {
+                    items.push(after.replace(/\\\\/g, '\\'));
+                }
+                break;
+            }
+        }
+        if (items.length === 0) {
+            return <div key={line + (key++)}><div className="miniSpacer" /></div>;
+        } else {
+            return <div key={line + (key++)}>{items}</div>;
+        }
     }
 }
 
