@@ -5,7 +5,7 @@ import CodeMirrorWrapper from './CodeMirrorWrapper';
 import { Button, Modal , Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import {API as WebserverAPI} from '../API';
-const ClipboardButton: any = require('react-clipboard.js').ClipboardButton;
+const ClipboardButton: any = require('react-clipboard.js');
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
 SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
     if (this.props.onUpdate && this.state.secondaryPaneSize !== prevState.secondaryPaneSize) {
@@ -108,10 +108,12 @@ class Playground extends React.Component<Props, State> {
                     <Modal.Title>Teilen link</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <pre>{this.state.shareLink}</pre>
-                    <ClipboardButton data-clipboard-text={this.state.shareLink}>
+                    <pre>
+                    {this.state.shareLink}
+                    <ClipboardButton className="headerButtons" data-clipboard-text={this.state.shareLink}>
                         <Glyphicon glyph={'copy'} />
                     </ClipboardButton>
+                    </pre>
                     <p className="text-justify">
                         Diesen Link können Sie anderen Personen geben, die dann den
                         Code sehen können, den Sie gerade geschrieben haben. <br />
