@@ -5,7 +5,6 @@ import CodeMirrorWrapper from './CodeMirrorWrapper';
 import { Button, Modal , Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import {API as WebserverAPI} from '../API';
-const ClipboardButton: any = require('react-clipboard.js');
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
 SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
     if (this.props.onUpdate && this.state.secondaryPaneSize !== prevState.secondaryPaneSize) {
@@ -109,10 +108,10 @@ class Playground extends React.Component<Props, State> {
                 </Modal.Header>
                 <Modal.Body>
                     <pre>
-                    {this.state.shareLink}
-                    <ClipboardButton className="headerButtons" data-clipboard-text={this.state.shareLink}>
-                        <Glyphicon glyph={'copy'} />
-                    </ClipboardButton>
+                    <input className="js-copytextarea" value={this.state.shareLink} />
+                        <Button className="headerButtons" onClick={this.copyShareLink}>
+                            <Glyphicon glyph={'copy'} />
+                        </Button>
                     </pre>
                     <p className="text-justify">
                         Diesen Link können Sie anderen Personen geben, die dann den
@@ -191,6 +190,12 @@ class Playground extends React.Component<Props, State> {
 
     closeShareModal() {
         this.setState({shareLink: ''});
+    }
+
+    copyShareLink() {
+        let copyTextarea = document.querySelector('.js-copytextarea') as HTMLTextAreaElement;
+        copyTextarea.select();
+        document.execCommand('copy');
     }
 
     componentDidMount() {
