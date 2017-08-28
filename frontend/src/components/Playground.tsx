@@ -107,12 +107,14 @@ class Playground extends React.Component<Props, State> {
                     <Modal.Title>Teilen link</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <pre>
-                    <input className="js-copytextarea" value={this.state.shareLink} />
-                        <Button className="headerButtons" onClick={this.copyShareLink}>
-                            <Glyphicon glyph={'copy'} />
-                        </Button>
-                    </pre>
+                    <div className="input-group">
+                        <input type="text" className="form-control js-copytextarea" value={this.state.shareLink} />
+                        <span className="input-group-btn">
+                            <button className="btn btn-default" onClick={this.copyShareLink} type="button">
+                                <Glyphicon glyph={'copy'} />
+                            </button>
+                        </span>
+                    </div>
                     <p className="text-justify">
                         Diesen Link können Sie anderen Personen geben, die dann den
                         Code sehen können, den Sie gerade geschrieben haben. <br />
