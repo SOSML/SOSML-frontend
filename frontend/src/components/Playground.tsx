@@ -224,6 +224,21 @@ class Playground extends React.Component<Props, State> {
     private parseLine(line: string, key: number): JSX.Element {
         let start = 0;
         let items: any[] = [];
+        if (line.startsWith('>')) {
+            let regex = /^>( *).*$/g;
+            let match = regex.exec(line);
+            if (match != null) {
+                if (match[1].length > 1) {
+                    start = match[1].length + 1;
+                    items.push('>');
+                    for (let i = 0; i < match[1].length; i++) {
+                        items.push((
+                            <div key={i} style={{display: 'inline-block'}}>&nbsp;</div>
+                        ));
+                    }
+                }
+            }
+        }
         while (true) {
             let indexList = OUTPUT_MARKUP_SPECIALS.map((x: string) => {
                 return line.indexOf(x, start);
