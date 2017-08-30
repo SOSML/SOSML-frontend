@@ -70,9 +70,6 @@ class Files extends React.Component<any, State> {
                             <Glyphicon glyph={'download-alt'} /> Herunterladen
                         </Button>
                         <div className="miniSpacer" />
-                        <Button bsStyle="primary">
-                            <Glyphicon glyph={'share'} /> Teilen
-                        </Button>
                     </td>
                 </tr>
             );
