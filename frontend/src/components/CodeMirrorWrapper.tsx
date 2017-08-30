@@ -131,8 +131,16 @@ class IncrementalInterpretationHelper {
         }
         this.workerTimeout = setTimeout(() => {
             this.restartWorker();
-            this.outputCallback(this.partialOutput +
-                '\nDie Ausführung wurde unterbrochen, da sie zu lange gedauert hat.');
+            let out = '';
+            let timeoutStr = 'Die Ausführung wurde unterbrochen, da sie zu lange gedauert hat.';
+            if (this.partialOutput.trim() === '') {
+                out = timeoutStr;
+            } else if (this.partialOutput.endsWith('\n')) {
+                out = this.partialOutput + timeoutStr;
+            } else {
+                out = this.partialOutput + '\n' + timeoutStr;
+            }
+            this.outputCallback(out);
             this.workerTimeout = null;
             this.clearAllMarkers();
             this.wasTerminated = true;
@@ -177,6 +185,7 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             lineNumbers: true,
             mode: 'text/sml',
             indentUnit: 2,
+            tabSize: 2,
             matchBrackets: true,
             lineWrapping: true,
             readOnly: this.props.readOnly ? true : false

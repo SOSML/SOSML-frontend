@@ -106,6 +106,12 @@ module.exports = g;
     });
 };
 let untypedGlobal = global;
+let interpreterSettings = {
+    'allowUnicodeInStrings': false,
+    'allowSuccessorML': false,
+    'disableElaboration': false,
+    'allowLongFunctionNames': true
+};
 class Communication {
     static init() {
         Communication.handlers = {};
@@ -295,7 +301,6 @@ class IncrementalInterpretation {
     reEvaluateFrom(basePos, baseIndex, anchor, remainingText) {
         let splitByLine = remainingText.split('\n');
         let lastPos = basePos;
-        // console.log(remainingText);
         let partial = '';
         let errorEncountered = false;
         let previousState = (baseIndex === -1) ? null : this.data[baseIndex].state;
@@ -368,21 +373,19 @@ class IncrementalInterpretation {
             }
             partial += line.substr(start + 1);
         }
-        // console.log(this);
     }
     evaluate(oldState, partial) {
         let ret;
         try {
             if (oldState === null) {
-                ret = this.interpreter.interpret(partial + ';', this.initialState, true);
+                ret = this.interpreter.interpret(partial + ';', this.initialState, interpreterSettings);
             }
             else {
-                ret = this.interpreter.interpret(partial + ';', oldState, true);
+                ret = this.interpreter.interpret(partial + ';', oldState, interpreterSettings);
             }
         }
         catch (e) {
             // TODO: switch over e's type
-            // console.log(e);
             if (this.getPrototypeName(e) === 'IncompleteError') {
                 return {
                     state: null,
@@ -485,13 +488,7 @@ class IncrementalInterpretation {
     }
     addSMLErrorSemicolon(pos, error, marker) {
         this.semicoli.push(pos);
-        let outputErr;
-        if (error.prettyPrint) {
-            outputErr = '\\*Uncaught SML exception\\*: ' + this.outputEscape(error.prettyPrint()) + '\n';
-        }
-        else {
-            outputErr = '\\*Unknown Uncaught SML exception\\*\n';
-        }
+        let outputErr = '\\*Uncaught SML exception\\*: ' + this.outputEscape(error.toString()) + '\n';
         this.data.push({
             state: null,
             marker: marker,
@@ -502,8 +499,40 @@ class IncrementalInterpretation {
     outputEscape(str) {
         return str.replace(/\\/g, "\\\\");
     }
+    printBasis(state, dynamicBasis, staticBasis, indent = 0) {
+        let out = '';
+        let stsym = '>';
+        let istr = '';
+        for (let i = 0; i < indent; ++i) {
+            istr += '  ';
+        }
+        for (let i in dynamicBasis.valueEnvironment) {
+            if (dynamicBasis.valueEnvironment.hasOwnProperty(i)) {
+                if (staticBasis) {
+                    out += stsym + ' ' + istr + this.printBinding(state, [i, dynamicBasis.valueEnvironment[i],
+                        staticBasis.getValue(i)]) + '\n';
+                }
+                else {
+                    out += stsym + ' ' + istr + this.printBinding(state, [i, dynamicBasis.valueEnvironment[i], undefined]) + '\n';
+                }
+            }
+        }
+        for (let i in dynamicBasis.structureEnvironment) {
+            if (dynamicBasis.structureEnvironment.hasOwnProperty(i)) {
+                out += stsym + ' ' + istr + 'structure ' + i + ' = {\n';
+                if (staticBasis) {
+                    out += this.printBasis(state, dynamicBasis.getStructure(i), staticBasis.getStructure(i), indent + 1);
+                }
+                else {
+                    out += this.printBasis(state, dynamicBasis.getStructure(i), undefined, indent + 1);
+                }
+                out += stsym + ' ' + istr + '}\n';
+            }
+        }
+        return out;
+    }
     computeNewStateOutput(state, id, warnings) {
-        let res = this.computeNewStateOutputInternal(state, id);
+        let res = this.printBasis(state, state.getDynamicChanges(id - 1), state.getStaticChanges(id - 1), 0);
         let needNewline = false;
         for (let val of warnings) {
             res += this.outputEscape(val.message);
@@ -514,12 +543,13 @@ class IncrementalInterpretation {
         }
         return res;
     }
-    computeNewStateOutputInternal(state, id) {
-        if (state.id < id) {
+    /*
+    private computeNewStateOutputInternal(state: any, id: number) {
+        if ( state.id < id ) {
             return '';
         }
         let output = '';
-        if (state.parent !== undefined) {
+        if ( state.parent !== undefined ) {
             output += this.computeNewStateOutputInternal(state.parent, id);
         }
         if (state.dynamicBasis.valueEnvironment !== undefined) {
@@ -536,9 +566,9 @@ class IncrementalInterpretation {
             }
         }
         return output;
-    }
+    }*/
     printBinding(state, bnd) {
-        let res = '> ';
+        let res = '';
         let value = bnd[1][0];
         let type = bnd[2];
         if (type) {
@@ -557,13 +587,13 @@ class IncrementalInterpretation {
         }
         res += '\\*';
         if (value) {
-            res += ' ' + bnd[0] + ' = ' + this.outputEscape(value.prettyPrint(state));
+            res += ' ' + bnd[0] + ' = ' + this.outputEscape(value.toString(state));
         }
         else {
             return res + ' ' + bnd[0] + ' = undefined;';
         }
         if (type) {
-            return res + ': \\_' + this.outputEscape(type.prettyPrint()) + '\\_;';
+            return res + ': \\_' + this.outputEscape(type.toString()) + '\\_;';
         }
         else {
             return res + ': undefined;';
