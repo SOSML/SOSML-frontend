@@ -4,7 +4,7 @@ import { Alert } from 'react-bootstrap';
 class Help extends React.Component<any, any> {
     render() {
         return (
-            <div className="container">
+            <div className="container flexy">
                 <h2>Hilfe</h2>
                 <hr />
                 <h3>Editor &amp; Ausführen Grundlagen</h3>

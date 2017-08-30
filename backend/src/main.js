@@ -195,6 +195,10 @@ server.get('/interpreter.js', function (request, response) {
     response.sendFile(path.resolve('../frontend/build/interpreter.js'));
 });
 
+server.get('/webworker.js', function (request, response) {
+    response.sendFile(path.resolve('../frontend/build/webworker.js'));
+});
+
 server.get('/logo.png', function (request, response) {
     response.sendFile(path.resolve('../frontend/build/logo.png'));
 });

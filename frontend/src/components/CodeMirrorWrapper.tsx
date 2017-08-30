@@ -5,7 +5,6 @@ require('codemirror/lib/codemirror.css');
 require('../mllike.js');
 require('codemirror/addon/edit/matchbrackets.js');
 import './CodeMirrorWrapper.css';
-import {API} from '../API';
 
 class CodeMirrorSubset {
     cm: any;
@@ -18,6 +17,10 @@ class CodeMirrorSubset {
         return this.cm.getRange(pos, {'line': this.cm.lineCount() + 1, 'ch' : 0}, '\n');
     }
 
+    getValue(): string {
+        return this.cm.getValue();
+    }
+
     markText(from: any, to: any, style: string) {
         return this.cm.markText(from, to, {
             className: style
@@ -25,51 +28,70 @@ class CodeMirrorSubset {
     }
 }
 
-enum ErrorType {
-    OK = 0, // Interpret successfull
-    INCOMPLETE, // The given partial string was incomplete SML code
-    INTERPRETER, // The interpreter failed, e.g. compile error etc.
-    SML // SML raised an exception
-}
-
-interface IncrementalStateValues {
-    state: any;
-    marker: any;
-    output: string;
-    error: boolean;
-}
-
 class IncrementalInterpretationHelper {
-    semicoli: any[];
-    data: IncrementalStateValues[];
-    debounceTimeout: any;
-    debounceMinimumPosition: any;
-    debounceCallNecessary: boolean;
-    interpreter: any;
+    markers: any;
     outputCallback: (code: string) => any;
     disabled: boolean;
-    initialState: any;
+    worker: Worker;
+    codemirror: CodeMirrorSubset;
+    workerTimeout: any;
+    wasTerminated: boolean;
+    partialOutput: string;
 
     constructor(outputCallback: (code: string) => any) {
-        this.semicoli = [];
-        this.data = [];
-
         this.disabled = false;
-        this.debounceCallNecessary = false;
-
-        this.interpreter = API.createInterpreter();
         this.outputCallback = outputCallback;
-        this.initialState = this.interpreter.getFirstState(true);
+        this.markers = {};
+
+        this.worker = new Worker(process.env.PUBLIC_URL + '/webworker.js');
+        this.worker.onmessage = this.onWorkerMessage.bind(this);
+        this.workerTimeout = null;
+        this.wasTerminated = false;
+        this.partialOutput = '';
+    }
+
+    restartWorker() {
+        this.worker.terminate();
+        this.worker = new Worker(process.env.PUBLIC_URL + '/webworker.js');
+        this.worker.onmessage = this.onWorkerMessage.bind(this);
+    }
+
+    onWorkerMessage(e: any) {
+        let message = e.data;
+        if (message.type === 'getcode') {
+            this.worker.postMessage({
+                type: 'code',
+                data: this.codemirror.getCode(message.data)
+            });
+        } else if (message.type === 'markText') {
+            let data = message.data;
+            let marker = this.codemirror.markText(data.from, data.to, data.style);
+            this.markers[data.id] = marker;
+        } else if (message.type === 'clearMarker') {
+            let id = message.data.id;
+            if (this.markers[id]) {
+                this.markers[id].clear();
+                delete this.markers[id];
+            }
+        } else if (message.type === 'partial') {
+            this.partialOutput += message.data;
+            this.outputCallback(this.partialOutput);
+            this.startTimeout();
+        } else if (message.type === 'ping' || message.type === 'finished') {
+            // The worker is letting us know that he is not dead or finished
+            this.partialOutput = '';
+            if (this.workerTimeout !== null) {
+                clearTimeout(this.workerTimeout);
+                this.workerTimeout = null;
+            }
+        }
     }
 
     clear() {
-        this.semicoli.length = 0;
-        for (let i = 0; i < this.data.length; i++) {
-            if (this.data[i].marker) {
-                this.data[i].marker.clear();
-            }
-        }
-        this.data.length = 0;
+        this.worker.postMessage({
+            type: 'clear',
+            data: ''
+        });
     }
 
     disable() {
@@ -85,431 +107,54 @@ class IncrementalInterpretationHelper {
         if (this.disabled) {
             return;
         }
-        this.doDebounce(pos, added, removed, codemirror);
-    }
-
-    private doDebounce(pos: any, added: string[], removed: string[], codemirror: CodeMirrorSubset) {
-        clearTimeout(this.debounceTimeout);
-        if (!this.debounceCallNecessary) {
-            if (!this.isHandlingNecessary(pos, added, removed)) {
-                return;
-            } else {
-                this.debounceCallNecessary = true;
+        this.codemirror = codemirror;
+        if (this.wasTerminated) { // Re-evaluate everything
+            added = codemirror.getValue().split('\n');
+            removed = [];
+            pos = {line: 0, ch: 0};
+            this.wasTerminated = false;
+        }
+        this.worker.postMessage({
+            type: 'interpret',
+            data: {
+                'pos': pos,
+                'added': added,
+                'removed': removed
             }
-        }
-        if (!this.debounceMinimumPosition || this.compare(pos, this.debounceMinimumPosition) === -1) {
-            this.debounceMinimumPosition = pos;
-        }
-        this.debounceTimeout = setTimeout(() => {
-            this.debounceTimeout = null;
-            this.debounceCallNecessary = false;
-            let minPos = this.debounceMinimumPosition;
-            this.debounceMinimumPosition = null;
-            this.debouncedHandleChangeAt(minPos, codemirror);
-        }, 400);
-    }
-
-    private debouncedHandleChangeAt(pos: any, codemirror: CodeMirrorSubset) {
-        let anchor = this.binarySearch(pos);
-        anchor = this.findNonErrorAnchor(anchor);
-        this.deleteAllAfter(anchor);
-        let baseIndex = this.findBaseIndex(anchor);
-        let basePos: any;
-        if (baseIndex !== -1) {
-            basePos = this.copyPos(this.semicoli[baseIndex]);
-        } else {
-            basePos = {line: 0, ch: 0};
-        }
-        let remainingText = codemirror.getCode(basePos);
-        if (baseIndex !== -1) {
-            remainingText = remainingText.substr(1);
-            basePos.ch = basePos.ch + 1;
-        }
-        this.reEvaluateFrom(basePos, baseIndex, anchor, remainingText, codemirror);
-        this.recomputeOutput();
-    }
-
-    private recomputeOutput() {
-        let out = '';
-        for (let i = 0; i < this.data.length; i++) {
-            out += this.data[i].output;
-        }
-        // out += this.getPrintOutput();
-        this.outputCallback(out);
-    }
-
-    /*
-    private getPrintOutput(): string {
-        for (let i = this.data.length - 1; i >= 0; i--) {
-            if (this.data[i].state !== null) {
-                if (this.data[i].state.getDynamicValue('__stdout') !== undefined) {
-                    return '\n' + this.data[i].state.getDynamicValue('__stdout').value;
-                }
-                return '';
-            }
-        }
-        return '';
-    }
-    */
-
-    private copyPos(pos: any): any {
-        return {line: pos.line, ch: pos.ch};
-    }
-
-    private reEvaluateFrom(basePos: any, baseIndex: number, anchor: number, remainingText: string,
-                           codemirror: CodeMirrorSubset) {
-        let splitByLine: string[] = remainingText.split('\n');
-        let lastPos = basePos;
-        // console.log(remainingText);
-        let partial = '';
-        let errorEncountered = false;
-        let previousState = (baseIndex === -1) ? null : this.data[baseIndex].state;
-        for (let i = 0; i < splitByLine.length; i++) {
-            let lineOffset = 0;
-            if (i === 0) {
-                lineOffset = basePos.ch;
-            }
-            let start = -1;
-            let line = splitByLine[i];
-            let sc: number;
-            if (i !== 0) {
-                partial += '\n';
-            }
-            while ((sc = line.indexOf(';', start + 1)) !== -1) {
-                partial += line.substring(start + 1, sc);
-                if (baseIndex >= anchor) {
-                    // actually need to handle this
-
-                    let semiPos = {line: (basePos.line + i), ch: sc + lineOffset};
-                    if (errorEncountered) {
-                        this.addErrorSemicolon(semiPos, '', codemirror.markText(lastPos, semiPos, 'eval-fail'));
-                        lastPos = this.copyPos(semiPos);
-                        lastPos.ch++;
-                        previousState = null;
-
-                        partial = '';
-                    } else {
-                        let ret = this.evaluate(previousState, partial);
-                        if (ret.result === ErrorType.INCOMPLETE) {
-                            this.addIncompleteSemicolon(semiPos);
-                            partial += ';';
-                        } else if (ret.result === ErrorType.OK) {
-                            this.addSemicolon(semiPos, ret.state, codemirror.markText(lastPos, semiPos, 'eval-success'),
-                                ret.warnings);
-                            lastPos = this.copyPos(semiPos);
-                            lastPos.ch++;
-                            previousState = ret.state;
-
-                            partial = '';
-                        } else if (ret.result === ErrorType.SML) {
-                            // TODO
-                            this.addSMLErrorSemicolon(semiPos, ret.error,
-                                codemirror.markText(lastPos, semiPos, 'eval-fail'));
-                            lastPos = this.copyPos(semiPos);
-                            lastPos.ch++;
-                            previousState = ret.state;
-
-                            partial = '';
-                        } else {
-                            // TODO: mark error position with red color
-                            let errorMessage = this.getErrorMessage(ret.error, partial, lastPos);
-                            this.addErrorSemicolon(semiPos, errorMessage,
-                                codemirror.markText(lastPos, semiPos, 'eval-fail'));
-                            lastPos = this.copyPos(semiPos);
-                            lastPos.ch++;
-                            previousState = null;
-                            errorEncountered = true;
-
-                            partial = '';
-                        }
-                    }
-                } else { // no need
-                    partial += ';';
-                }
-                baseIndex++;
-                start = sc;
-            }
-            partial += line.substr(start + 1);
-        }
-        // console.log(this);
-    }
-
-    private evaluate(oldState: any, partial: string): { [name: string]: any } {
-        let ret: any;
-        try {
-            if (oldState === null) {
-                ret = this.interpreter.interpret(partial + ';', this.initialState, true);
-            } else {
-                ret = this.interpreter.interpret(partial + ';', oldState, true);
-            }
-        } catch (e) {
-            // TODO: switch over e's type
-            // console.log(e);
-            if (this.getPrototypeName(e) === 'IncompleteError') {
-                return {
-                    state: null,
-                    result: ErrorType.INCOMPLETE,
-                    error: e,
-                    warnings: []
-                };
-            } else {
-                return {
-                    state: null,
-                    result: ErrorType.INTERPRETER,
-                    error: e,
-                    warnings: []
-                };
-            }
-        }
-        if (ret.evaluationErrored) {
-            return {
-                state: ret.state,
-                result: ErrorType.SML,
-                error: ret.error,
-                warnings: ret.warnings
-            };
-        } else {
-            return {
-                state: ret.state,
-                result: ErrorType.OK,
-                error: null,
-                warnings: ret.warnings
-            };
-        }
-    }
-
-    private getPrototypeName(object: any): string {
-        let proto: any = Object.getPrototypeOf(object);
-        if (proto.constructor && proto.constructor.name) {
-            return proto.constructor.name;
-        } else {
-            return '';
-        }
-    }
-
-    private getErrorMessage(error: any, partial: string, startPos: any): string {
-        if (error.position !== undefined) {
-            let position = this.calculateErrorPos(partial, startPos, error.position);
-            return 'Zeile ' + position[0] + ' Spalte ' + position[1] + ': ' +
-                this.getPrototypeName(error) + ': ' + error.message;
-        } else {
-            return 'Unbekannte Position: ' + this.getPrototypeName(error) + ': ' + error.message;
-        }
-    }
-
-    private calculateErrorPos(partial: string, startPos: any, offset: number): [number, number] {
-        let pos = {line: startPos.line, ch: startPos.ch};
-        for (let i = 0; i < offset; i++) {
-            let char = partial.charAt(i);
-            if (char === '\n') {
-                pos.line ++;
-                pos.ch = 0;
-            } else {
-                pos.ch++;
-            }
-        }
-        return [pos.line + 1, pos.ch + 1];
-    }
-
-    private addSemicolon(pos: any, newState: any, marker: any, warnings: any) {
-        this.semicoli.push(pos);
-        let baseIndex = this.findBaseIndex(this.data.length - 1);
-        let baseStateId = this.initialState.id + 1;
-        if (baseIndex !== -1) {
-            baseStateId = this.data[baseIndex].state.id + 1;
-        }
-        this.data.push({
-            state: newState,
-            marker: marker,
-            error: false,
-            output: this.computeNewStateOutput(newState, baseStateId, warnings)
         });
+        this.startTimeout();
     }
 
-    private addIncompleteSemicolon(pos: any) {
-        this.semicoli.push(pos);
-        this.data.push({
-            state: null,
-            marker: null,
-            error: false,
-            output: ''
-        });
-    }
-
-    private addErrorSemicolon(pos: any, errorMessage: any, marker: any) {
-        this.semicoli.push(pos);
-        this.data.push({
-            state: null,
-            marker: marker,
-            error: true,
-            output: errorMessage
-        });
-    }
-
-    private addSMLErrorSemicolon(pos: any, error: any, marker: any) {
-        this.semicoli.push(pos);
-        let outputErr: string;
-        if (error.prettyPrint) {
-            outputErr = 'Uncaught SML exception: ' + error.prettyPrint() + '\n';
-        } else {
-            outputErr = 'Unknown Uncaught SML exception\n';
+    private startTimeout() {
+        if (this.workerTimeout !== null) {
+            clearTimeout(this.workerTimeout);
         }
-        this.data.push({
-            state: null,
-            marker: marker,
-            error: true,
-            output: outputErr
-        });
-    }
-
-    private computeNewStateOutput(state: any, id: number, warnings: any[]) {
-        let res = this.computeNewStateOutputInternal(state, id);
-        if (state.getDynamicValue('__stdout', false, id) !== undefined) {
-            res += '\n' + state.getDynamicValue('__stdout', false, id).value;
-        }
-        for (let val of warnings) {
-            res += '\n' + val.message;
-        }
-        return res + '\n';
-    }
-
-    private computeNewStateOutputInternal(state: any, id: number) {
-        if ( state.id < id ) {
-            return '';
-        }
-        let output = '';
-        if ( state.parent !== undefined ) {
-            output += this.computeNewStateOutputInternal(state.parent, id);
-        }
-        if (state.dynamicBasis.valueEnvironment !== undefined) {
-            let valEnv = state.dynamicBasis.valueEnvironment;
-            for (let i in valEnv) {
-                if (valEnv.hasOwnProperty(i)) {
-                    if (state.getDynamicValue(i, false) === undefined) {
-                        continue;
-                    }
-                    output += this.printBinding(state, [i, state.getDynamicValue(i),
-                        state.getStaticValue(i)]);
-                    output += '\n';
-                }
-            }
-            output += '\n';
-        }
-        return output;
-    }
-
-    private printBinding(state: any, bnd: [any, any[], any[]]) {
-        let res = '> ';
-
-        let value = bnd[1][0];
-        let type: any = bnd[2];
-        if (type) {
-            type = type[0];
-        }
-
-        let protoName = this.getPrototypeName(value);
-        if (protoName === 'ValueConstructor') {
-            res += 'con';
-        } else if (protoName === 'ExceptionConstructor') {
-            res += 'exn';
-        } else {
-            res += 'val';
-        }
-
-        if (value) {
-            res += ' ' + bnd[0] + ' = ' + value.prettyPrint(state);
-        } else {
-            return res + ' ' + bnd[0] + ' = undefined;';
-        }
-
-        if (type) {
-            return res + ': ' + type.prettyPrint() + ';';
-        } else {
-            return res + ': undefined;';
-        }
-    }
-
-    private stringArrayContains(arr: string[], search: string) {
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i].indexOf(search) !== -1) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private isHandlingNecessary(pos: any, added: string[], removed: string[]) {
-        if (this.stringArrayContains(added, ';') || this.stringArrayContains(removed, ';')) {
-            return true;
-        }
-        if (this.semicoli.length === 0) {
-            return false;
-        }
-        let lastSemicolon = this.semicoli[this.semicoli.length - 1];
-        if (this.compare(lastSemicolon, pos) === -1) {
-            return false;
-        }
-        return true;
-    }
-
-    private findBaseIndex(index: number): any {
-        for (let i = index; i >= 0; i--) {
-            if (this.data[i].state !== null) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private findNonErrorAnchor(anchor: number) {
-        for (let i = anchor; i >= 0; i--) {
-            if (!this.data[i].error) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private deleteAllAfter(index: number) {
-        this.semicoli.length = index + 1;
-        for (let i = index + 1; i < this.data.length; i++) {
-            if (this.data[i].marker) {
-                this.data[i].marker.clear();
-            }
-        }
-        this.data.length = index + 1;
-    }
-
-    private binarySearch(pos: any): number {
-        let left = 0;
-        let right = this.semicoli.length - 1;
-        while (left <= right) {
-            let center = Math.floor((left + right) / 2);
-            let element = this.semicoli[center];
-            let cmp = this.compare(pos, element);
-            if (cmp === -1) {
-                right = center - 1;
-                if (left > right) {
-                    return center - 1; // the element left of center is the next best element
-                }
-            } else if (cmp === 1) {
-                left = center + 1;
-                if (left > right) {
-                    return center; // center is the next best element
-                }
+        this.workerTimeout = setTimeout(() => {
+            this.restartWorker();
+            let out = '';
+            let timeoutStr = 'Die Ausführung wurde unterbrochen, da sie zu lange gedauert hat.';
+            if (this.partialOutput.trim() === '') {
+                out = timeoutStr;
+            } else if (this.partialOutput.endsWith('\n')) {
+                out = this.partialOutput + timeoutStr;
             } else {
-                return center - 1;
+                out = this.partialOutput + '\n' + timeoutStr;
             }
-        }
-        return -1;
+            this.outputCallback(out);
+            this.workerTimeout = null;
+            this.clearAllMarkers();
+            this.wasTerminated = true;
+            this.partialOutput = '';
+        }, 5400);
     }
 
-    private compare(posa: any, posb: any) {
-        if (posa.line === posb.line) {
-            return Math.sign(posa.ch - posb.ch);
-        } else {
-            return Math.sign(posa.line - posb.line);
+    private clearAllMarkers() {
+        for (let key in this.markers) {
+            if (this.markers.hasOwnProperty(key)) {
+                this.markers[key].clear();
+            }
         }
+        this.markers = {};
     }
 }
 
@@ -540,6 +185,7 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             lineNumbers: true,
             mode: 'text/sml',
             indentUnit: 2,
+            tabSize: 2,
             matchBrackets: true,
             lineWrapping: true,
             readOnly: this.props.readOnly ? true : false
