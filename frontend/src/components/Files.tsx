@@ -70,7 +70,7 @@ class Files extends React.Component<any, State> {
                         </Button>
                         <div className="miniSpacer" />
                         <Button bsStyle="primary" onClick={downloadHandlerFor(file.name)}>
-                            <Glyphicon glyph={'save-file'} />
+                            <Glyphicon glyph={'download-alt'} /> Herunterladen
                         </Button>
                     </td>
                 </tr>
