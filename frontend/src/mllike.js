@@ -83,7 +83,7 @@
                 stream.eatWhile(/[\w\xa1-\uffff]/);
                 var cur = stream.current();
                 if (words.hasOwnProperty(cur)) {
-                    if (cur == 'let' || cur == 'in' ||cur == 'local') {
+                    if (stream.eol() && (cur == 'let' || cur == 'in' ||cur == 'local')) {
                         state.indentHint += 2;
                     }
                     return words[cur];

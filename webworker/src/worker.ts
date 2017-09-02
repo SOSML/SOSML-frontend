@@ -3,7 +3,7 @@ let interpreterSettings = {
     'allowUnicodeInStrings': false,
     'allowSuccessorML': false,
     'disableElaboration': false,
-    'allowLongFunctionNames': true
+    'allowLongFunctionNames': false
 };
 
 class Communication {
@@ -23,6 +23,12 @@ class Communication {
                 }
             }
         };
+        Communication.registerHandler('settings', (settings: any) => {
+            if (settings) {
+                interpreterSettings = JSON.parse(settings);
+                console.log(interpreterSettings);
+            }
+        });
     }
 
     static registerHandler(type: string, func: (msg: any) => any) {

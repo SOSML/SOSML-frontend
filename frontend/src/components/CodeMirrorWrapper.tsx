@@ -46,7 +46,7 @@ class IncrementalInterpretationHelper {
         this.worker = new Worker(process.env.PUBLIC_URL + '/webworker.js');
         this.worker.onmessage = this.onWorkerMessage.bind(this);
         this.workerTimeout = null;
-        this.wasTerminated = false;
+        this.wasTerminated = true;
         this.partialOutput = '';
     }
 
@@ -113,6 +113,10 @@ class IncrementalInterpretationHelper {
             removed = [];
             pos = {line: 0, ch: 0};
             this.wasTerminated = false;
+            this.worker.postMessage({
+                type: 'settings',
+                data: localStorage.getItem('interpreterSettings')
+            });
         }
         this.worker.postMessage({
             type: 'interpret',

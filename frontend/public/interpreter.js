@@ -469,7 +469,7 @@ exports.LongIdentifierToken = LongIdentifierToken;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var values_1 = __webpack_require__(3);
+var values_1 = __webpack_require__(4);
 var tokens_1 = __webpack_require__(1);
 var errors_1 = __webpack_require__(0);
 var IdentifierStatus;
@@ -670,8 +670,9 @@ var StaticBasis = (function () {
     StaticBasis.prototype.deleteValue = function (name) {
         this.valueEnvironment[name] = undefined;
     };
-    StaticBasis.prototype.setType = function (name, type, constructors, arity) {
-        this.typeEnvironment[name] = new TypeInformation(type, constructors, arity);
+    StaticBasis.prototype.setType = function (name, type, constructors, arity, admitsEquality) {
+        if (admitsEquality === void 0) { admitsEquality = false; }
+        this.typeEnvironment[name] = new TypeInformation(type, constructors, arity, admitsEquality);
     };
     StaticBasis.prototype.setStructure = function (name, structure) {
         this.structureEnvironment[name] = structure;
@@ -838,6 +839,53 @@ var State = (function () {
             return this.parent.getStaticType(name, idLimit);
         }
     };
+    State.prototype.getStaticStructure = function (name, idLimit) {
+        if (idLimit === void 0) { idLimit = 0; }
+        var result = this.staticBasis.getStructure(name);
+        if (result !== undefined || this.parent === undefined || this.parent.id < idLimit) {
+            return result;
+        }
+        else {
+            return this.parent.getStaticStructure(name, idLimit);
+        }
+    };
+    State.prototype.getAndResolveStaticStructure = function (name, idLimit) {
+        if (idLimit === void 0) { idLimit = 0; }
+        var res = undefined;
+        if (name.qualifiers.length === 0) {
+            throw new errors_1.EvaluationError(name.position, 'Unqualified LongIdentifierToken are too unqualified to be useful here.');
+        }
+        else {
+            res = this.getStaticStructure(name.qualifiers[0].getText(), idLimit);
+        }
+        for (var i = 1; i < name.qualifiers.length; ++i) {
+            if (res === undefined) {
+                return res;
+            }
+            res = res.getStructure(name.qualifiers[i].getText());
+        }
+        return res;
+    };
+    State.prototype.getStaticSignature = function (name, idLimit) {
+        if (idLimit === void 0) { idLimit = 0; }
+        var result = this.staticBasis.getSignature(name);
+        if (result !== undefined || this.parent === undefined || this.parent.id < idLimit) {
+            return result;
+        }
+        else {
+            return this.parent.getStaticSignature(name, idLimit);
+        }
+    };
+    State.prototype.getStaticFunctor = function (name, idLimit) {
+        if (idLimit === void 0) { idLimit = 0; }
+        var result = this.staticBasis.getFunctor(name);
+        if (result !== undefined || this.parent === undefined || this.parent.id < idLimit) {
+            return result;
+        }
+        else {
+            return this.parent.getStaticFunctor(name, idLimit);
+        }
+    };
     State.prototype.getDynamicValue = function (name, idLimit) {
         if (idLimit === void 0) { idLimit = 0; }
         var result = this.dynamicBasis.getValue(name);
@@ -991,6 +1039,42 @@ var State = (function () {
             this.parent.setStaticType(name, type, constructors, arity, atId);
         }
     };
+    State.prototype.setStaticStructure = function (name, structure, atId) {
+        if (atId === void 0) { atId = undefined; }
+        if (atId === undefined || atId === this.id) {
+            this.staticBasis.setStructure(name, structure);
+        }
+        else if (atId > this.id || this.parent === undefined) {
+            throw new errors_1.InternalInterpreterError(-1, 'State with id "' + atId + '" does not exist.');
+        }
+        else {
+            this.parent.setStaticStructure(name, structure, atId);
+        }
+    };
+    State.prototype.setStaticSignature = function (name, signature, atId) {
+        if (atId === void 0) { atId = undefined; }
+        if (atId === undefined || atId === this.id) {
+            this.staticBasis.setSignature(name, signature);
+        }
+        else if (atId > this.id || this.parent === undefined) {
+            throw new errors_1.InternalInterpreterError(-1, 'State with id "' + atId + '" does not exist.');
+        }
+        else {
+            this.parent.setStaticSignature(name, signature, atId);
+        }
+    };
+    State.prototype.setStaticFunctor = function (name, functor, atId) {
+        if (atId === void 0) { atId = undefined; }
+        if (atId === undefined || atId === this.id) {
+            this.staticBasis.setFunctor(name, functor);
+        }
+        else if (atId > this.id || this.parent === undefined) {
+            throw new errors_1.InternalInterpreterError(-1, 'State with id "' + atId + '" does not exist.');
+        }
+        else {
+            this.parent.setStaticFunctor(name, functor, atId);
+        }
+    };
     State.prototype.setDynamicValue = function (name, value, is, atId) {
         if (atId === void 0) { atId = undefined; }
         if (atId === undefined || atId === this.id) {
@@ -1073,6 +1157,1003 @@ exports.State = State;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var errors_1 = __webpack_require__(0);
+var Type = (function () {
+    function Type() {
+    }
+    // Constructs types with type variables instantiated as much as possible
+    Type.prototype.instantiate = function (state, tyVarBnd, seen) {
+        if (seen === void 0) { seen = new Set(); }
+        throw new errors_1.ElaborationError(-1, 'I mustn\'t run away. I mustn\'t run away. I mustn\'t run away.');
+    };
+    // Merge this type with the other type. This operation is commutative
+    Type.prototype.merge = function (state, tyVarBnd, other) {
+        throw new errors_1.ElaborationError(-1, 'I don\'t know anything.');
+    };
+    Type.prototype.makeEqType = function (state, tyVarBnd) {
+        throw new errors_1.ElaborationError(-1, 'Yeaaah.');
+    };
+    // Return all (free) type variables
+    Type.prototype.getTypeVariables = function (free) {
+        if (free === void 0) { free = false; }
+        throw new errors_1.ElaborationError(-1, 'This is wrong.\nI said with a posed look.');
+    };
+    // Get all type variables in order (they may appear more than once)
+    Type.prototype.getOrderedTypeVariables = function () {
+        throw new errors_1.ElaborationError(-1, 'You seem well today.\nDid something nice happen?');
+    };
+    Type.prototype.replaceTypeVariables = function (replacements, free) {
+        if (free === void 0) { free = new Set(); }
+        throw new errors_1.ElaborationError(-1, 'あんたバカ?');
+    };
+    Type.prototype.qualify = function (state, qualifiers) {
+        return this;
+    };
+    // Mark all type variables as free
+    Type.prototype.makeFree = function () {
+        return this;
+    };
+    Type.prototype.simplify = function () {
+        return this;
+    };
+    Type.prototype.isOpaque = function () {
+        return false;
+    };
+    Type.prototype.getOpaqueName = function () {
+        return 'undefined';
+    };
+    Type.prototype.admitsEquality = function (state) {
+        return false;
+    };
+    // Normalizes a type. Free type variables need to get new names **across** different decls.
+    Type.prototype.normalize = function (nextFree) {
+        if (nextFree === void 0) { nextFree = 0; }
+        var orderedVars = this.getOrderedTypeVariables();
+        var freeVars = this.getTypeVariables(true);
+        var replacements = new Map();
+        var rcnt = 0;
+        for (var _i = 0, orderedVars_1 = orderedVars; _i < orderedVars_1.length; _i++) {
+            var v = orderedVars_1[_i];
+            if (replacements.has(v)) {
+                continue;
+            }
+            var nextVar = '';
+            var cnt = ++rcnt;
+            if (freeVars.has(v)) {
+                cnt = ++nextFree;
+            }
+            if (cnt <= 26) {
+                nextVar = String.fromCharCode('a'.charCodeAt(0) + cnt - 1);
+            }
+            else {
+                while (cnt > 0) {
+                    var nextChar = (--cnt) % 26;
+                    nextVar = String.fromCharCode('a'.charCodeAt(0) + nextChar) + nextVar;
+                    cnt = Math.floor(cnt / 26);
+                }
+            }
+            var newVar = '\'';
+            if (v.length > 2 && v.charAt(1) === '\'') {
+                newVar += '\'';
+            }
+            if (freeVars.has(v)) {
+                newVar += '~';
+            }
+            newVar += nextVar;
+            if (freeVars.has(v)) {
+                newVar = newVar.toUpperCase();
+            }
+            replacements.set(v, newVar);
+        }
+        return [this.replaceTypeVariables(replacements), nextFree];
+    };
+    return Type;
+}());
+exports.Type = Type;
+// A type representing any type
+var AnyType = (function (_super) {
+    __extends(AnyType, _super);
+    function AnyType() {
+        return _super.call(this) || this;
+    }
+    AnyType.prototype.toString = function () {
+        return 'any';
+    };
+    AnyType.prototype.equals = function (other) {
+        return true;
+    };
+    AnyType.prototype.instantiate = function (state, tyVarBnd, seen) {
+        if (seen === void 0) { seen = new Set(); }
+        return this;
+    };
+    AnyType.prototype.merge = function (state, tyVarBnd, other) {
+        return [other, tyVarBnd];
+    };
+    AnyType.prototype.makeEqType = function (state, tyVarBnd) {
+        return [this, tyVarBnd];
+    };
+    AnyType.prototype.getTypeVariables = function (free) {
+        if (free === void 0) { free = false; }
+        return new Set();
+    };
+    AnyType.prototype.getOrderedTypeVariables = function () {
+        return [];
+    };
+    AnyType.prototype.replaceTypeVariables = function (replacements, free) {
+        if (free === void 0) { free = new Set(); }
+        return this;
+    };
+    return AnyType;
+}(Type));
+exports.AnyType = AnyType;
+var TypeVariableBind = (function (_super) {
+    __extends(TypeVariableBind, _super);
+    function TypeVariableBind(name, type, domain) {
+        if (domain === void 0) { domain = []; }
+        var _this = _super.call(this) || this;
+        _this.name = name;
+        _this.type = type;
+        _this.domain = domain;
+        _this.isFree = false;
+        return _this;
+    }
+    TypeVariableBind.prototype.simplify = function () {
+        var res = new TypeVariableBind(this.name, this.type.simplify(), this.domain);
+        res.isFree = this.isFree;
+        return res;
+    };
+    TypeVariableBind.prototype.makeFree = function () {
+        var res = new TypeVariableBind(this.name, this.type.makeFree(), this.domain);
+        res.isFree = true;
+        return res;
+    };
+    TypeVariableBind.prototype.qualify = function (state, qualifiers) {
+        var res = new TypeVariableBind(this.name, this.type.qualify(state, qualifiers), this.domain);
+        res.isFree = this.isFree;
+        return res;
+    };
+    TypeVariableBind.prototype.isOpaque = function () {
+        return this.type.isOpaque();
+    };
+    TypeVariableBind.prototype.getOpaqueName = function () {
+        return this.type.getOpaqueName();
+    };
+    TypeVariableBind.prototype.instantiate = function (state, tyVarBnd) {
+        var res = new TypeVariableBind(this.name, this.type.instantiate(state, tyVarBnd), this.domain);
+        res.isFree = this.isFree;
+        return res;
+    };
+    TypeVariableBind.prototype.toString = function () {
+        var frees = new Set();
+        var bound = new Set();
+        var ct = this;
+        while (ct instanceof TypeVariableBind) {
+            if (ct.isFree) {
+                frees = frees.add([ct.name, ct.domain]);
+            }
+            else {
+                bound = bound.add([ct.name, ct.domain]);
+            }
+            ct = ct.type;
+        }
+        var res = '';
+        if (bound.size > 0) {
+            res += '∀';
+            bound.forEach(function (val) {
+                res += ' ' + val[0];
+                if (val[1].length > 0) {
+                    res += ' ∈ {';
+                    for (var i = 0; i < val[1].length; ++i) {
+                        if (i > 0) {
+                            res += ', ';
+                        }
+                        res += val[1][i];
+                    }
+                    res += '}';
+                }
+            });
+            res += ' . ';
+        }
+        res += ct;
+        if (frees.size > 0) {
+            res += ',';
+            frees.forEach(function (val) {
+                res += ' ' + val[0];
+                if (val[1].length > 0) {
+                    res += ' ∈ {';
+                    for (var i = 0; i < val[1].length; ++i) {
+                        if (i > 0) {
+                            res += ', ';
+                        }
+                        res += val[1][i];
+                    }
+                    res += '}';
+                }
+            });
+            res += ' free';
+        }
+        return res;
+    };
+    TypeVariableBind.prototype.getTypeVariables = function (free) {
+        var _this = this;
+        if (free === void 0) { free = false; }
+        var rec = this.type.getTypeVariables(free);
+        var res = new Set();
+        rec.forEach(function (val) {
+            if (val !== _this.name || free === _this.isFree) {
+                res.add(val);
+            }
+        });
+        if (free && this.isFree && !res.has(this.name)) {
+            res.add(this.name);
+        }
+        return res;
+    };
+    TypeVariableBind.prototype.getOrderedTypeVariables = function () {
+        return [this.name].concat(this.type.getOrderedTypeVariables());
+    };
+    TypeVariableBind.prototype.replaceTypeVariables = function (replacements, free) {
+        if (free === void 0) { free = new Set(); }
+        if (replacements.has(this.name)) {
+            var res = new TypeVariableBind(replacements.get(this.name), this.type.replaceTypeVariables(replacements, free));
+            if (free.has(this.name)) {
+                res.isFree = true;
+            }
+            else {
+                res.isFree = this.isFree;
+            }
+            return res;
+        }
+        else {
+            var res = new TypeVariableBind(this.name, this.type.replaceTypeVariables(replacements, free));
+            res.isFree = this.isFree;
+            return res;
+        }
+    };
+    TypeVariableBind.prototype.equals = function (other) {
+        if (!(other instanceof TypeVariableBind)
+            || other.name !== this.name) {
+            return false;
+        }
+        return other.type.equals(this.type);
+    };
+    return TypeVariableBind;
+}(Type));
+exports.TypeVariableBind = TypeVariableBind;
+var TypeVariable = (function (_super) {
+    __extends(TypeVariable, _super);
+    function TypeVariable(name, position) {
+        if (position === void 0) { position = 0; }
+        var _this = _super.call(this) || this;
+        _this.name = name;
+        _this.position = position;
+        _this.isFree = false;
+        return _this;
+    }
+    TypeVariable.prototype.makeFree = function () {
+        var res = new TypeVariable(this.name, this.position);
+        res.isFree = true;
+        return res;
+    };
+    TypeVariable.prototype.toString = function () {
+        return this.name;
+    };
+    TypeVariable.prototype.instantiate = function (state, tyVarBnd, seen) {
+        if (seen === void 0) { seen = new Set(); }
+        if (!tyVarBnd.has(this.name)) {
+            return this;
+        }
+        if (seen.has(this.name)) {
+            throw new errors_1.ElaborationError(-1, 'Type clash. An expression of type "' + this.name
+                + '" cannot have type "' + tyVarBnd.get(this.name)[0]
+                + '" because of circularity.');
+        }
+        var nsen = new Set();
+        seen.forEach(function (val) {
+            nsen.add(val);
+        });
+        nsen.add(this.name);
+        return tyVarBnd.get(this.name)[0].instantiate(state, tyVarBnd, nsen);
+    };
+    TypeVariable.prototype.merge = function (state, tyVarBnd, other) {
+        if (other instanceof AnyType) {
+            return [this, tyVarBnd];
+        }
+        var ths = this.instantiate(state, tyVarBnd);
+        if (ths instanceof TypeVariable) {
+            var oth = other.instantiate(state, tyVarBnd);
+            if (oth instanceof TypeVariable) {
+                // TODO equality checks
+                if (ths.name === oth.name) {
+                    return [ths, tyVarBnd];
+                }
+                else {
+                    var repl_1 = new Map();
+                    var rs = ths;
+                    if (ths.name < oth.name) {
+                        repl_1.set(oth.name, ths.name);
+                    }
+                    else {
+                        repl_1.set(ths.name, oth.name);
+                        rs = oth;
+                    }
+                    var nvb_1 = new Map();
+                    tyVarBnd.forEach(function (val, key) {
+                        nvb_1 = nvb_1.set(key, [val[0].replaceTypeVariables(repl_1), val[1]]);
+                    });
+                    if (ths.name < oth.name) {
+                        nvb_1.set(oth.name, [ths, oth.isFree]);
+                    }
+                    else {
+                        nvb_1.set(ths.name, [oth, ths.isFree]);
+                    }
+                    return [rs, nvb_1];
+                }
+            }
+            else {
+                var otv = oth.getTypeVariables();
+                if (otv.has(ths.name)) {
+                    throw new errors_1.ElaborationError(-1, 'Type clash. An expression of type "' + ths.name
+                        + '" cannot have type "' + oth + '" because of circularity.');
+                }
+                if (ths.isFree) {
+                    oth = oth.makeFree();
+                }
+                if (ths.admitsEquality(state) && !oth.admitsEquality(state)) {
+                    var nt = oth.makeEqType(state, tyVarBnd);
+                    if (!nt[0].admitsEquality(state)) {
+                        throw ['Type "' + oth + '" does not admit equality.', ths, oth];
+                    }
+                    else {
+                        oth = nt[0];
+                        tyVarBnd = nt[1];
+                    }
+                }
+                return [oth, tyVarBnd.set(ths.name, [oth, ths.isFree])];
+            }
+        }
+        else {
+            return ths.merge(state, tyVarBnd, other);
+        }
+    };
+    TypeVariable.prototype.makeEqType = function (state, tyVarBnd) {
+        if (this.admitsEquality(state)) {
+            return [this, tyVarBnd];
+        }
+        if (tyVarBnd.has(this.name)) {
+            var tmp = tyVarBnd.get(this.name)[0].makeEqType(state, tyVarBnd);
+            tyVarBnd = tmp[1];
+            var n = new TypeVariable('\'' + this.name, this.position);
+            n.isFree = this.isFree;
+            tyVarBnd = tyVarBnd.set(n.name, [tmp[0], n.isFree]);
+        }
+        var nt = new TypeVariable('\'' + this.name, this.position);
+        return [nt, tyVarBnd.set(this.name, [nt, this.isFree])];
+    };
+    TypeVariable.prototype.getTypeVariables = function (free) {
+        if (free === void 0) { free = false; }
+        var res = new Set();
+        if (!free || this.isFree) {
+            res.add(this.name);
+        }
+        return res;
+    };
+    TypeVariable.prototype.getOrderedTypeVariables = function () {
+        return [this.name];
+    };
+    TypeVariable.prototype.replaceTypeVariables = function (replacements, free) {
+        if (free === void 0) { free = new Set(); }
+        if (replacements.has(this.name)) {
+            var res = new TypeVariable(replacements.get(this.name), this.position);
+            if (free.has(this.name)) {
+                res.isFree = true;
+            }
+            else {
+                res.isFree = this.isFree;
+            }
+            return res;
+        }
+        return this;
+    };
+    TypeVariable.prototype.admitsEquality = function (state) {
+        return this.name[1] === '\'';
+    };
+    TypeVariable.prototype.equals = function (other) {
+        if (other instanceof AnyType) {
+            return true;
+        }
+        if (!(other instanceof TypeVariable && this.name === other.name)) {
+            return false;
+        }
+        return true;
+    };
+    return TypeVariable;
+}(Type));
+exports.TypeVariable = TypeVariable;
+var RecordType = (function (_super) {
+    __extends(RecordType, _super);
+    function RecordType(elements, complete, position) {
+        if (complete === void 0) { complete = true; }
+        if (position === void 0) { position = 0; }
+        var _this = _super.call(this) || this;
+        _this.elements = elements;
+        _this.complete = complete;
+        _this.position = position;
+        return _this;
+    }
+    RecordType.prototype.makeFree = function () {
+        var newElements = new Map();
+        this.elements.forEach(function (type, key) {
+            newElements.set(key, type.makeFree());
+        });
+        return new RecordType(newElements, this.complete, this.position);
+    };
+    RecordType.prototype.instantiate = function (state, tyVarBnd, seen) {
+        if (seen === void 0) { seen = new Set(); }
+        var newElements = new Map();
+        this.elements.forEach(function (type, key) {
+            newElements.set(key, type.instantiate(state, tyVarBnd, seen));
+        });
+        return new RecordType(newElements, this.complete, this.position);
+    };
+    RecordType.prototype.qualify = function (state, qualifiers) {
+        var newElements = new Map();
+        this.elements.forEach(function (type, key) {
+            newElements.set(key, type.qualify(state, qualifiers));
+        });
+        return new RecordType(newElements, this.complete, this.position);
+    };
+    RecordType.prototype.merge = function (state, tyVarBnd, other) {
+        var _this = this;
+        if (other instanceof TypeVariable || other instanceof AnyType) {
+            return other.merge(state, tyVarBnd, this);
+        }
+        other = other.instantiate(state, tyVarBnd);
+        if (other instanceof RecordType) {
+            if (!this.complete && other.complete) {
+                return other.merge(state, tyVarBnd, this);
+            }
+            var rt_1 = new Map();
+            var tybnd_1 = tyVarBnd;
+            other.elements.forEach(function (val, key) {
+                if (_this.complete && !_this.elements.has(key)) {
+                    throw ['Records don\'t agree on members ("' + key
+                            + '" occurs only once.)', _this.instantiate(state, tybnd_1),
+                        other.instantiate(state, tybnd_1)];
+                }
+                if (!_this.elements.has(key)) {
+                    rt_1 = rt_1.set(key, val.instantiate(state, tybnd_1));
+                }
+                else {
+                    var mg = val.merge(state, tybnd_1, _this.elements.get(key));
+                    rt_1 = rt_1.set(key, mg[0]);
+                    tybnd_1 = mg[1];
+                }
+            });
+            if (other.complete) {
+                this.elements.forEach(function (val, key) {
+                    if (!other.elements.has(key)) {
+                        throw ['Records don\'t agree on members ("' + key
+                                + '" occurs only once.)', _this.instantiate(state, tybnd_1),
+                            other.instantiate(state, tybnd_1)];
+                    }
+                });
+            }
+            return [new RecordType(rt_1, this.complete || other.complete, this.position), tybnd_1];
+        }
+        // Merging didn't work
+        throw ['Cannot merge "' + this.instantiate(state, tyVarBnd) + '" and "'
+                + other.instantiate(state, tyVarBnd) + '".', this.constructor.name,
+            other.constructor.name];
+    };
+    RecordType.prototype.makeEqType = function (state, tyVarBnd) {
+        var newElements = new Map();
+        this.elements.forEach(function (type, key) {
+            var tmp = type.makeEqType(state, tyVarBnd);
+            newElements.set(key, tmp[0]);
+            tyVarBnd = tmp[1];
+        });
+        return [new RecordType(newElements, this.complete, this.position), tyVarBnd];
+    };
+    RecordType.prototype.getTypeVariables = function (free) {
+        if (free === void 0) { free = false; }
+        var res = new Set();
+        this.elements.forEach(function (val) {
+            val.getTypeVariables(free).forEach(function (id) {
+                res.add(id);
+            });
+        });
+        return res;
+    };
+    RecordType.prototype.getOrderedTypeVariables = function () {
+        var res = [];
+        this.elements.forEach(function (val) {
+            res = res.concat(val.getOrderedTypeVariables());
+        });
+        return res;
+    };
+    RecordType.prototype.replaceTypeVariables = function (replacements, free) {
+        if (free === void 0) { free = new Set(); }
+        var rt = new Map();
+        this.elements.forEach(function (val, key) {
+            rt = rt.set(key, val.replaceTypeVariables(replacements, free));
+        });
+        return new RecordType(rt, this.complete, this.position);
+    };
+    RecordType.prototype.getType = function (name) {
+        if (!this.elements.has(name)) {
+            throw new errors_1.ElaborationError(0, 'Tried accessing non-existing record part.');
+        }
+        return this.elements.get(name);
+    };
+    RecordType.prototype.hasType = function (name) {
+        return this.elements.has(name);
+    };
+    RecordType.prototype.admitsEquality = function (state) {
+        var res = true;
+        this.elements.forEach(function (type, key) {
+            if (!type.admitsEquality(state)) {
+                res = false;
+            }
+        });
+        return res;
+    };
+    RecordType.prototype.toString = function () {
+        var isTuple = true;
+        for (var i = 1; i <= this.elements.size; ++i) {
+            if (!this.elements.has('' + i)) {
+                isTuple = false;
+            }
+        }
+        if (isTuple) {
+            if (this.elements.size === 0) {
+                return 'unit';
+            }
+            var res = '';
+            for (var i = 1; i <= this.elements.size; ++i) {
+                if (i > 1) {
+                    res += ' * ';
+                }
+                var sub = this.elements.get('' + i);
+                if (sub instanceof FunctionType) {
+                    res += '(' + sub + ')';
+                }
+                else {
+                    res += sub;
+                }
+            }
+            return res + '';
+        }
+        // TODO: print as Tuple if possible
+        var result = '{';
+        var first = true;
+        this.elements.forEach(function (type, key) {
+            if (!first) {
+                result += ', ';
+            }
+            else {
+                first = false;
+            }
+            result += key + ': ' + type;
+        });
+        if (!this.complete) {
+            if (!first) {
+                result += ', ';
+            }
+            result += '...';
+        }
+        return result + '}';
+    };
+    RecordType.prototype.simplify = function () {
+        var newElements = new Map();
+        this.elements.forEach(function (type, key) {
+            newElements.set(key, type.simplify());
+        });
+        return new RecordType(newElements, this.complete, this.position);
+    };
+    RecordType.prototype.equals = function (other) {
+        if (other instanceof AnyType) {
+            return true;
+        }
+        if (!(other instanceof RecordType) || this.complete !== other.complete) {
+            return false;
+        }
+        else {
+            if (other === this) {
+                return true;
+            }
+            for (var name_1 in this.elements) {
+                if (!this.elements.hasOwnProperty(name_1)) {
+                    if (!this.elements.get(name_1).equals(other.elements.get(name_1))) {
+                        return false;
+                    }
+                }
+            }
+            for (var name_2 in other.elements) {
+                if (!other.elements.hasOwnProperty(name_2)) {
+                    if (!other.elements.get(name_2).equals(this.elements.get(name_2))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    };
+    return RecordType;
+}(Type));
+exports.RecordType = RecordType;
+var FunctionType = (function (_super) {
+    __extends(FunctionType, _super);
+    function FunctionType(parameterType, returnType, position) {
+        if (position === void 0) { position = 0; }
+        var _this = _super.call(this) || this;
+        _this.parameterType = parameterType;
+        _this.returnType = returnType;
+        _this.position = position;
+        return _this;
+    }
+    FunctionType.prototype.makeFree = function () {
+        return new FunctionType(this.parameterType.makeFree(), this.returnType.makeFree());
+    };
+    FunctionType.prototype.instantiate = function (state, tyVarBnd, seen) {
+        if (seen === void 0) { seen = new Set(); }
+        return new FunctionType(this.parameterType.instantiate(state, tyVarBnd, seen), this.returnType.instantiate(state, tyVarBnd, seen), this.position);
+    };
+    FunctionType.prototype.qualify = function (state, qualifiers) {
+        return new FunctionType(this.parameterType.qualify(state, qualifiers), this.returnType.qualify(state, qualifiers), this.position);
+    };
+    FunctionType.prototype.merge = function (state, tyVarBnd, other) {
+        if (other instanceof TypeVariable || other instanceof AnyType) {
+            return other.merge(state, tyVarBnd, this);
+        }
+        if (other instanceof FunctionType) {
+            var p = this.parameterType.merge(state, tyVarBnd, other.parameterType);
+            var r = this.returnType.merge(state, p[1], other.returnType);
+            return [new FunctionType(p[0], r[0], this.position), r[1]];
+        }
+        // Merging didn't work
+        throw ['Cannot merge "' + this.instantiate(state, tyVarBnd) + '" and "'
+                + other.instantiate(state, tyVarBnd) + '".', this.constructor.name,
+            other.constructor.name];
+    };
+    FunctionType.prototype.makeEqType = function (state, tyVarBnd) {
+        return [this, tyVarBnd];
+    };
+    FunctionType.prototype.getTypeVariables = function (free) {
+        if (free === void 0) { free = false; }
+        var res = new Set();
+        this.parameterType.getTypeVariables(free).forEach(function (value) {
+            res.add(value);
+        });
+        this.returnType.getTypeVariables(free).forEach(function (value) {
+            res.add(value);
+        });
+        return res;
+    };
+    FunctionType.prototype.getOrderedTypeVariables = function () {
+        var res = [];
+        res = res.concat(this.parameterType.getOrderedTypeVariables());
+        res = res.concat(this.returnType.getOrderedTypeVariables());
+        return res;
+    };
+    FunctionType.prototype.replaceTypeVariables = function (replacements, free) {
+        if (free === void 0) { free = new Set(); }
+        var res = this.parameterType.replaceTypeVariables(replacements, free);
+        var res2 = this.returnType.replaceTypeVariables(replacements, free);
+        return new FunctionType(res, res2, this.position);
+    };
+    FunctionType.prototype.admitsEquality = function (state) {
+        return false;
+    };
+    FunctionType.prototype.toString = function () {
+        if (this.parameterType instanceof FunctionType) {
+            return '(' + this.parameterType + ')'
+                + ' → ' + this.returnType;
+        }
+        else {
+            return this.parameterType
+                + ' → ' + this.returnType;
+        }
+    };
+    FunctionType.prototype.simplify = function () {
+        return new FunctionType(this.parameterType.simplify(), this.returnType.simplify(), this.position);
+    };
+    FunctionType.prototype.equals = function (other) {
+        if (other instanceof AnyType) {
+            return true;
+        }
+        return other instanceof FunctionType && this.parameterType.equals(other.parameterType)
+            && this.returnType.equals(other.returnType);
+    };
+    return FunctionType;
+}(Type));
+exports.FunctionType = FunctionType;
+// A custom defined type similar to "list" or "option".
+// May have a type argument.
+// TODO ID?
+var CustomType = (function (_super) {
+    __extends(CustomType, _super);
+    function CustomType(name, typeArguments, position, qualifiedName, opaque) {
+        if (typeArguments === void 0) { typeArguments = []; }
+        if (position === void 0) { position = 0; }
+        if (qualifiedName === void 0) { qualifiedName = undefined; }
+        if (opaque === void 0) { opaque = false; }
+        var _this = _super.call(this) || this;
+        _this.name = name;
+        _this.typeArguments = typeArguments;
+        _this.position = position;
+        _this.qualifiedName = qualifiedName;
+        _this.opaque = opaque;
+        return _this;
+    }
+    CustomType.prototype.isOpaque = function () {
+        return this.opaque;
+    };
+    CustomType.prototype.getOpaqueName = function () {
+        if (this.isOpaque) {
+            return this.name;
+        }
+        else {
+            return 'undefined';
+        }
+    };
+    CustomType.prototype.makeFree = function () {
+        var res = [];
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            res.push(this.typeArguments[i].makeFree());
+        }
+        return new CustomType(this.name, res, this.position, this.qualifiedName, this.opaque);
+    };
+    CustomType.prototype.qualify = function (state, qualifiers) {
+        var res = [];
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            res.push(this.typeArguments[i].qualify(state, qualifiers));
+        }
+        var rs = new CustomType(this.name, res, this.position, this.qualifiedName, this.opaque);
+        var tp = state.getStaticType(this.name);
+        if (tp !== undefined) {
+            rs.qualifiedName = qualifiers;
+        }
+        return rs;
+    };
+    CustomType.prototype.instantiate = function (state, tyVarBnd, seen) {
+        if (seen === void 0) { seen = new Set(); }
+        var tp = state.getStaticType(this.name);
+        if (this.qualifiedName !== undefined) {
+            var rsv = state.getAndResolveStaticStructure(this.qualifiedName);
+            if (rsv !== undefined) {
+                tp = rsv.getType(this.name);
+            }
+            else {
+                tp = undefined;
+            }
+        }
+        if (tp !== undefined && tp.type instanceof FunctionType && !this.opaque) {
+            try {
+                var mt = this.merge(state, tyVarBnd, tp.type.parameterType, true);
+                return tp.type.returnType.instantiate(state, mt[1], seen);
+            }
+            catch (e) {
+                if (!(e instanceof Array)) {
+                    throw e;
+                }
+                throw new errors_1.ElaborationError(-1, 'Instantiating "' + this + '" failed:\n'
+                    + 'Cannot merge "' + e[1] + '" and "' + e[2]
+                    + '" (' + e[0] + ').');
+            }
+        }
+        else if (tp === undefined) {
+            throw new errors_1.ElaborationError(-1, 'Unbound type "' + this.name + '".');
+        }
+        else if (tp !== undefined && tp.type instanceof CustomType && tp.type.opaque) {
+            this.opaque = true;
+        }
+        var res = [];
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            res.push(this.typeArguments[i].instantiate(state, tyVarBnd, seen));
+        }
+        return new CustomType(this.name, res, this.position, this.qualifiedName, this.opaque);
+    };
+    CustomType.prototype.merge = function (state, tyVarBnd, other, noinst) {
+        if (noinst === void 0) { noinst = false; }
+        if (other instanceof TypeVariable || other instanceof AnyType) {
+            return other.merge(state, tyVarBnd, this);
+        }
+        var ths = this;
+        var oth = other;
+        if (!noinst) {
+            // Remove type alias and stuff
+            ths = this.instantiate(state, tyVarBnd);
+            if (!(ths instanceof CustomType)) {
+                return ths.merge(state, tyVarBnd, other);
+            }
+            oth = other.instantiate(state, tyVarBnd);
+        }
+        if (oth instanceof CustomType && ths.name === oth.name
+            && ths.typeArguments.length === oth.typeArguments.length) {
+            var ok = !(this.qualifiedName !== undefined
+                && oth.qualifiedName === undefined
+                || this.qualifiedName === undefined
+                    && oth.qualifiedName !== undefined);
+            if (this.qualifiedName !== undefined) {
+                if (this.qualifiedName.qualifiers.length
+                    === oth.qualifiedName.qualifiers.length) {
+                    for (var i = 0; i < this.qualifiedName.qualifiers.length; ++i) {
+                        if (this.qualifiedName.qualifiers[i].getText()
+                            !== oth.qualifiedName.qualifiers[i].getText()) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    ok = false;
+                }
+            }
+            if (ok) {
+                var res = [];
+                var tybnd = tyVarBnd;
+                for (var i = 0; i < ths.typeArguments.length; ++i) {
+                    var tmp = ths.typeArguments[i].merge(state, tybnd, oth.typeArguments[i]);
+                    res.push(tmp[0]);
+                    tybnd = tmp[1];
+                }
+                return [new CustomType(ths.name, res, this.position, this.qualifiedName, this.opaque), tybnd];
+            }
+        }
+        // Merging didn't work
+        throw ['Cannot merge "' + this.instantiate(state, tyVarBnd) + '" and "'
+                + other.instantiate(state, tyVarBnd) + '".', this.constructor.name,
+            other.constructor.name];
+    };
+    CustomType.prototype.makeEqType = function (state, tyVarBnd) {
+        var res = [];
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            var tmp = this.typeArguments[i].makeEqType(state, tyVarBnd);
+            res.push(tmp[0]);
+            tyVarBnd = tmp[1];
+        }
+        return [new CustomType(this.name, res, this.position, this.qualifiedName, this.opaque), tyVarBnd];
+    };
+    CustomType.prototype.getTypeVariables = function (free) {
+        if (free === void 0) { free = false; }
+        var res = new Set();
+        if (this.typeArguments.length > 0) {
+            for (var i = 0; i < this.typeArguments.length; ++i) {
+                this.typeArguments[i].getTypeVariables(free).forEach(function (val) {
+                    res.add(val);
+                });
+            }
+        }
+        return res;
+    };
+    CustomType.prototype.getOrderedTypeVariables = function () {
+        var res = [];
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            res = res.concat(this.typeArguments[i].getOrderedTypeVariables());
+        }
+        return res;
+    };
+    CustomType.prototype.replaceTypeVariables = function (replacements, free) {
+        if (replacements === void 0) { replacements = new Map(); }
+        if (free === void 0) { free = new Set(); }
+        var rt = [];
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            rt.push(this.typeArguments[i].replaceTypeVariables(replacements, free));
+        }
+        return new CustomType(this.name, rt, this.position, this.qualifiedName, this.opaque);
+    };
+    CustomType.prototype.admitsEquality = function (state) {
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            if (!this.typeArguments[i].admitsEquality(state)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    CustomType.prototype.toString = function () {
+        var result = '';
+        if (this.typeArguments.length > 1
+            || (this.typeArguments.length === 1 && this.typeArguments[0] instanceof FunctionType)) {
+            result += '(';
+        }
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            if (i > 0) {
+                result += ', ';
+            }
+            result += this.typeArguments[i];
+        }
+        if (this.typeArguments.length > 1
+            || (this.typeArguments.length === 1 && this.typeArguments[0] instanceof FunctionType)) {
+            result += ')';
+        }
+        if (this.typeArguments.length > 0) {
+            result += ' ';
+        }
+        if (this.qualifiedName !== undefined) {
+            for (var i = 0; i < this.qualifiedName.qualifiers.length; ++i) {
+                result += this.qualifiedName.qualifiers[i].getText() + '.';
+            }
+        }
+        result += this.name;
+        return result;
+    };
+    CustomType.prototype.simplify = function () {
+        var args = [];
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            args.push(this.typeArguments[i].simplify());
+        }
+        return new CustomType(this.name, args, this.position, this.qualifiedName, this.opaque);
+    };
+    CustomType.prototype.equals = function (other) {
+        if (other instanceof AnyType) {
+            return true;
+        }
+        if (!(other instanceof CustomType) || this.name !== other.name) {
+            return false;
+        }
+        for (var i = 0; i < this.typeArguments.length; ++i) {
+            if (!this.typeArguments[i].equals(other.typeArguments[i])) {
+                return false;
+            }
+        }
+        return true;
+    };
+    return CustomType;
+}(Type));
+exports.CustomType = CustomType;
+// Derived Types
+var TupleType = (function (_super) {
+    __extends(TupleType, _super);
+    function TupleType(elements, position) {
+        if (position === void 0) { position = 0; }
+        var _this = _super.call(this) || this;
+        _this.elements = elements;
+        _this.position = position;
+        return _this;
+    }
+    TupleType.prototype.toString = function () {
+        var result = '(';
+        for (var i = 0; i < this.elements.length; ++i) {
+            if (i > 0) {
+                result += ' * ';
+            }
+            result += this.elements[i];
+        }
+        return result + ')';
+    };
+    TupleType.prototype.simplify = function () {
+        var entries = new Map();
+        for (var i = 0; i < this.elements.length; ++i) {
+            entries.set('' + (i + 1), this.elements[i].simplify());
+        }
+        return new RecordType(entries, true, this.position);
+    };
+    TupleType.prototype.equals = function (other) {
+        return this.simplify().equals(other);
+    };
+    return TupleType;
+}(Type));
+exports.TupleType = TupleType;
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1766,902 +2847,6 @@ exports.ExceptionConstructor = ExceptionConstructor;
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var errors_1 = __webpack_require__(0);
-var Type = (function () {
-    function Type() {
-    }
-    // Constructs types with type variables instantiated as much as possible
-    Type.prototype.instantiate = function (state, tyVarBnd, seen) {
-        if (seen === void 0) { seen = new Set(); }
-        throw new errors_1.ElaborationError(-1, 'I mustn\'t run away. I mustn\'t run away. I mustn\'t run away.');
-    };
-    // Merge this type with the other type. This operation is commutative
-    Type.prototype.merge = function (state, tyVarBnd, other) {
-        throw new errors_1.ElaborationError(-1, 'I don\'t know anything.');
-    };
-    Type.prototype.makeEqType = function (state, tyVarBnd) {
-        throw new errors_1.ElaborationError(-1, 'Yeaaah.');
-    };
-    // Return all (free) type variables
-    Type.prototype.getTypeVariables = function (free) {
-        if (free === void 0) { free = false; }
-        throw new errors_1.ElaborationError(-1, 'This is wrong.\nI said with a posed look.');
-    };
-    // Get all type variables in order (they may appear more than once)
-    Type.prototype.getOrderedTypeVariables = function () {
-        throw new errors_1.ElaborationError(-1, 'You seem well today.\nDid something nice happen?');
-    };
-    Type.prototype.replaceTypeVariables = function (replacements, free) {
-        if (free === void 0) { free = new Set(); }
-        throw new errors_1.ElaborationError(-1, 'あんたバカ?');
-    };
-    // Mark all type variables as free
-    Type.prototype.makeFree = function () {
-        return this;
-    };
-    Type.prototype.simplify = function () {
-        return this;
-    };
-    Type.prototype.admitsEquality = function (state) {
-        return false;
-    };
-    // Normalizes a type. Free type variables need to get new names **across** different decls.
-    Type.prototype.normalize = function (nextFree) {
-        if (nextFree === void 0) { nextFree = 0; }
-        var orderedVars = this.getOrderedTypeVariables();
-        var freeVars = this.getTypeVariables(true);
-        var replacements = new Map();
-        var rcnt = 0;
-        for (var _i = 0, orderedVars_1 = orderedVars; _i < orderedVars_1.length; _i++) {
-            var v = orderedVars_1[_i];
-            if (replacements.has(v)) {
-                continue;
-            }
-            var nextVar = '';
-            var cnt = ++rcnt;
-            if (freeVars.has(v)) {
-                cnt = ++nextFree;
-            }
-            if (cnt <= 26) {
-                nextVar = String.fromCharCode('a'.charCodeAt(0) + cnt - 1);
-            }
-            else {
-                while (cnt > 0) {
-                    var nextChar = (--cnt) % 26;
-                    nextVar = String.fromCharCode('a'.charCodeAt(0) + nextChar) + nextVar;
-                    cnt = Math.floor(cnt / 26);
-                }
-            }
-            var newVar = '\'';
-            if (v.length > 2 && v.charAt(1) === '\'') {
-                newVar += '\'';
-            }
-            if (freeVars.has(v)) {
-                newVar += '~';
-            }
-            newVar += nextVar;
-            if (freeVars.has(v)) {
-                newVar = newVar.toUpperCase();
-            }
-            replacements.set(v, newVar);
-        }
-        return [this.replaceTypeVariables(replacements), nextFree];
-    };
-    return Type;
-}());
-exports.Type = Type;
-// A type representing any type
-var AnyType = (function (_super) {
-    __extends(AnyType, _super);
-    function AnyType() {
-        return _super.call(this) || this;
-    }
-    AnyType.prototype.toString = function () {
-        return 'any';
-    };
-    AnyType.prototype.equals = function (other) {
-        return true;
-    };
-    AnyType.prototype.instantiate = function (state, tyVarBnd, seen) {
-        if (seen === void 0) { seen = new Set(); }
-        return this;
-    };
-    AnyType.prototype.merge = function (state, tyVarBnd, other) {
-        return [other, tyVarBnd];
-    };
-    AnyType.prototype.makeEqType = function (state, tyVarBnd) {
-        return [this, tyVarBnd];
-    };
-    AnyType.prototype.getTypeVariables = function (free) {
-        if (free === void 0) { free = false; }
-        return new Set();
-    };
-    AnyType.prototype.getOrderedTypeVariables = function () {
-        return [];
-    };
-    AnyType.prototype.replaceTypeVariables = function (replacements, free) {
-        if (free === void 0) { free = new Set(); }
-        return this;
-    };
-    return AnyType;
-}(Type));
-exports.AnyType = AnyType;
-var TypeVariableBind = (function (_super) {
-    __extends(TypeVariableBind, _super);
-    function TypeVariableBind(name, type, domain) {
-        if (domain === void 0) { domain = []; }
-        var _this = _super.call(this) || this;
-        _this.name = name;
-        _this.type = type;
-        _this.domain = domain;
-        _this.isFree = false;
-        return _this;
-    }
-    TypeVariableBind.prototype.simplify = function () {
-        var res = new TypeVariableBind(this.name, this.type.simplify(), this.domain);
-        res.isFree = this.isFree;
-        return res;
-    };
-    TypeVariableBind.prototype.makeFree = function () {
-        var res = new TypeVariableBind(this.name, this.type.makeFree(), this.domain);
-        res.isFree = true;
-        return res;
-    };
-    TypeVariableBind.prototype.toString = function () {
-        var frees = new Set();
-        var bound = new Set();
-        var ct = this;
-        while (ct instanceof TypeVariableBind) {
-            if (ct.isFree) {
-                frees = frees.add([ct.name, ct.domain]);
-            }
-            else {
-                bound = bound.add([ct.name, ct.domain]);
-            }
-            ct = ct.type;
-        }
-        var res = '';
-        if (bound.size > 0) {
-            res += '∀';
-            bound.forEach(function (val) {
-                res += ' ' + val[0];
-                if (val[1].length > 0) {
-                    res += ' ∈ {';
-                    for (var i = 0; i < val[1].length; ++i) {
-                        if (i > 0) {
-                            res += ', ';
-                        }
-                        res += val[1][i];
-                    }
-                    res += '}';
-                }
-            });
-            res += ' . ';
-        }
-        res += ct;
-        if (frees.size > 0) {
-            res += ',';
-            frees.forEach(function (val) {
-                res += ' ' + val[0];
-                if (val[1].length > 0) {
-                    res += ' ∈ {';
-                    for (var i = 0; i < val[1].length; ++i) {
-                        if (i > 0) {
-                            res += ', ';
-                        }
-                        res += val[1][i];
-                    }
-                    res += '}';
-                }
-            });
-            res += ' free';
-        }
-        return res;
-    };
-    TypeVariableBind.prototype.getTypeVariables = function (free) {
-        var _this = this;
-        if (free === void 0) { free = false; }
-        var rec = this.type.getTypeVariables(free);
-        var res = new Set();
-        rec.forEach(function (val) {
-            if (val !== _this.name || free === _this.isFree) {
-                res.add(val);
-            }
-        });
-        if (free && this.isFree && !res.has(this.name)) {
-            res.add(this.name);
-        }
-        return res;
-    };
-    TypeVariableBind.prototype.getOrderedTypeVariables = function () {
-        return [this.name].concat(this.type.getOrderedTypeVariables());
-    };
-    TypeVariableBind.prototype.replaceTypeVariables = function (replacements, free) {
-        if (free === void 0) { free = new Set(); }
-        if (replacements.has(this.name)) {
-            var res = new TypeVariableBind(replacements.get(this.name), this.type.replaceTypeVariables(replacements, free));
-            if (free.has(this.name)) {
-                res.isFree = true;
-            }
-            else {
-                res.isFree = this.isFree;
-            }
-            return res;
-        }
-        else {
-            var res = new TypeVariableBind(this.name, this.type.replaceTypeVariables(replacements, free));
-            res.isFree = this.isFree;
-            return res;
-        }
-    };
-    TypeVariableBind.prototype.equals = function (other) {
-        if (!(other instanceof TypeVariableBind)
-            || other.name !== this.name) {
-            return false;
-        }
-        return other.type.equals(this.type);
-    };
-    return TypeVariableBind;
-}(Type));
-exports.TypeVariableBind = TypeVariableBind;
-var TypeVariable = (function (_super) {
-    __extends(TypeVariable, _super);
-    function TypeVariable(name, position) {
-        if (position === void 0) { position = 0; }
-        var _this = _super.call(this) || this;
-        _this.name = name;
-        _this.position = position;
-        _this.isFree = false;
-        return _this;
-    }
-    TypeVariable.prototype.makeFree = function () {
-        var res = new TypeVariable(this.name, this.position);
-        res.isFree = true;
-        return res;
-    };
-    TypeVariable.prototype.toString = function () {
-        return this.name;
-    };
-    TypeVariable.prototype.instantiate = function (state, tyVarBnd, seen) {
-        if (seen === void 0) { seen = new Set(); }
-        if (!tyVarBnd.has(this.name)) {
-            return this;
-        }
-        if (seen.has(this.name)) {
-            throw new errors_1.ElaborationError(-1, 'Type clash. An expression of type "' + this.name
-                + '" cannot have type "' + tyVarBnd.get(this.name)[0]
-                + '" because of circularity.');
-        }
-        var nsen = new Set();
-        seen.forEach(function (val) {
-            nsen.add(val);
-        });
-        nsen.add(this.name);
-        return tyVarBnd.get(this.name)[0].instantiate(state, tyVarBnd, nsen);
-    };
-    TypeVariable.prototype.merge = function (state, tyVarBnd, other) {
-        if (other instanceof AnyType) {
-            return [this, tyVarBnd];
-        }
-        var ths = this.instantiate(state, tyVarBnd);
-        if (ths instanceof TypeVariable) {
-            var oth = other.instantiate(state, tyVarBnd);
-            if (oth instanceof TypeVariable) {
-                // TODO equality checks
-                if (ths.name === oth.name) {
-                    return [ths, tyVarBnd];
-                }
-                else {
-                    var repl_1 = new Map();
-                    var rs = ths;
-                    if (ths.name < oth.name) {
-                        repl_1.set(oth.name, ths.name);
-                    }
-                    else {
-                        repl_1.set(ths.name, oth.name);
-                        rs = oth;
-                    }
-                    var nvb_1 = new Map();
-                    tyVarBnd.forEach(function (val, key) {
-                        nvb_1 = nvb_1.set(key, [val[0].replaceTypeVariables(repl_1), val[1]]);
-                    });
-                    if (ths.name < oth.name) {
-                        nvb_1.set(oth.name, [ths, oth.isFree]);
-                    }
-                    else {
-                        nvb_1.set(ths.name, [oth, ths.isFree]);
-                    }
-                    return [rs, nvb_1];
-                }
-            }
-            else {
-                var otv = oth.getTypeVariables();
-                if (otv.has(ths.name)) {
-                    throw new errors_1.ElaborationError(-1, 'Type clash. An expression of type "' + ths.name
-                        + '" cannot have type "' + oth + '" because of circularity.');
-                }
-                if (ths.isFree) {
-                    oth = oth.makeFree();
-                }
-                if (ths.admitsEquality(state) && !oth.admitsEquality(state)) {
-                    var nt = oth.makeEqType(state, tyVarBnd);
-                    if (!nt[0].admitsEquality(state)) {
-                        throw ['Type "' + oth + '" does not admit equality.', ths, oth];
-                    }
-                    else {
-                        oth = nt[0];
-                        tyVarBnd = nt[1];
-                    }
-                }
-                return [oth, tyVarBnd.set(ths.name, [oth, ths.isFree])];
-            }
-        }
-        else {
-            return ths.merge(state, tyVarBnd, other);
-        }
-    };
-    TypeVariable.prototype.makeEqType = function (state, tyVarBnd) {
-        if (this.admitsEquality(state)) {
-            return [this, tyVarBnd];
-        }
-        if (tyVarBnd.has(this.name)) {
-            var tmp = tyVarBnd.get(this.name)[0].makeEqType(state, tyVarBnd);
-            tyVarBnd = tmp[1];
-            var n = new TypeVariable('\'' + this.name, this.position);
-            n.isFree = this.isFree;
-            tyVarBnd = tyVarBnd.set(n.name, [tmp[0], n.isFree]);
-        }
-        var nt = new TypeVariable('\'' + this.name, this.position);
-        return [nt, tyVarBnd.set(this.name, [nt, this.isFree])];
-    };
-    TypeVariable.prototype.getTypeVariables = function (free) {
-        if (free === void 0) { free = false; }
-        var res = new Set();
-        if (!free || this.isFree) {
-            res.add(this.name);
-        }
-        return res;
-    };
-    TypeVariable.prototype.getOrderedTypeVariables = function () {
-        return [this.name];
-    };
-    TypeVariable.prototype.replaceTypeVariables = function (replacements, free) {
-        if (free === void 0) { free = new Set(); }
-        if (replacements.has(this.name)) {
-            var res = new TypeVariable(replacements.get(this.name), this.position);
-            if (free.has(this.name)) {
-                res.isFree = true;
-            }
-            else {
-                res.isFree = this.isFree;
-            }
-            return res;
-        }
-        return this;
-    };
-    TypeVariable.prototype.admitsEquality = function (state) {
-        return this.name[1] === '\'';
-    };
-    TypeVariable.prototype.equals = function (other) {
-        if (other instanceof AnyType) {
-            return true;
-        }
-        if (!(other instanceof TypeVariable && this.name === other.name)) {
-            return false;
-        }
-        return true;
-    };
-    return TypeVariable;
-}(Type));
-exports.TypeVariable = TypeVariable;
-var RecordType = (function (_super) {
-    __extends(RecordType, _super);
-    function RecordType(elements, complete, position) {
-        if (complete === void 0) { complete = true; }
-        if (position === void 0) { position = 0; }
-        var _this = _super.call(this) || this;
-        _this.elements = elements;
-        _this.complete = complete;
-        _this.position = position;
-        return _this;
-    }
-    RecordType.prototype.makeFree = function () {
-        var newElements = new Map();
-        this.elements.forEach(function (type, key) {
-            newElements.set(key, type.makeFree());
-        });
-        return new RecordType(newElements, this.complete, this.position);
-    };
-    RecordType.prototype.instantiate = function (state, tyVarBnd, seen) {
-        if (seen === void 0) { seen = new Set(); }
-        var newElements = new Map();
-        this.elements.forEach(function (type, key) {
-            newElements.set(key, type.instantiate(state, tyVarBnd, seen));
-        });
-        return new RecordType(newElements, this.complete, this.position);
-    };
-    RecordType.prototype.merge = function (state, tyVarBnd, other) {
-        var _this = this;
-        if (other instanceof TypeVariable || other instanceof AnyType) {
-            return other.merge(state, tyVarBnd, this);
-        }
-        if (other instanceof RecordType) {
-            if (!this.complete && other.complete) {
-                return other.merge(state, tyVarBnd, this);
-            }
-            var rt_1 = new Map();
-            var tybnd_1 = tyVarBnd;
-            other.elements.forEach(function (val, key) {
-                if (_this.complete && !_this.elements.has(key)) {
-                    throw ['Records don\'t agree on members ("' + key
-                            + '" occurs only once.)', _this.instantiate(state, tybnd_1),
-                        other.instantiate(state, tybnd_1)];
-                }
-                if (!_this.elements.has(key)) {
-                    rt_1 = rt_1.set(key, val.instantiate(state, tybnd_1));
-                }
-                else {
-                    var mg = val.merge(state, tybnd_1, _this.elements.get(key));
-                    rt_1 = rt_1.set(key, mg[0]);
-                    tybnd_1 = mg[1];
-                }
-            });
-            if (other.complete) {
-                this.elements.forEach(function (val, key) {
-                    if (!other.elements.has(key)) {
-                        throw ['Records don\'t agree on members ("' + key
-                                + '" occurs only once.)', _this.instantiate(state, tybnd_1),
-                            other.instantiate(state, tybnd_1)];
-                    }
-                });
-            }
-            return [new RecordType(rt_1, this.complete || other.complete, this.position), tybnd_1];
-        }
-        // Merging didn't work
-        throw ['Cannot merge "RecordType" and "' + other.constructor.name + '".',
-            this.instantiate(state, tyVarBnd),
-            other.instantiate(state, tyVarBnd)];
-    };
-    RecordType.prototype.makeEqType = function (state, tyVarBnd) {
-        var newElements = new Map();
-        this.elements.forEach(function (type, key) {
-            var tmp = type.makeEqType(state, tyVarBnd);
-            newElements.set(key, tmp[0]);
-            tyVarBnd = tmp[1];
-        });
-        return [new RecordType(newElements, this.complete, this.position), tyVarBnd];
-    };
-    RecordType.prototype.getTypeVariables = function (free) {
-        if (free === void 0) { free = false; }
-        var res = new Set();
-        this.elements.forEach(function (val) {
-            val.getTypeVariables(free).forEach(function (id) {
-                res.add(id);
-            });
-        });
-        return res;
-    };
-    RecordType.prototype.getOrderedTypeVariables = function () {
-        var res = [];
-        this.elements.forEach(function (val) {
-            res = res.concat(val.getOrderedTypeVariables());
-        });
-        return res;
-    };
-    RecordType.prototype.replaceTypeVariables = function (replacements, free) {
-        if (free === void 0) { free = new Set(); }
-        var rt = new Map();
-        this.elements.forEach(function (val, key) {
-            rt = rt.set(key, val.replaceTypeVariables(replacements, free));
-        });
-        return new RecordType(rt, this.complete, this.position);
-    };
-    RecordType.prototype.getType = function (name) {
-        if (!this.elements.has(name)) {
-            throw new errors_1.ElaborationError(0, 'Tried accessing non-existing record part.');
-        }
-        return this.elements.get(name);
-    };
-    RecordType.prototype.hasType = function (name) {
-        return this.elements.has(name);
-    };
-    RecordType.prototype.admitsEquality = function (state) {
-        var res = true;
-        this.elements.forEach(function (type, key) {
-            if (!type.admitsEquality(state)) {
-                res = false;
-            }
-        });
-        return res;
-    };
-    RecordType.prototype.toString = function () {
-        var isTuple = true;
-        for (var i = 1; i <= this.elements.size; ++i) {
-            if (!this.elements.has('' + i)) {
-                isTuple = false;
-            }
-        }
-        if (isTuple) {
-            if (this.elements.size === 0) {
-                return 'unit';
-            }
-            var res = '';
-            for (var i = 1; i <= this.elements.size; ++i) {
-                if (i > 1) {
-                    res += ' * ';
-                }
-                var sub = this.elements.get('' + i);
-                if (sub instanceof FunctionType) {
-                    res += '(' + sub + ')';
-                }
-                else {
-                    res += sub;
-                }
-            }
-            return res + '';
-        }
-        // TODO: print as Tuple if possible
-        var result = '{';
-        var first = true;
-        this.elements.forEach(function (type, key) {
-            if (!first) {
-                result += ', ';
-            }
-            else {
-                first = false;
-            }
-            result += key + ': ' + type;
-        });
-        if (!this.complete) {
-            if (!first) {
-                result += ', ';
-            }
-            result += '...';
-        }
-        return result + '}';
-    };
-    RecordType.prototype.simplify = function () {
-        var newElements = new Map();
-        this.elements.forEach(function (type, key) {
-            newElements.set(key, type.simplify());
-        });
-        return new RecordType(newElements, this.complete, this.position);
-    };
-    RecordType.prototype.equals = function (other) {
-        if (other instanceof AnyType) {
-            return true;
-        }
-        if (!(other instanceof RecordType) || this.complete !== other.complete) {
-            return false;
-        }
-        else {
-            if (other === this) {
-                return true;
-            }
-            for (var name_1 in this.elements) {
-                if (!this.elements.hasOwnProperty(name_1)) {
-                    if (!this.elements.get(name_1).equals(other.elements.get(name_1))) {
-                        return false;
-                    }
-                }
-            }
-            for (var name_2 in other.elements) {
-                if (!other.elements.hasOwnProperty(name_2)) {
-                    if (!other.elements.get(name_2).equals(this.elements.get(name_2))) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    };
-    return RecordType;
-}(Type));
-exports.RecordType = RecordType;
-var FunctionType = (function (_super) {
-    __extends(FunctionType, _super);
-    function FunctionType(parameterType, returnType, position) {
-        if (position === void 0) { position = 0; }
-        var _this = _super.call(this) || this;
-        _this.parameterType = parameterType;
-        _this.returnType = returnType;
-        _this.position = position;
-        return _this;
-    }
-    FunctionType.prototype.makeFree = function () {
-        return new FunctionType(this.parameterType.makeFree(), this.returnType.makeFree());
-    };
-    FunctionType.prototype.instantiate = function (state, tyVarBnd, seen) {
-        if (seen === void 0) { seen = new Set(); }
-        return new FunctionType(this.parameterType.instantiate(state, tyVarBnd, seen), this.returnType.instantiate(state, tyVarBnd, seen), this.position);
-    };
-    FunctionType.prototype.merge = function (state, tyVarBnd, other) {
-        if (other instanceof TypeVariable || other instanceof AnyType) {
-            return other.merge(state, tyVarBnd, this);
-        }
-        if (other instanceof FunctionType) {
-            var p = this.parameterType.merge(state, tyVarBnd, other.parameterType);
-            var r = this.returnType.merge(state, p[1], other.returnType);
-            return [new FunctionType(p[0], r[0], this.position), r[1]];
-        }
-        // Merging didn't work
-        throw ['Cannot merge "FunctionType" and "' + other.constructor.name + '".',
-            this.instantiate(state, tyVarBnd),
-            other.instantiate(state, tyVarBnd)];
-    };
-    FunctionType.prototype.makeEqType = function (state, tyVarBnd) {
-        return [this, tyVarBnd];
-    };
-    FunctionType.prototype.getTypeVariables = function (free) {
-        if (free === void 0) { free = false; }
-        var res = new Set();
-        this.parameterType.getTypeVariables(free).forEach(function (value) {
-            res.add(value);
-        });
-        this.returnType.getTypeVariables(free).forEach(function (value) {
-            res.add(value);
-        });
-        return res;
-    };
-    FunctionType.prototype.getOrderedTypeVariables = function () {
-        var res = [];
-        res = res.concat(this.parameterType.getOrderedTypeVariables());
-        res = res.concat(this.returnType.getOrderedTypeVariables());
-        return res;
-    };
-    FunctionType.prototype.replaceTypeVariables = function (replacements, free) {
-        if (free === void 0) { free = new Set(); }
-        var res = this.parameterType.replaceTypeVariables(replacements, free);
-        var res2 = this.returnType.replaceTypeVariables(replacements, free);
-        return new FunctionType(res, res2, this.position);
-    };
-    FunctionType.prototype.admitsEquality = function (state) {
-        return false;
-    };
-    FunctionType.prototype.toString = function () {
-        if (this.parameterType instanceof FunctionType) {
-            return '(' + this.parameterType + ')'
-                + ' → ' + this.returnType;
-        }
-        else {
-            return this.parameterType
-                + ' → ' + this.returnType;
-        }
-    };
-    FunctionType.prototype.simplify = function () {
-        return new FunctionType(this.parameterType.simplify(), this.returnType.simplify(), this.position);
-    };
-    FunctionType.prototype.equals = function (other) {
-        if (other instanceof AnyType) {
-            return true;
-        }
-        return other instanceof FunctionType && this.parameterType.equals(other.parameterType)
-            && this.returnType.equals(other.returnType);
-    };
-    return FunctionType;
-}(Type));
-exports.FunctionType = FunctionType;
-// A custom defined type similar to "list" or "option".
-// May have a type argument.
-// TODO ID?
-var CustomType = (function (_super) {
-    __extends(CustomType, _super);
-    function CustomType(name, typeArguments, position) {
-        if (typeArguments === void 0) { typeArguments = []; }
-        if (position === void 0) { position = 0; }
-        var _this = _super.call(this) || this;
-        _this.name = name;
-        _this.typeArguments = typeArguments;
-        _this.position = position;
-        return _this;
-    }
-    CustomType.prototype.makeFree = function () {
-        var res = [];
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            res.push(this.typeArguments[i].makeFree());
-        }
-        return new CustomType(this.name, res, this.position);
-    };
-    CustomType.prototype.instantiate = function (state, tyVarBnd, seen) {
-        if (seen === void 0) { seen = new Set(); }
-        var tp = state.getStaticType(this.name);
-        if (tp !== undefined && tp.type instanceof FunctionType) {
-            try {
-                var mt = this.merge(state, tyVarBnd, tp.type.parameterType, true);
-                return tp.type.returnType.instantiate(state, mt[1], seen);
-            }
-            catch (e) {
-                if (!(e instanceof Array)) {
-                    throw e;
-                }
-                throw new errors_1.ElaborationError(-1, 'Instantiating "' + this + '" failed:\n'
-                    + 'Cannot merge "' + e[1] + '" and "' + e[2]
-                    + '" (' + e[0] + ').');
-            }
-        }
-        else if (tp === undefined) {
-            throw new errors_1.ElaborationError(-1, 'Unbound type "' + this.name + '".');
-        }
-        var res = [];
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            res.push(this.typeArguments[i].instantiate(state, tyVarBnd, seen));
-        }
-        return new CustomType(this.name, res, this.position);
-    };
-    CustomType.prototype.merge = function (state, tyVarBnd, other, noinst) {
-        if (noinst === void 0) { noinst = false; }
-        if (other instanceof TypeVariable || other instanceof AnyType) {
-            return other.merge(state, tyVarBnd, this);
-        }
-        var ths = this;
-        var oth = other;
-        if (!noinst) {
-            // Remove type alias and stuff
-            ths = this.instantiate(state, tyVarBnd);
-            if (!(ths instanceof CustomType)) {
-                return ths.merge(state, tyVarBnd, other);
-            }
-            oth = other.instantiate(state, tyVarBnd);
-        }
-        if (oth instanceof CustomType && ths.name === oth.name
-            && ths.typeArguments.length === oth.typeArguments.length) {
-            var res = [];
-            var tybnd = tyVarBnd;
-            for (var i = 0; i < ths.typeArguments.length; ++i) {
-                var tmp = ths.typeArguments[i].merge(state, tybnd, oth.typeArguments[i]);
-                res.push(tmp[0]);
-                tybnd = tmp[1];
-            }
-            return [new CustomType(ths.name, res, this.position), tybnd];
-        }
-        // Merging didn't work
-        throw ['Cannot merge "CustomType" and "' + other.constructor.name + '".',
-            this.instantiate(state, tyVarBnd),
-            other.instantiate(state, tyVarBnd)];
-    };
-    CustomType.prototype.makeEqType = function (state, tyVarBnd) {
-        var res = [];
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            var tmp = this.typeArguments[i].makeEqType(state, tyVarBnd);
-            res.push(tmp[0]);
-            tyVarBnd = tmp[1];
-        }
-        return [new CustomType(this.name, res, this.position), tyVarBnd];
-    };
-    CustomType.prototype.getTypeVariables = function (free) {
-        if (free === void 0) { free = false; }
-        var res = new Set();
-        if (this.typeArguments.length > 0) {
-            for (var i = 0; i < this.typeArguments.length; ++i) {
-                this.typeArguments[i].getTypeVariables(free).forEach(function (val) {
-                    res.add(val);
-                });
-            }
-        }
-        return res;
-    };
-    CustomType.prototype.getOrderedTypeVariables = function () {
-        var res = [];
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            res = res.concat(this.typeArguments[i].getOrderedTypeVariables());
-        }
-        return res;
-    };
-    CustomType.prototype.replaceTypeVariables = function (replacements, free) {
-        if (replacements === void 0) { replacements = new Map(); }
-        if (free === void 0) { free = new Set(); }
-        var rt = [];
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            rt.push(this.typeArguments[i].replaceTypeVariables(replacements, free));
-        }
-        return new CustomType(this.name, rt, this.position);
-    };
-    CustomType.prototype.admitsEquality = function (state) {
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            if (!this.typeArguments[i].admitsEquality(state)) {
-                return false;
-            }
-        }
-        return true;
-    };
-    CustomType.prototype.toString = function () {
-        var result = '';
-        if (this.typeArguments.length > 1
-            || (this.typeArguments.length === 1 && this.typeArguments[0] instanceof FunctionType)) {
-            result += '(';
-        }
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            if (i > 0) {
-                result += ', ';
-            }
-            result += this.typeArguments[i];
-        }
-        if (this.typeArguments.length > 1
-            || (this.typeArguments.length === 1 && this.typeArguments[0] instanceof FunctionType)) {
-            result += ')';
-        }
-        if (this.typeArguments.length > 0) {
-            result += ' ';
-        }
-        result += this.name;
-        return result;
-    };
-    CustomType.prototype.simplify = function () {
-        var args = [];
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            args.push(this.typeArguments[i].simplify());
-        }
-        return new CustomType(this.name, args, this.position);
-    };
-    CustomType.prototype.equals = function (other) {
-        if (other instanceof AnyType) {
-            return true;
-        }
-        if (!(other instanceof CustomType) || this.name !== other.name) {
-            return false;
-        }
-        for (var i = 0; i < this.typeArguments.length; ++i) {
-            if (!this.typeArguments[i].equals(other.typeArguments[i])) {
-                return false;
-            }
-        }
-        return true;
-    };
-    return CustomType;
-}(Type));
-exports.CustomType = CustomType;
-// Derived Types
-var TupleType = (function (_super) {
-    __extends(TupleType, _super);
-    function TupleType(elements, position) {
-        if (position === void 0) { position = 0; }
-        var _this = _super.call(this) || this;
-        _this.elements = elements;
-        _this.position = position;
-        return _this;
-    }
-    TupleType.prototype.toString = function () {
-        var result = '(';
-        for (var i = 0; i < this.elements.length; ++i) {
-            if (i > 0) {
-                result += ' * ';
-            }
-            result += this.elements[i];
-        }
-        return result + ')';
-    };
-    TupleType.prototype.simplify = function () {
-        var entries = new Map();
-        for (var i = 0; i < this.elements.length; ++i) {
-            entries.set('' + (i + 1), this.elements[i].simplify());
-        }
-        return new RecordType(entries, true, this.position);
-    };
-    TupleType.prototype.equals = function (other) {
-        return this.simplify().equals(other);
-    };
-    return TupleType;
-}(Type));
-exports.TupleType = TupleType;
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2669,8 +2854,8 @@ exports.TupleType = TupleType;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var state_1 = __webpack_require__(2);
-var types_1 = __webpack_require__(4);
-var values_1 = __webpack_require__(3);
+var types_1 = __webpack_require__(3);
+var values_1 = __webpack_require__(4);
 var errors_1 = __webpack_require__(0);
 // Initial static basis (see SML Definition, appendix C through E)
 // let intType = new CustomType('int');
@@ -3164,16 +3349,16 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var expressions_1 = __webpack_require__(7);
 var tokens_1 = __webpack_require__(1);
-var types_1 = __webpack_require__(4);
+var types_1 = __webpack_require__(3);
 var state_1 = __webpack_require__(2);
 var errors_1 = __webpack_require__(0);
-var values_1 = __webpack_require__(3);
+var values_1 = __webpack_require__(4);
 var Declaration = (function () {
     function Declaration() {
     }
     Declaration.prototype.elaborate = function (state, tyVarBnd, nextName, isTopLevel) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (isTopLevel === void 0) { isTopLevel = false; }
         throw new errors_1.InternalInterpreterError(-1, 'Not yet implemented.');
     };
@@ -3462,13 +3647,10 @@ var DatatypeReplication = (function (_super) {
     DatatypeReplication.prototype.elaborate = function (state, tyVarBnd, nextName, isTopLevel) {
         var res = undefined;
         if (this.oldname instanceof tokens_1.LongIdentifierToken) {
-            /* TODO
-            let st = state.getAndResolveStaticStructure(<LongIdentifierToken> this.oldname);
+            var st = state.getAndResolveStaticStructure(this.oldname);
             if (st !== undefined) {
-                res = <string[]> (<StaticBasis> st).getType(
-                    (<LongIdentifierToken> this.oldname).id.getText());
+                res = st.getType(this.oldname.id.getText());
             }
-             */
         }
         else {
             res = state.getStaticType(this.oldname.getText());
@@ -3608,20 +3790,18 @@ var OpenDeclaration = (function (_super) {
         for (var i = 0; i < this.names.length; ++i) {
             var tmp = undefined;
             if (this.names[i] instanceof tokens_1.LongIdentifierToken) {
-                /* TODO
-                tmp = state.getAndResolveStaticStructure(<LongIdentifierToken> this.names[i]);
+                tmp = state.getAndResolveStaticStructure(this.names[i]);
                 if (tmp !== undefined) {
-                    tmp = res.getStructure((<LongIdentifierToken> this.names[i]).id.getText());
+                    tmp = tmp.getStructure(this.names[i].id.getText());
                 }
-                 */
             }
             else {
-                // tmp = state.getStaticStructure(this.names[i].getText());
+                tmp = state.getStaticStructure(this.names[i].getText());
             }
             if (tmp === undefined) {
                 throw new errors_1.EvaluationError(this.position, 'Undefined module "' + this.names[i].getText() + '".');
             }
-            // state.staticBasis.extend(<StaticBasis> tmp);
+            state.staticBasis.extend(tmp);
         }
         return [state, [], tyVarBnd, nextName];
     };
@@ -3993,8 +4173,6 @@ var ValueBinding = (function () {
         var valuePoly = !this.isRecursive && !this.expression.isSafe(state);
         for (var i = 0; i < res[0].length; ++i) {
             res[0][i][1] = res[0][i][1].instantiate(state, res[2]);
-            //           console.log(res[2]);
-            // console.log(res[0][i][1] + ' ' + i );
             var tv = res[0][i][1].getTypeVariables();
             var free = res[0][i][1].getTypeVariables(true);
             for (var j = ntys.length - 1; j >= 0; --j) {
@@ -4222,12 +4400,10 @@ var ExceptionAlias = (function () {
     ExceptionAlias.prototype.elaborate = function (state) {
         var res = undefined;
         if (this.oldname instanceof tokens_1.LongIdentifierToken) {
-            /* TODO
-            let st = state.getAndResolveStaticStructure(<LongIdentifierToken> this.oldname);
+            var st = state.getAndResolveStaticStructure(this.oldname);
             if (st !== undefined) {
-                res = st.getValue((<LongIdentifierToken> this.oldname).id.getText());
+                res = st.getValue(this.oldname.id.getText());
             }
-            */
         }
         else {
             res = state.getStaticValue(this.oldname.getText());
@@ -4287,19 +4463,19 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var types_1 = __webpack_require__(4);
+var types_1 = __webpack_require__(3);
 var declarations_1 = __webpack_require__(6);
 var tokens_1 = __webpack_require__(1);
 var state_1 = __webpack_require__(2);
 var errors_1 = __webpack_require__(0);
-var values_1 = __webpack_require__(3);
+var values_1 = __webpack_require__(4);
 var initialState_ts_1 = __webpack_require__(5);
 var Expression = (function () {
     function Expression() {
     }
     Expression.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         throw new errors_1.InternalInterpreterError(this.position, 'Called "getType" on a derived form.');
@@ -4339,7 +4515,7 @@ var Constant = (function (_super) {
     };
     Constant.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         if (this.token instanceof tokens_1.IntegerConstantToken || this.token instanceof tokens_1.NumericToken) {
@@ -4398,17 +4574,19 @@ var ValueIdentifier = (function (_super) {
     }
     ValueIdentifier.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var res = undefined;
         if (this.name instanceof tokens_1.LongIdentifierToken) {
-            /* TODO
-            let st = state.getAndResolveStaticStructure(<LongIdentifierToken> this.name);
+            var st = state.getAndResolveStaticStructure(this.name);
             if (st !== undefined) {
-                res = st.getValue((<LongIdentifierToken> this.name).id.getText());
+                res = st.getValue(this.name.id.getText());
+                if (res !== undefined) {
+                    var nst = new state_1.State(0, undefined, st, state.dynamicBasis, [0, {}]);
+                    res[0] = res[0].qualify(nst, this.name);
+                }
             }
-             */
         }
         else {
             res = state.getStaticValue(this.name.getText());
@@ -4445,10 +4623,10 @@ var ValueIdentifier = (function (_super) {
         }
         var nwvar = [];
         vars.forEach(function (val) {
-            var cur = (+nextName.substring(2)) + 1;
+            var cur = (+nextName.substring(3)) + 1;
             var nm = '';
             for (;; ++cur) {
-                nextName = '\'' + nextName[1] + cur;
+                nextName = '\'' + nextName[1] + nextName[2] + cur;
                 if (!vars.has(nextName) && !tyVars.has(nextName) && !tyVarBnd.has(nextName)
                     && state.getStaticValue(nextName) === undefined) {
                     if (val[1] === '\'') {
@@ -4481,11 +4659,11 @@ var ValueIdentifier = (function (_super) {
             return [[[this.name.getText(), t.instantiate(state, tyVarBnd)]],
                 t.instantiate(state, tyVarBnd), tyVarBnd];
         }
-        var tmp = this.getType(state, tyVarBnd, '\'g0');
+        var tmp = this.getType(state, tyVarBnd, '\'*g0');
         tmp[3].forEach(function (val) {
-            var nname = '\'p' + val.substring(2);
+            var nname = '\'*p' + val.substring(3);
             if (val[1] === '\'') {
-                nname = '\'\'p' + val.substring(3);
+                nname = '\'\'*p' + val.substring(4);
             }
             tmp[4] = tmp[4].set(val, [new types_1.TypeVariable(nname), false]);
         });
@@ -4500,7 +4678,7 @@ var ValueIdentifier = (function (_super) {
                 throw e;
             }
             throw new errors_1.ElaborationError(this.position, 'Type clash: "' + t + '" vs. "'
-                + res[0] + '":\n' + e[0]);
+                + res[0] + '": ' + e[0]);
         }
     };
     ValueIdentifier.prototype.matches = function (state, v) {
@@ -4634,7 +4812,7 @@ var Record = (function (_super) {
     };
     Record.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var e = new Map();
@@ -4731,7 +4909,7 @@ var LocalDeclarationExpression = (function (_super) {
     };
     LocalDeclarationExpression.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var nstate = state.getNestedState(state.id);
@@ -4816,7 +4994,7 @@ var TypedExpression = (function (_super) {
             }
             throw new errors_1.ElaborationError(this.position, 'The annotated type "' + this.typeAnnotation
                 + '" does not match the expression\'s type "'
-                + tp[1] + '":\n' + e[0]);
+                + tp[1] + '": ' + e[0]);
         }
     };
     TypedExpression.prototype.matches = function (state, v) {
@@ -4824,7 +5002,7 @@ var TypedExpression = (function (_super) {
     };
     TypedExpression.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var tp = this.expression.getType(state, tyVarBnd, nextName, tyVars, forceRebind);
@@ -4838,9 +5016,7 @@ var TypedExpression = (function (_super) {
                 throw e;
             }
             throw new errors_1.ElaborationError(this.position, 'The specified type "' + this.typeAnnotation
-                + '" does not match the annotated expression\'s type "'
-                + tp[0] + '":\n' + e[0] + ' ("' + e[1] + '" vs. "'
-                + e[2] + '")');
+                + '" does not match the annotated expression\'s type "' + tp[0] + '": ' + e[0]);
         }
     };
     TypedExpression.prototype.simplify = function () {
@@ -4918,7 +5094,7 @@ var FunctionApplication = (function (_super) {
                 throw e;
             }
             // TODO Better message
-            throw new errors_1.ElaborationError(this.position, 'Merge failed:\n' + e[0]);
+            throw new errors_1.ElaborationError(this.position, 'Merge failed: ' + e[0]);
         }
     };
     FunctionApplication.prototype.matches = function (state, v) {
@@ -4963,7 +5139,7 @@ var FunctionApplication = (function (_super) {
     };
     FunctionApplication.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var f = this.func.getType(state, tyVarBnd, nextName, tyVars, forceRebind);
@@ -4995,8 +5171,7 @@ var FunctionApplication = (function (_super) {
                     throw e;
                 }
                 throw new errors_1.ElaborationError(this.position, 'Do not feed functions of type "' + f[0]
-                    + '" an argument of type "' + arg[0] + '":\n'
-                    + e[0] + ' ("' + e[1] + '" vs. "' + e[2] + '")');
+                    + '" an argument of type "' + arg[0] + '": ' + e[0]);
             }
         }
         else {
@@ -5122,7 +5297,7 @@ var HandleException = (function (_super) {
     };
     HandleException.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var mtp = this.match.getType(state, tyVarBnd, nextName, tyVars, forceRebind);
@@ -5142,7 +5317,7 @@ var HandleException = (function (_super) {
                 throw e;
             }
             throw new errors_1.ElaborationError(this.expression.position, 'The "handle" cannot change the type of the expression from "'
-                + etp[0] + '" to "' + rt + '":\n' + e[0]);
+                + etp[0] + '" to "' + rt + '": ' + e[0]);
         }
     };
     HandleException.prototype.compute = function (state) {
@@ -5184,7 +5359,7 @@ var RaiseException = (function (_super) {
     };
     RaiseException.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var res = this.expression.getType(state, tyVarBnd, nextName, tyVars, forceRebind);
@@ -5196,7 +5371,7 @@ var RaiseException = (function (_super) {
             if (!(e instanceof Array)) {
                 throw e;
             }
-            throw new errors_1.ElaborationError(this.expression.position, 'Raising anything but exceptions will only raise exceptions:\n' + e[0]);
+            throw new errors_1.ElaborationError(this.expression.position, 'Raising anything but exceptions will only raise exceptions: ' + e[0]);
         }
     };
     RaiseException.prototype.compute = function (state) {
@@ -5227,7 +5402,7 @@ var Lambda = (function (_super) {
     };
     Lambda.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         return this.match.getType(state, tyVarBnd, nextName, tyVars, forceRebind);
@@ -5276,7 +5451,7 @@ var Match = (function () {
     };
     Match.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         var restp = new types_1.FunctionType(new types_1.AnyType(), new types_1.AnyType());
@@ -5301,8 +5476,7 @@ var Match = (function () {
                 if (!(e instanceof Array)) {
                     throw e;
                 }
-                throw new errors_1.ElaborationError(this_1.position, 'Match rules disagree on type:\n' + e[0] + ' ("' + e[1]
-                    + '" vs. "' + e[2] + '")');
+                throw new errors_1.ElaborationError(this_1.position, 'Match rules disagree on type: ' + e[0]);
             }
             restp = restp.instantiate(state, r2[4]);
             bnds.forEach(function (val, key) {
@@ -5340,10 +5514,19 @@ var Wildcard = (function (_super) {
     }
     Wildcard.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
-        return [new types_1.AnyType(), [], nextName, tyVars, tyVarBnd];
+        var cur = (+nextName.substring(3)) + 1;
+        var nm = '';
+        for (;; ++cur) {
+            nextName = '\'' + nextName[1] + nextName[2] + cur;
+            if (!tyVars.has(nextName) && !tyVarBnd.has(nextName)
+                && state.getStaticValue(nextName) === undefined) {
+                nm = nextName;
+                return [new types_1.TypeVariable(nm), [], nm, tyVars.add(nm), tyVarBnd];
+            }
+        }
     };
     Wildcard.prototype.compute = function (state) {
         throw new errors_1.InternalInterpreterError(this.position, 'Wildcards are far too wild to have a value.');
@@ -5376,7 +5559,7 @@ var LayeredPattern = (function (_super) {
     }
     LayeredPattern.prototype.getType = function (state, tyVarBnd, nextName, tyVars, forceRebind) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         if (tyVars === void 0) { tyVars = new Set(); }
         if (forceRebind === void 0) { forceRebind = false; }
         if (!forceRebind) {
@@ -5395,7 +5578,7 @@ var LayeredPattern = (function (_super) {
                 if (!(e instanceof Array)) {
                     throw e;
                 }
-                throw new errors_1.ElaborationError(this.position, 'Wrong type annotation:\n' + e[0]);
+                throw new errors_1.ElaborationError(this.position, 'Wrong type annotation: ' + e[0]);
             }
         }
         var argtp = this.pattern.getType(state, tyVarBnd, gtp[2], gtp[3], true);
@@ -5408,7 +5591,7 @@ var LayeredPattern = (function (_super) {
             if (!(e instanceof Array)) {
                 throw e;
             }
-            throw new errors_1.ElaborationError(this.position, 'Wrong type annotation:\n' + e[0]);
+            throw new errors_1.ElaborationError(this.position, 'Wrong type annotation: ' + e[0]);
         }
         return [tp, gtp[1].concat(argtp[1]), argtp[2], argtp[3], tyVarBnd];
     };
@@ -5427,7 +5610,7 @@ var LayeredPattern = (function (_super) {
                 if (!(e instanceof Array)) {
                     throw e;
                 }
-                throw new errors_1.ElaborationError(this.position, 'Wrong type annotation:\n' + e[0]);
+                throw new errors_1.ElaborationError(this.position, 'Wrong type annotation: ' + e[0]);
             }
         }
         var res = this.pattern.matchType(state, tyVarBnd, tp);
@@ -5840,7 +6023,7 @@ function interpret(nextInstruction, oldState, options) {
             'warnings': tmp[3]
         };
     }
-    var elab = ast.elaborate(state, new Map(), '\'t0', true);
+    var elab = ast.elaborate(state, new Map(), '\'*t0', true);
     state = elab[0];
     // Use a fresh state to be able to piece types and values together
     var res = ast.evaluate(oldState.getNestedState() /* , options */);
@@ -5874,6 +6057,24 @@ function interpret(nextInstruction, oldState, options) {
                     var tp = state.getStaticType(i, curState.id);
                     if (tp !== undefined) {
                         curState.setStaticType(i, tp.type, tp.constructors, tp.arity);
+                    }
+                }
+            }
+            // For every new bound structure, try to find its type
+            for (var i in curState.dynamicBasis.structureEnvironment) {
+                if (Object.prototype.hasOwnProperty.call(curState.dynamicBasis.structureEnvironment, i)) {
+                    var tp = state.getStaticStructure(i, curState.id);
+                    if (tp !== undefined) {
+                        curState.setStaticStructure(i, tp);
+                    }
+                }
+            }
+            // For every new bound signature, try to find its type
+            for (var i in curState.dynamicBasis.signatureEnvironment) {
+                if (Object.prototype.hasOwnProperty.call(curState.dynamicBasis.signatureEnvironment, i)) {
+                    var tp = state.getStaticSignature(i, curState.id);
+                    if (tp !== undefined) {
+                        curState.setStaticSignature(i, tp);
                     }
                 }
             }
@@ -6335,7 +6536,7 @@ exports.lex = lex;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var expressions_1 = __webpack_require__(7);
-var types_1 = __webpack_require__(4);
+var types_1 = __webpack_require__(3);
 var errors_1 = __webpack_require__(0);
 var tokens_1 = __webpack_require__(1);
 var declarations_1 = __webpack_require__(6);
@@ -8259,8 +8460,8 @@ exports.parse = parse;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var state_1 = __webpack_require__(2);
-var types_1 = __webpack_require__(4);
-var values_1 = __webpack_require__(3);
+var types_1 = __webpack_require__(3);
+var values_1 = __webpack_require__(4);
 var errors_1 = __webpack_require__(0);
 var Interpreter = __webpack_require__(8);
 var intType = new types_1.CustomType('int');
@@ -8489,9 +8690,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var expressions_1 = __webpack_require__(7);
 var declarations_1 = __webpack_require__(6);
 var tokens_1 = __webpack_require__(1);
+var types_1 = __webpack_require__(3);
 var state_1 = __webpack_require__(2);
 var errors_1 = __webpack_require__(0);
-var values_1 = __webpack_require__(3);
+var values_1 = __webpack_require__(4);
 var initialState_1 = __webpack_require__(5);
 var StructureExpression = (function (_super) {
     __extends(StructureExpression, _super);
@@ -8504,6 +8706,11 @@ var StructureExpression = (function (_super) {
     }
     StructureExpression.prototype.simplify = function () {
         return new StructureExpression(this.position, this.structureDeclaration.simplify());
+    };
+    StructureExpression.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var nstate = state.getNestedState(0).getNestedState(state.id);
+        var tmp = this.structureDeclaration.elaborate(nstate, tyVarBnd, nextName, true);
+        return [tmp[0].getStaticChanges(0), tmp[1], tmp[2], tmp[3]];
     };
     StructureExpression.prototype.computeStructure = function (state) {
         var nstate = state.getNestedState(0).getNestedState(state.id);
@@ -8531,6 +8738,23 @@ var StructureIdentifier = (function (_super) {
     }
     StructureIdentifier.prototype.simplify = function () {
         return this;
+    };
+    StructureIdentifier.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var res = undefined;
+        if (this.identifier instanceof tokens_1.LongIdentifierToken) {
+            var st = state.getAndResolveStaticStructure(this.identifier);
+            if (st !== undefined) {
+                res = st.getStructure(this.identifier.id.getText());
+            }
+        }
+        else {
+            res = state.getStaticStructure(this.identifier.getText());
+        }
+        if (res === undefined) {
+            throw new errors_1.ElaborationError(this.position, 'Undefined module "'
+                + this.identifier.getText() + '".');
+        }
+        return [res, [], tyVarBnd, nextName];
     };
     StructureIdentifier.prototype.computeStructure = function (state) {
         var res = undefined;
@@ -8568,6 +8792,97 @@ var TransparentConstraint = (function (_super) {
     TransparentConstraint.prototype.simplify = function () {
         return new TransparentConstraint(this.position, this.structureExpression.simplify(), this.signatureExpression.simplify());
     };
+    TransparentConstraint.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var str = this.structureExpression.elaborate(state, tyVarBnd, nextName);
+        var sig = this.signatureExpression.elaborate(state, str[2], str[3]);
+        var res = new state_1.StaticBasis({}, {}, {}, {}, {});
+        var nstate = state.getNestedState(state.id);
+        nstate.staticBasis = str[0];
+        var nstate2 = state.getNestedState(state.id);
+        nstate2.staticBasis = sig[0];
+        for (var i in sig[0].typeEnvironment) {
+            if (sig[0].typeEnvironment.hasOwnProperty(i)) {
+                if (!str[0].typeEnvironment.hasOwnProperty(i)) {
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Unimplemented type "' + i + '".');
+                }
+                var sg = sig[0].typeEnvironment[i];
+                var st = str[0].typeEnvironment[i];
+                if (sg.arity !== st.arity) {
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Implementation of type "' + i
+                        + '" has the wrong arity.');
+                }
+                try {
+                    var sgtp = sg.type;
+                    var tp = sgtp.merge(nstate, tyVarBnd, st.type.parameterType);
+                    res.setType(i, sgtp.instantiate(nstate, tp[1]), [], sg.arity, sg.allowsEquality);
+                    tyVarBnd = tp[1];
+                }
+                catch (e) {
+                    if (!(e instanceof Array)) {
+                        throw e;
+                    }
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Wrong implementation of type "' + i + '": ' + e[0]);
+                }
+            }
+        }
+        for (var i in sig[0].valueEnvironment) {
+            if (sig[0].valueEnvironment.hasOwnProperty(i)) {
+                if (!str[0].valueEnvironment.hasOwnProperty(i)) {
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Unimplemented value "' + i + '".');
+                }
+                var sg = sig[0].valueEnvironment[i];
+                var st = str[0].valueEnvironment[i];
+                var repl = new Map();
+                var vsg = sg[0].getTypeVariables();
+                var vst = st[0].getTypeVariables();
+                while (st[0] instanceof types_1.TypeVariableBind) {
+                    while (true) {
+                        var cur = +nextName.substring(3);
+                        var nname = '\'' + nextName[1] + nextName[2] + (cur + 1);
+                        nextName = nname;
+                        if (!tyVarBnd.has(nname) && !vsg.has(nname) && !vst.has(nname)) {
+                            if (st[0].name[1] === '\'') {
+                                nname = '\'' + nname;
+                            }
+                            repl = repl.set(st[0].name, nname);
+                            break;
+                        }
+                    }
+                    st[0] = st[0].type;
+                }
+                st[0] = st[0].replaceTypeVariables(repl);
+                var nsg = sg[0];
+                while (nsg instanceof types_1.TypeVariableBind) {
+                    while (true) {
+                        var cur = +nextName.substring(3);
+                        var nname = '\'' + nextName[1] + nextName[2] + (cur + 1);
+                        nextName = nname;
+                        if (!tyVarBnd.has(nname) && !vsg.has(nname) && !vst.has(nname)) {
+                            if (nsg.name[1] === '\'') {
+                                nname = '\'' + nname;
+                            }
+                            repl = repl.set(nsg.name, nname);
+                            break;
+                        }
+                    }
+                    nsg = nsg.type;
+                }
+                nsg = nsg.replaceTypeVariables(repl);
+                try {
+                    var mg = nsg.merge(nstate, tyVarBnd, st[0]);
+                    res.setValue(i, sg[0].instantiate(nstate, mg[1]), state_1.IdentifierStatus.VALUE_VARIABLE);
+                }
+                catch (e) {
+                    if (!(e instanceof Array)) {
+                        throw e;
+                    }
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Wrong implementation of type "' + i + '": ' + e[0]);
+                }
+            }
+        }
+        // TODO Structs, Functors?
+        return [res, [], tyVarBnd, nextName];
+    };
     TransparentConstraint.prototype.computeStructure = function (state) {
         var tmp = this.structureExpression.computeStructure(state);
         if (tmp[0] instanceof values_1.Value) {
@@ -8595,6 +8910,99 @@ var OpaqueConstraint = (function (_super) {
     OpaqueConstraint.prototype.simplify = function () {
         return new OpaqueConstraint(this.position, this.structureExpression.simplify(), this.signatureExpression.simplify());
     };
+    OpaqueConstraint.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var str = this.structureExpression.elaborate(state, tyVarBnd, nextName);
+        var sig = this.signatureExpression.elaborate(state, str[2], str[3]);
+        var res = new state_1.StaticBasis({}, {}, {}, {}, {});
+        var nstate = state.getNestedState(state.id);
+        nstate.staticBasis = str[0];
+        var nstate2 = state.getNestedState(state.id);
+        nstate2.staticBasis = sig[0];
+        for (var i in sig[0].typeEnvironment) {
+            if (sig[0].typeEnvironment.hasOwnProperty(i)) {
+                if (!str[0].typeEnvironment.hasOwnProperty(i)) {
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Unimplemented type "' + i + '".');
+                }
+                var sg = sig[0].typeEnvironment[i];
+                var st = str[0].typeEnvironment[i];
+                if (sg.arity !== st.arity) {
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Implementation of type "' + i
+                        + '" has the wrong arity.');
+                }
+                try {
+                    var sgtp = sg.type;
+                    var tp = sgtp.merge(nstate, tyVarBnd, st.type.parameterType);
+                    // We need to create a new type here because of reference stuff
+                    sgtp = new types_1.CustomType(sgtp.name, sgtp.typeArguments, sgtp.position, sgtp.qualifiedName, true);
+                    res.setType(i, sgtp, [], sg.arity, sg.allowsEquality);
+                    tyVarBnd = tp[1];
+                }
+                catch (e) {
+                    if (!(e instanceof Array)) {
+                        throw e;
+                    }
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Wrong implementation of type "' + i + '": ' + e[0]);
+                }
+            }
+        }
+        for (var i in sig[0].valueEnvironment) {
+            if (sig[0].valueEnvironment.hasOwnProperty(i)) {
+                if (!str[0].valueEnvironment.hasOwnProperty(i)) {
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Unimplemented value "' + i + '".');
+                }
+                var sg = sig[0].valueEnvironment[i];
+                var st = str[0].valueEnvironment[i];
+                var repl = new Map();
+                var vsg = sg[0].getTypeVariables();
+                var vst = st[0].getTypeVariables();
+                while (st[0] instanceof types_1.TypeVariableBind) {
+                    while (true) {
+                        var cur = +nextName.substring(3);
+                        var nname = '\'' + nextName[1] + nextName[2] + (cur + 1);
+                        nextName = nname;
+                        if (!tyVarBnd.has(nname) && !vsg.has(nname) && !vst.has(nname)) {
+                            if (st[0].name[1] === '\'') {
+                                nname = '\'' + nname;
+                            }
+                            repl = repl.set(st[0].name, nname);
+                            break;
+                        }
+                    }
+                    st[0] = st[0].type;
+                }
+                st[0] = st[0].replaceTypeVariables(repl);
+                var nsg = sg[0];
+                while (nsg instanceof types_1.TypeVariableBind) {
+                    while (true) {
+                        var cur = +nextName.substring(3);
+                        var nname = '\'' + nextName[1] + nextName[2] + (cur + 1);
+                        nextName = nname;
+                        if (!tyVarBnd.has(nname) && !vsg.has(nname) && !vst.has(nname)) {
+                            if (nsg.name[1] === '\'') {
+                                nname = '\'' + nname;
+                            }
+                            repl = repl.set(nsg.name, nname);
+                            break;
+                        }
+                    }
+                    nsg = nsg.type;
+                }
+                nsg = nsg.replaceTypeVariables(repl);
+                try {
+                    nsg.merge(nstate, tyVarBnd, st[0]);
+                    res.setValue(i, sg[0].instantiate(nstate2, tyVarBnd), state_1.IdentifierStatus.VALUE_VARIABLE);
+                }
+                catch (e) {
+                    if (!(e instanceof Array)) {
+                        throw e;
+                    }
+                    throw new errors_1.ElaborationError(this.position, 'Signature mismatch: Wrong implementation of type "' + i + '": ' + e[0]);
+                }
+            }
+        }
+        // TODO Structs, Functors?
+        return [res, [], tyVarBnd, nextName];
+    };
     OpaqueConstraint.prototype.computeStructure = function (state) {
         var tmp = this.structureExpression.computeStructure(state);
         if (tmp[0] instanceof values_1.Value) {
@@ -8621,6 +9029,9 @@ var FunctorApplication = (function (_super) {
     }
     FunctorApplication.prototype.simplify = function () {
         return new FunctorApplication(this.position, this.functorId, this.structureExpression.simplify());
+    };
+    FunctorApplication.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        throw new Error('ニャ－');
     };
     FunctorApplication.prototype.computeStructure = function (state) {
         var fun = state.getDynamicFunctor(this.functorId.getText());
@@ -8660,6 +9071,22 @@ var LocalDeclarationStructureExpression = (function (_super) {
     LocalDeclarationStructureExpression.prototype.simplify = function () {
         return new LocalDeclarationStructureExpression(this.position, this.declaration.simplify(), this.expression.simplify());
     };
+    LocalDeclarationStructureExpression.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var nstate = state.getNestedState(state.id);
+        tyVarBnd.forEach(function (val, key) {
+            if (key[1] === '*' && key[2] === '*') {
+                nstate.setStaticValue(key.substring(3), val[0].instantiate(state, tyVarBnd), state_1.IdentifierStatus.VALUE_VARIABLE);
+            }
+        });
+        var res = this.declaration.elaborate(nstate, tyVarBnd, nextName);
+        nextName = res[3];
+        var nbnds = new Map();
+        tyVarBnd.forEach(function (val, key) {
+            nbnds = nbnds.set(key, [val[0].instantiate(res[0], res[2]), val[1]]);
+        });
+        var r2 = this.expression.elaborate(res[0], res[2], nextName);
+        return [r2[0], res[1].concat(r2[1]), r2[2], r2[3]];
+    };
     LocalDeclarationStructureExpression.prototype.toString = function () {
         return 'let ' + this.declaration + ' in ' + this.expression + ' end';
     };
@@ -8688,6 +9115,9 @@ var SignatureExpression = (function (_super) {
     SignatureExpression.prototype.simplify = function () {
         return this;
     };
+    SignatureExpression.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        return this.specification.elaborate(state, tyVarBnd, nextName);
+    };
     SignatureExpression.prototype.computeInterface = function (state) {
         return this.specification.computeInterface(state);
     };
@@ -8709,40 +9139,39 @@ var SignatureIdentifier = (function (_super) {
     SignatureIdentifier.prototype.simplify = function () {
         return this;
     };
-    SignatureIdentifier.prototype.computeInterface = function (state) {
-        var st = state.dynamicBasis;
+    SignatureIdentifier.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var res = undefined;
         if (this.identifier instanceof tokens_1.LongIdentifierToken) {
-            for (var i = 0; i < this.identifier.qualifiers.length; ++i) {
-                var tmp = void 0;
-                if (i === 0) {
-                    tmp = state.getDynamicStructure(this.identifier.qualifiers[i].getText());
-                }
-                else {
-                    tmp = st.getStructure(this.identifier.qualifiers[i].getText());
-                }
-                if (tmp === undefined) {
-                    throw new errors_1.EvaluationError(this.position, 'Undefined module "'
-                        + this.identifier.qualifiers[i].getText() + '"');
-                }
-                st = tmp;
-            }
-            var res = st.getSignature(this.identifier.id.getText());
-            if (res === undefined) {
-                throw new errors_1.EvaluationError(this.position, 'Undefined signature "'
-                    + this.identifier.getText() + '".');
-            }
-            else {
-                return res;
+            var st = state.getAndResolveStaticStructure(this.identifier);
+            if (st !== undefined) {
+                res = st.getSignature(this.identifier.id.getText());
             }
         }
-        var rs = state.getDynamicSignature(this.identifier.getText());
-        if (rs === undefined) {
+        else {
+            res = state.getStaticSignature(this.identifier.getText());
+        }
+        if (res === undefined) {
             throw new errors_1.EvaluationError(this.position, 'Undefined signature "'
                 + this.identifier.getText() + '".');
         }
-        else {
-            return rs;
+        return [res, [], tyVarBnd, nextName];
+    };
+    SignatureIdentifier.prototype.computeInterface = function (state) {
+        var res = undefined;
+        if (this.identifier instanceof tokens_1.LongIdentifierToken) {
+            var st = state.getAndResolveDynamicStructure(this.identifier);
+            if (st !== undefined) {
+                res = st.getSignature(this.identifier.id.getText());
+            }
         }
+        else {
+            res = state.getDynamicSignature(this.identifier.getText());
+        }
+        if (res === undefined) {
+            throw new errors_1.EvaluationError(this.position, 'Undefined signature "'
+                + this.identifier.getText() + '".');
+        }
+        return res;
     };
     SignatureIdentifier.prototype.toString = function () {
         return this.identifier.getText();
@@ -8765,6 +9194,10 @@ var TypeRealisation = (function (_super) {
     TypeRealisation.prototype.simplify = function () {
         return new TypeRealisation(this.position, this.signatureExpression.simplify(), this.tyvarseq, this.name, this.type.simplify());
     };
+    TypeRealisation.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        // TODO
+        throw new Error('ニャ－');
+    };
     TypeRealisation.prototype.computeInterface = function (state) {
         return this.signatureExpression.computeInterface(state);
     };
@@ -8786,11 +9219,16 @@ var StructureDeclaration = (function (_super) {
         _this.structureBinding = structureBinding;
         return _this;
     }
-    StructureDeclaration.prototype.elaborate = function (state, tyVarBnd, nextName) {
-        if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
-        // TODO
-        return [state, [new errors_1.Warning(this.position, 'Skipped elaborating structure.\n')], tyVarBnd, nextName];
+    StructureDeclaration.prototype.elaborate = function (state, tyVarBnd, nextName, isTopLevel) {
+        var warns = [];
+        for (var i = 0; i < this.structureBinding.length; ++i) {
+            var tmp = this.structureBinding[i].elaborate(state, tyVarBnd, nextName);
+            state = tmp[0];
+            warns = warns.concat(tmp[1]);
+            tyVarBnd = tmp[2];
+            nextName = tmp[3];
+        }
+        return [state, warns, tyVarBnd, nextName];
     };
     StructureDeclaration.prototype.evaluate = function (state) {
         var warns = [];
@@ -8832,9 +9270,16 @@ var SignatureDeclaration = (function (_super) {
     }
     SignatureDeclaration.prototype.elaborate = function (state, tyVarBnd, nextName) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
-        // TODO
-        return [state, [new errors_1.Warning(this.position, 'Skipped elaborating signature.\n')], tyVarBnd, nextName];
+        if (nextName === void 0) { nextName = '\'*t0'; }
+        var warns = [];
+        for (var i = 0; i < this.signatureBinding.length; ++i) {
+            var tmp = this.signatureBinding[i].elaborate(state, tyVarBnd, nextName);
+            state = tmp[0];
+            warns = warns.concat(tmp[1]);
+            tyVarBnd = tmp[2];
+            nextName = tmp[3];
+        }
+        return [state, warns, tyVarBnd, nextName];
     };
     SignatureDeclaration.prototype.evaluate = function (state) {
         for (var i = 0; i < this.signatureBinding.length; ++i) {
@@ -8870,7 +9315,7 @@ var FunctorDeclaration = (function (_super) {
     }
     FunctorDeclaration.prototype.elaborate = function (state, tyVarBnd, nextName) {
         if (tyVarBnd === void 0) { tyVarBnd = new Map(); }
-        if (nextName === void 0) { nextName = '\'t0'; }
+        if (nextName === void 0) { nextName = '\'*t0'; }
         // TODO
         return [state, [new errors_1.Warning(this.position, 'Skipped elaborating functor.\n')], tyVarBnd, nextName];
     };
@@ -8907,6 +9352,11 @@ var StructureBinding = (function () {
     StructureBinding.prototype.simplify = function () {
         return new StructureBinding(this.position, this.name, this.binding.simplify());
     };
+    StructureBinding.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var tmp = this.binding.elaborate(state, tyVarBnd, nextName);
+        state.setStaticStructure(this.name.getText(), tmp[0]);
+        return [state, tmp[1], tmp[2], tmp[3]];
+    };
     StructureBinding.prototype.evaluate = function (state) {
         var tmp = this.binding.computeStructure(state);
         for (var i = 0; i < tmp[2].length; ++i) {
@@ -8933,6 +9383,11 @@ var SignatureBinding = (function () {
     }
     SignatureBinding.prototype.simplify = function () {
         return new SignatureBinding(this.position, this.name, this.binding.simplify());
+    };
+    SignatureBinding.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var res = this.binding.elaborate(state, tyVarBnd, nextName);
+        state.setStaticSignature(this.name.getText(), res[0]);
+        return [state, res[1], res[2], res[3]];
     };
     SignatureBinding.prototype.evaluate = function (state) {
         state.setDynamicSignature(this.name.getText(), this.binding.computeInterface(state));
@@ -8986,6 +9441,22 @@ var ValueSpecification = (function (_super) {
         _this.valueDescription = valueDescription;
         return _this;
     }
+    ValueSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var res = new state_1.StaticBasis({}, {}, {}, {}, {});
+        var _loop_1 = function (i) {
+            var tp = this_1.valueDescription[i][1].instantiate(state, tyVarBnd);
+            var tyv = tp.getTypeVariables();
+            tyv.forEach(function (val) {
+                tp = new types_1.TypeVariableBind(val, tp);
+            });
+            res.setValue(this_1.valueDescription[i][0].getText(), tp, state_1.IdentifierStatus.VALUE_VARIABLE);
+        };
+        var this_1 = this;
+        for (var i = 0; i < this.valueDescription.length; ++i) {
+            _loop_1(i);
+        }
+        return [res, [], tyVarBnd, nextName];
+    };
     ValueSpecification.prototype.computeInterface = function (state) {
         var res = {};
         for (var i = 0; i < this.valueDescription.length; ++i) {
@@ -9005,6 +9476,13 @@ var TypeSpecification = (function (_super) {
         _this.typeDescription = typeDescription;
         return _this;
     }
+    TypeSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var res = new state_1.StaticBasis({}, {}, {}, {}, {});
+        for (var i = 0; i < this.typeDescription.length; ++i) {
+            res.setType(this.typeDescription[i][1].getText(), new types_1.CustomType(this.typeDescription[i][1].getText(), this.typeDescription[i][0]), [], this.typeDescription[i][0].length);
+        }
+        return [res, [], tyVarBnd, nextName];
+    };
     TypeSpecification.prototype.computeInterface = function (state) {
         var res = {};
         for (var i = 0; i < this.typeDescription.length; ++i) {
@@ -9024,6 +9502,13 @@ var EqualityTypeSpecification = (function (_super) {
         _this.typeDescription = typeDescription;
         return _this;
     }
+    EqualityTypeSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var res = new state_1.StaticBasis({}, {}, {}, {}, {});
+        for (var i = 0; i < this.typeDescription.length; ++i) {
+            res.setType(this.typeDescription[i][1].getText(), new types_1.CustomType(this.typeDescription[i][1].getText(), this.typeDescription[i][0]), [], this.typeDescription[i][0].length, true);
+        }
+        return [res, [], tyVarBnd, nextName];
+    };
     EqualityTypeSpecification.prototype.computeInterface = function (state) {
         var res = {};
         for (var i = 0; i < this.typeDescription.length; ++i) {
@@ -9043,6 +9528,10 @@ var DatatypeSpecification = (function (_super) {
         _this.datatypeDescription = datatypeDescription;
         return _this;
     }
+    DatatypeSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        // TODO
+        throw new Error('ニャ－');
+    };
     DatatypeSpecification.prototype.computeInterface = function (state) {
         var vi = {};
         var ti = {};
@@ -9070,25 +9559,17 @@ var DatatypeReplicationSpecification = (function (_super) {
         _this.oldname = oldname;
         return _this;
     }
+    DatatypeReplicationSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        // TODO
+        throw new Error('ニャ－');
+    };
     DatatypeReplicationSpecification.prototype.computeInterface = function (state) {
-        var st = state.dynamicBasis;
-        var tp = [];
+        var tp = undefined;
         if (this.oldname instanceof tokens_1.LongIdentifierToken) {
-            for (var i = 0; i < this.oldname.qualifiers.length; ++i) {
-                var tmp = void 0;
-                if (i === 0) {
-                    tmp = state.getDynamicStructure(this.oldname.qualifiers[i].getText());
-                }
-                else {
-                    tmp = st.getStructure(this.oldname.qualifiers[i].getText());
-                }
-                if (tmp === undefined) {
-                    throw new errors_1.EvaluationError(this.position, 'Undefined module "'
-                        + this.oldname.qualifiers[i].getText() + '"');
-                }
-                st = tmp;
+            var tmp = state.getAndResolveDynamicStructure(this.oldname);
+            if (tmp !== undefined) {
+                tp = tmp.getType(this.oldname.id.getText());
             }
-            tp = st.getType(this.oldname.id.getText());
         }
         else {
             tp = state.getDynamicType(this.oldname.getText());
@@ -9117,6 +9598,10 @@ var ExceptionSpecification = (function (_super) {
         _this.exceptionDescription = exceptionDescription;
         return _this;
     }
+    ExceptionSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        // TODO
+        throw new Error('ニャ－');
+    };
     ExceptionSpecification.prototype.computeInterface = function (state) {
         var res = {};
         for (var i = 0; i < this.exceptionDescription.length; ++i) {
@@ -9136,6 +9621,10 @@ var StructureSpecification = (function (_super) {
         _this.structureDescription = structureDescription;
         return _this;
     }
+    StructureSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        // TODO
+        throw new Error('ニャ－');
+    };
     StructureSpecification.prototype.computeInterface = function (state) {
         var res = {};
         for (var i = 0; i < this.structureDescription.length; ++i) {
@@ -9155,6 +9644,9 @@ var IncludeSpecification = (function (_super) {
         _this.expression = expression;
         return _this;
     }
+    IncludeSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        return this.expression.elaborate(state, tyVarBnd, nextName);
+    };
     IncludeSpecification.prototype.computeInterface = function (state) {
         return this.expression.computeInterface(state);
     };
@@ -9169,6 +9661,9 @@ var EmptySpecification = (function (_super) {
         _this.position = position;
         return _this;
     }
+    EmptySpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        return [new state_1.StaticBasis({}, {}, {}, {}, {}), [], tyVarBnd, nextName];
+    };
     EmptySpecification.prototype.computeInterface = function (state) {
         return new state_1.DynamicInterface({}, {}, {});
     };
@@ -9184,6 +9679,21 @@ var SequentialSpecification = (function (_super) {
         _this.specifications = specifications;
         return _this;
     }
+    SequentialSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        var res = new state_1.StaticBasis({}, {}, {}, {}, {});
+        var warns = [];
+        var nstate = state;
+        for (var i = 0; i < this.specifications.length; ++i) {
+            var tmp = this.specifications[i].elaborate(nstate, tyVarBnd, nextName);
+            res = res.extend(tmp[0]);
+            warns = warns.concat(tmp[1]);
+            tyVarBnd = tmp[2];
+            nextName = tmp[3];
+            nstate = nstate.getNestedState(nstate.id);
+            nstate.staticBasis = tmp[0];
+        }
+        return [res, warns, tyVarBnd, nextName];
+    };
     SequentialSpecification.prototype.computeInterface = function (state) {
         var res = new state_1.DynamicInterface({}, {}, {});
         for (var i = 0; i < this.specifications.length; ++i) {
@@ -9204,6 +9714,10 @@ var SharingSpecification = (function (_super) {
         _this.typeNames = typeNames;
         return _this;
     }
+    SharingSpecification.prototype.elaborate = function (state, tyVarBnd, nextName) {
+        // TODO
+        throw new Error('ニャ－');
+    };
     SharingSpecification.prototype.computeInterface = function (state) {
         return this.specification.computeInterface(state);
     };
