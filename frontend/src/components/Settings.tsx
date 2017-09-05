@@ -6,6 +6,9 @@ interface State {
     allowSuccessorML: boolean;
     disableElaboration: boolean;
     allowLongFunctionNames: boolean;
+    allowStructuresAnywhere: boolean;
+    allowSignaturesAnywhere: boolean;
+    allowFunctorsAnywhere: boolean;
 }
 
 class Settings extends React.Component<any, State> {
@@ -17,22 +20,35 @@ class Settings extends React.Component<any, State> {
     render() {
         return (
             <div className="container flexy">
-                <h2>Einstellungen für den Interpreter</h2>
+            <h2>Einstellungen für den Interpreter</h2>
+                <hr/>
+                <p>
+                Auf dieser Seite kannst Du einige Einstellungen am Interpreter vornehmen
+                und optionale Features aktivieren.
+                </p>
+                <br/>
+                <h4>Einstellungen für den Parser</h4>
                 <Checkbox defaultChecked={this.state.allowUnicodeInStrings}
                     onChange={this.changeHandler('allowUnicodeInStrings')}>
-                    Unicode Zeichen in Strings erlauben
+                    Erlaube Unicode-Symbole in Zeichenketten.
                 </Checkbox>
-                <Checkbox checked={this.state.allowSuccessorML}
-                    onChange={this.changeHandler('allowSuccessorML')}>
-                    'SuccessorML' aktivieren
+                <Checkbox checked={this.state.allowStructuresAnywhere}
+                    onChange={this.changeHandler('allowStructuresAnywhere')}>
+                    Erlaube, dass Strukturen in lokalen Deklarationen defeniert werden können.
                 </Checkbox>
+                <Checkbox checked={this.state.allowSignaturesAnywhere}
+                    onChange={this.changeHandler('allowSignaturesAnywhere')}>
+                    Erlaube, dass Signaturen auch außerhalb der obersten Programmebene definiert werden können.
+                </Checkbox>
+                <Checkbox checked={this.state.allowFunctorsAnywhere}
+                    onChange={this.changeHandler('allowFunctorsAnywhere')}>
+                    Erlaube, dass Funktoren auch außerhalb der obersten Programmebene definiert werden können.
+                </Checkbox>
+                <h4>Verschiedenes</h4>
                 <Checkbox checked={this.state.disableElaboration}
                     onChange={this.changeHandler('disableElaboration')}>
-                    Elaborierung <b>deaktivieren</b>
-                </Checkbox>
-                <Checkbox checked={this.state.allowLongFunctionNames}
-                    onChange={this.changeHandler('allowLongFunctionNames')}>
-                    'Lange Funktionsnamen' aktivieren
+                    Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
+                        macht oder versucht, wegzurennen.)
                 </Checkbox>
             </div>
         );
@@ -58,7 +74,10 @@ class Settings extends React.Component<any, State> {
             allowUnicodeInStrings: false,
             allowSuccessorML : false,
             disableElaboration: false,
-            allowLongFunctionNames: false
+            allowLongFunctionNames: false,
+            allowStructuresAnywhere: false,
+            allowSignaturesAnywhere: false,
+            allowFunctorsAnywhere: false
         };
         if (typeof str === 'string') {
             let data: any = JSON.parse(str);

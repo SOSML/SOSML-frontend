@@ -74,7 +74,7 @@ class Playground extends React.Component<Props, State> {
             <Modal show={this.state.shareLink !== '' && this.state.shareLink !== SHARE_LINK_ERROR}
             onHide={this.closeShareModal}>
                 <Modal.Header closeButton={true}>
-                    <Modal.Title>Teilen link</Modal.Title>
+                    <Modal.Title>Erstellung des Teilen-Links erfolgreich</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className="input-group">
@@ -86,11 +86,9 @@ class Playground extends React.Component<Props, State> {
                         </span>
                     </div>
                     <p className="text-justify">
-                        Diesen Link können Sie anderen Personen geben, die dann den
-                        Code sehen können, den Sie gerade geschrieben haben. <br />
-                        Der Link beinhaltet den Code der sich beim Teilen im Editor
-                        befunden hat. Wenn sie Änderungen vornehmen wollen, „Teilen“
-                        Sie erneuert.
+                        Nutze den obigen Link, um deinen Code mit deinen Freunden zu teilen.<br/>
+                        <b>Hinweis:</b> Unter dem Link befindet sich eine schreibgeschützte Version Deines Codes.
+                        Für veränderte Versionen Deines Codes musst Du also einen neuen Teilen-Link erstellen.
                     </p>
                 </Modal.Body>
                 <Modal.Footer>
@@ -101,10 +99,11 @@ class Playground extends React.Component<Props, State> {
         let errorModal = (
             <Modal show={this.state.shareLink === SHARE_LINK_ERROR} onHide={this.closeShareModal}>
                 <Modal.Header closeButton={true}>
-                    <Modal.Title>Fehler beim Teilen</Modal.Title>
+                    <Modal.Title>Fehler beim Erstellen des Teilen-Links</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Es gab einen Fehler beim erstellen eines Links zum Teilen.
+                    Es konnte leider kein Teilen-Link erstellt werden.<br/>
+                    Versuche es später noch einmal.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.closeShareModal}>Schließen</Button>
@@ -202,7 +201,7 @@ class Playground extends React.Component<Props, State> {
         WebserverAPI.fallbackInterpreter(this.state.code).then((val) => {
             this.setState({output: val.replace(/\\/g, '\\\\')});
         }).catch(() => {
-            this.setState({output: 'Fehler: konnte keine Verbindung zum Server herstellen'});
+            this.setState({output: 'Fehler: Es konnte keine Verbindung zum Server hergestellt werden.'});
         });
     }
 

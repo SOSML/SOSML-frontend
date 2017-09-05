@@ -7,68 +7,67 @@ class Help extends React.Component<any, any> {
             <div className="container flexy">
                 <h2>Hilfe</h2>
                 <hr />
-                <h3>Editor &amp; Ausführen Grundlagen</h3>
+                <h3>Grundlegende Benutzung des Interpreters</h3>
                 <p>
-                    In der Editor Ansicht können Sie SML Code links in den Texteditor eintippen. <br />
-                    Es gibt zwei Modi, die bestimmen wie der Code ausgeführt wird:
+                    In der Editor-Ansicht kannst Du links Code in den Interpreter eintippen.<br/>
+                    Standardmäßig wird Dein Code ausgeführt, sobald Du eine Anweisung mit einem
+                    Semikolon (<code>;</code>) abschließt; dabei wird ein Interpreter benutzt, der bei Dir im Browser läuft.<br/>
+                    Alternativ kannst Du Deinen Code auch auf unserem Server ausführen lassen; benutze dazu den
+                    „Umschalten“-Button am oberen Rand des „Ausgabe“-Fensters. Hier ist auch vermerkt, wo genau Dein Code
+                    ausgeführt wird.
                 </p>
-                    <ol>
-                        <li>Der Code wird in Ihren Browser ausgeführt.</li>
-                        <li>Der Code wird auf dem Server ausgeführt.</li>
-                    </ol>
+                <Alert bsStyle="info">
+                    <strong>Aufgepasst! </strong>Zum Ausführen auf dem Server musst Du extra
+                    den „Ausführen“-Button betätigen.
+                </Alert>
+                <h4>Code im Browser ausführen lassen</h4>
                 <p>
-                    Sie können erkennen in welchen Modus sie sich befinden rechts im
-                    Titel der Ausgabe Anzeige. Hier können sie falls benötigt auch zwischen
-                    den Modi wechseln.
+                    Im Browser-Modus wird Dein SML-Code automatisch ausgeführt,
+                    sobald Du Anweisung mit einem Semikolon (<code>;</code>) abschließt.
+                    Bei erfolgreicher Ausführung wird Dein Code dann <i>grün</i> hinterlegt;
+                    ist Dein Code ungültig oder beinhaltet nicht behandelte SML Ausnahme, so wird Dein Code <i>rot</i> hinterlegt.
+                    In allen Fällen erscheint die Ausgabe Deines Programms (oder die Fehlermeldung)
+                    im rechten „Ausgabe“-Fenster.
                 </p>
-                <h4>Browser Modus</h4>
+                <Alert bsStyle="info">
+                    <strong>Aufgepasst! </strong>Bei Code, dessen Berechnung sehr viel Zeit beansprucht, wird diese
+                    nach einegen Sekunden abgebrochen. Auch dann erscheint eine Fehlermeldung im „Ausgabe“-Fenster.
+                </Alert>
+                <h4>Code auf dem Server ausführen lassen</h4>
                 <p>
-                    Im Browser Modus wird der eingetippte SML Code
-                    automatisch ausgeführt, sobald sie eine Anweisung mit einem <code>;</code> abschliessen.
-                    Ist die Ausführung erfolgreich, so wird der Code grün markiert.
-                    Ist der Code ungültig oder beinhaltet der Code eine nicht behandelte SML
-                    Ausnahme, so wird dieser Rot markiert.
-                    In allen Fällen können sie die Ausgabe Ihres Programms oder die Fehlermeldung
-                    in der rechten Ausgabe Anzeige sehen.
+                    Im Server Modus wird Dein SML-Code erst ausgeführt, wenn Du den „Ausführen“-Button benutzt.
+                    Dann wird Dein Code an den Server geschickt und dort mit dem Interpreter „MoscowML“ ausgeführt.
+                    Nach wenigen Sekunden, bekommst Du dann die Ausgabe des Interpreters im „Ausgabe“-Fenster angezeigt.
                 </p>
-                <Alert bsStyle="info"><strong>Beachten Sie:</strong> Sollten Sie Code schreiben,
-                dessen Ausführung lange braucht oder der nicht terminiert, so
-                wirkt sich dies auf die Performance ihres Browsers aus.</Alert>
-                <h4>Server Modus</h4>
-                <p>
-                    Im Server Modus wird der Code erst ausgeführt, wenn Sie dies mit dem
-                    "Ausführen" Knopf explizit anfordern. Hierbei wird der Code an den Server
-                    geschickt und dort mit MoscowML ausgeführt. Sie bekommen die Ausgabe
-                    des Interpreters in der Ausgabe Anzeige angezeigt. Sollte ihr Code zu
-                    lange laufen, so wird dieser nach einer Weile terminiert.<br />
-                    In diesem Modus entfällt auch die Markierung des Codes.
-                </p>
+                <Alert bsStyle="info">
+                    <strong>Aufgepasst! </strong>Bei Code, dessen Berechnung sehr viel Zeit beansprucht, wird diese
+                    nach einegen Sekunden abgebrochen. Dann erscheint eine Fehlermeldung im „Ausgabe“-Fenster.
+                </Alert>
+                <Alert bsStyle="info">
+                    <strong>Aufgepasst! </strong>In diesem Modus wird Dein Code nicht farbig hinterlegt.
+                </Alert>
                 <hr />
                 <h3>Code teilen</h3>
                 <p>
-                    Sie können in der Editor Ansicht Code mit Mitstudenten teilen.
-                    Nutzen Sie dafür den "Teilen" Knopf. Sollte das Teilen erfolgreich
-                    gewesen sein, so bekommen sie nun einen Link angezeigt den sie
-                    weiterreichen können. Dieser Link speichert den exakt den Code
-                    wie er sicht zur Zeit des Teilens in dem Editor befand.
-                    Sollten Sie doch noch eine Änderung vornehmen wollen, so teilen
-                    sie den Code erneuert.
+                    Du kannst Deinen Code mit Mitstudenten teilen, indem Du in der „Editor“-Ansicht den „Teilen“-Button betätigst.
+                    Dann wird Dein Code auf unserem Server (anonymisiert) gespeichert und ein Link zu deinem Code erstellt.
+                    Dieser Link speichert eine schreibgeschützte Version des Codes, wie er sicht zur Zeit des Teilens in dem Editor befand.
+                    Um also Änderungen weiterzureichen, musst Du Deinen geänderten Code erneut teilen.
                 </p>
                 <hr />
-                <h3>Code speichern &amp; Dateiansicht</h3>
+                <h3>Code speichern und die Dateiansicht</h3>
                 <p>
-                    Sie können Code, den Sie geschrieben haben, lokal in Ihren Browser
-                    speichern. Geben Sie dazu einen Dateinamen in das entsprechende
-                    Textfeld in der Editor Ansicht ein und klicken sie auf "Speichern".
-                    Der Code wird nicht automatisch gespeichert, betätigen Sie also
-                    "Speichern" jedes mal, wenn sie speichern wollen. <br />
-                    Eine Liste der lokal gespeicherten Dateien finden Sie in der
-                    Dateiansicht. Hier können sie durch einen Klick auf den Dateinamen
-                    eine Datei wieder öffnen und auch Dateien löschen.
+                    In neueren Browsern wird Dein Code automatisch gespeichert und erscheint im Editor, sobald Du ihn öffnest.
+                    Solltest Du jedoch mehr als eine Code-Datei speichern wollen, so kannst Du dies, indem Du einen Dateinamen für dienen Code
+                    festlegst und den „Speichern”-Button benutzt. Auf diese Weise gespeicherten Code findest Du unter der Dateiansicht,
+                    zu welcher du über den Link in der Kopfzeile gelangst.<br/>
+                    Um Code aus der Dateiansicht in den Editor zu laden, clicke auf den Dateinamen des entsprechenden Codes.<br/>
+                    In der Dateiansicht findest Du auch Codebeispiele aus Deinem „Programmierung 1“-Lehrbuch.
                 </p>
-                <Alert bsStyle="info"><strong>Beachten Sie:</strong> Da die Dateien
-                in Ihren Browser gespeichert werden, verlieren Sie diese womöglich wenn
-                Sie Browserdaten löschen.</Alert>
+                <Alert bsStyle="info">
+                    <strong>Aufgepasst! </strong>Alle gespeicherten Dateien befinden sich im lokalen Speicher Deines Browsers.
+                    Solltest Du diesen löschen, so verschwinden auch deine gespeicherten Dateien.
+                </Alert>
             </div>
         );
     }

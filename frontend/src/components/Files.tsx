@@ -65,12 +65,12 @@ class Files extends React.Component<any, State> {
                     </td>
                     <td>Lokal</td>
                     <td>
-                        <Button bsStyle="danger" onClick={deleteHandlerFor(file.name)} >
-                            <Glyphicon glyph={'trash'} />
-                        </Button>
-                        <div className="miniSpacer" />
                         <Button bsStyle="primary" onClick={downloadHandlerFor(file.name)}>
                             <Glyphicon glyph={'download-alt'} /> Herunterladen
+                        </Button>
+                        <div className="miniSpacer" />
+                        <Button bsStyle="danger" onClick={deleteHandlerFor(file.name)} >
+                            <Glyphicon glyph={'trash'} /> Löschen
                         </Button>
                     </td>
                 </tr>
@@ -102,7 +102,7 @@ class Files extends React.Component<any, State> {
             );
         } else if (this.state.examplesStatus === EXAMPLES_FAILED) {
             examplesView = (
-                <p>Beispieldateien konnten nicht geladen werden</p>
+                <p>Beispieldateien konnten nicht geladen werden.</p>
             );
         } else {
             examplesView = (
@@ -110,8 +110,30 @@ class Files extends React.Component<any, State> {
             );
         }
 
+        if (this.state.files.length === 0) {
+            return (
+                <Grid className="flexy">
+                    <h2>Lokale Dateien und Programmbeispiele</h2>
+                    <hr/>
+                    <h4>Lokale Dateien</h4>
+                    <p>
+                    Du hast noch keine Dateien gespeichert.
+                    </p>
+                    <h4>Beispieldateien</h4>
+                    {examplesView}
+                </Grid>
+            );
+        }
+
         return (
             <Grid className="flexy">
+                    <h2>Lokale Dateien und Programmbeispiele</h2>
+                    <hr/>
+                    <h4>Lokale Dateien</h4>
+                    <p>
+                    Du findest hier Deine gespeicherten Programme. Clicke auf einen Dateinamen, um eine
+                    Datei in den Editor zu laden.
+                    </p>
                 <Table>
                     <thead>
                         <tr>

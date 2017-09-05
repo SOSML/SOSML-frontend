@@ -31,12 +31,14 @@ class MenuBar extends React.Component<any, any> {
                             <NavItem><Glyphicon glyph={'file'} /> Dateien</NavItem>
                         </LinkContainer>
                     </Nav>
+                    <Nav>
+                        <LinkContainer to="/help">
+                            <NavItem><Glyphicon glyph={'question-sign'} /> Hilfe</NavItem>
+                        </LinkContainer>
+                    </Nav>
                     <Nav pullRight={true}>
                         <LinkContainer to="/settings">
                             <NavItem><Glyphicon glyph={'cog'} /> Einstellungen</NavItem>
-                        </LinkContainer>
-                        <LinkContainer to="/help">
-                            <NavItem><Glyphicon glyph={'question-sign'} /> Hilfe</NavItem>
                         </LinkContainer>
                     </Nav>
                 </Navbar.Collapse>

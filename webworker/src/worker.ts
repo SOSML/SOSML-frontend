@@ -466,7 +466,7 @@ class IncrementalInterpretation {
         }
         for( let i in dynamicBasis.structureEnvironment ) {
             if( dynamicBasis.structureEnvironment.hasOwnProperty( i ) ) {
-                out += stsym + ' ' + istr + '\\*structure\\* ' + i + ' = {\n';
+                out += stsym + ' ' + istr + 'structure \\*' + i + ' = {\\*\n';
                 if( staticBasis ) {
                     out += this.printBasis( state, dynamicBasis.getStructure( i ),
                         staticBasis.getStructure( i ), indent + 1 );
@@ -474,7 +474,7 @@ class IncrementalInterpretation {
                     out += this.printBasis( state, dynamicBasis.getStructure( i ),
                         undefined, indent + 1 );
                 }
-                out += stsym + ' ' + istr + '}\n';
+                out += stsym + ' ' + istr + '\\*}\\*\n';
             }
         }
         return out;
@@ -530,7 +530,6 @@ class IncrementalInterpretation {
         }
 
         let protoName = this.getPrototypeName(value);
-        res += '\\*';
         if (protoName === 'ValueConstructor') {
             res += 'con';
         } else if (protoName === 'ExceptionConstructor') {
@@ -538,12 +537,11 @@ class IncrementalInterpretation {
         } else {
             res += 'val';
         }
-        res += '\\*';
 
         if (value) {
-            res += ' ' + bnd[0] + ' = ' + this.outputEscape(value.toString(state));
+            res += ' \\*' + bnd[0] + ' = ' + this.outputEscape(value.toString(state)) + '\\*';
         } else {
-            return res + ' ' + bnd[0] + ' = undefined;';
+            return res + ' \\*' + bnd[0] + ' = undefined\\*;';
         }
 
         if (type) {
