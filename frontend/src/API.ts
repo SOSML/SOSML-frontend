@@ -16,7 +16,7 @@ export interface File {
 }
 
 export class API {
-    static EMULATE: boolean = false;
+    static EMULATE: boolean = true;
 
     static fallbackInterpreter(code: string): Promise<string> {
         if (API.EMULATE) {
@@ -95,27 +95,6 @@ export class API {
                 return response.text();
             }
         });
-    }
-
-    static createInterpreter(): any {
-        // TODO: return new interpreter
-        let untypedWindow: any = window;
-        if (untypedWindow.Interpreter) { // It's loaded!
-            return untypedWindow.Interpreter;
-        } else {
-            return {
-                interpret: function(partial: string, oldState: any): [any, boolean, any] {
-                    if (partial.indexOf('NOPE') !== -1 && partial.indexOf(';') === -1) {
-                        // Simulate failure
-                        return [null, true, 'Generic error'];
-                    } else {
-                        return [{'partial': partial, 'prev': oldState}, false, null];
-                    }
-                }, getFirstState: function() {
-                    return {};
-                }
-            };
-        }
     }
 
     static getCodeExamplesList(): Promise<string[]> {

@@ -1,8 +1,9 @@
 import * as React from 'react';
 
 import MiniWindow from './MiniWindow';
+import ShareModal from './ShareModal';
 import CodeMirrorWrapper from './CodeMirrorWrapper';
-import { Button, Modal , Glyphicon } from 'react-bootstrap';
+import { Button , Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import {API as WebserverAPI} from '../API';
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
@@ -48,7 +49,7 @@ class Playground extends React.Component<Props, State> {
         this.handleOutputChange = this.handleOutputChange.bind(this);
         this.handleSwitchMode = this.handleSwitchMode.bind(this);
         this.handleShare = this.handleShare.bind(this);
-        this.closeShareModal = this.closeShareModal.bind(this);
+        this.modalCloseCallback = this.modalCloseCallback.bind(this);
     }
 
     render() {
@@ -70,53 +71,20 @@ class Playground extends React.Component<Props, State> {
                 </div>
             );
         }
-        let modal = (
-            <Modal show={this.state.shareLink !== '' && this.state.shareLink !== SHARE_LINK_ERROR}
-            onHide={this.closeShareModal}>
-                <Modal.Header closeButton={true}>
-                    <Modal.Title>Erstellung des Teilen-Links erfolgreich</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="input-group">
-                        <input type="text" className="form-control js-copytextarea" value={this.state.shareLink} />
-                        <span className="input-group-btn">
-                            <button className="btn btn-default" onClick={this.copyShareLink} type="button">
-                                <Glyphicon glyph={'copy'} />
-                            </button>
-                        </span>
-                    </div>
-                    <p className="text-justify">
-                        Nutze den obigen Link, um deinen Code mit deinen Freunden zu teilen.<br/>
-                        <b>Hinweis:</b> Unter dem Link befindet sich eine schreibgeschützte Version Deines Codes.
-                        Für veränderte Versionen Deines Codes musst Du also einen neuen Teilen-Link erstellen.
-                    </p>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.closeShareModal}>Schließen</Button>
-                </Modal.Footer>
-            </Modal>
-        );
-        let errorModal = (
-            <Modal show={this.state.shareLink === SHARE_LINK_ERROR} onHide={this.closeShareModal}>
-                <Modal.Header closeButton={true}>
-                    <Modal.Title>Fehler beim Erstellen des Teilen-Links</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    Es konnte leider kein Teilen-Link erstellt werden.<br/>
-                    Versuche es später noch einmal.
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.closeShareModal}>Schließen</Button>
-                </Modal.Footer>
-            </Modal>
-        );
+        let modal: JSX.Element | undefined;
+        if (this.state.shareLink !== '') {
+            modal = (
+                <ShareModal error={this.state.shareLink === SHARE_LINK_ERROR}
+                    link={this.state.shareLink} closeCallback={this.modalCloseCallback} />
+            );
+        }
         let shareElements: JSX.Element | undefined;
         if (!this.props.readOnly) {
             shareElements = (
                 <div className="inlineBlock">
                     <div className="miniSpacer" />
                     <Button bsSize="small" bsStyle="primary" onClick={this.handleShare}>
-                        <Glyphicon glyph={'share'} /> Teilen
+                        <Glyphicon glyph={'link'} /> Teilen
                     </Button>
                 </div>
             );
@@ -154,19 +122,14 @@ class Playground extends React.Component<Props, State> {
                     </div>
                 </SplitterLayout>
                 {modal}
-                {errorModal}
             </div>
         );
     }
 
-    closeShareModal() {
-        this.setState({shareLink: ''});
-    }
-
-    copyShareLink() {
-        let copyTextarea = document.querySelector('.js-copytextarea') as HTMLTextAreaElement;
-        copyTextarea.select();
-        document.execCommand('copy');
+    modalCloseCallback() {
+        this.setState({
+            shareLink: ''
+        });
     }
 
     componentDidMount() {

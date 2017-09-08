@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import ShareModal from './ShareModal';
 import { Grid , Table, Button, Glyphicon } from 'react-bootstrap';
 import { File, Database, API } from '../API';
 import './Files.css';
@@ -15,7 +16,10 @@ interface State {
     files: File[];
     examples: string[];
     examplesStatus: number;
+    shareLink: string;
 }
+
+const SHARE_LINK_ERROR = ':ERROR';
 
 class Files extends React.Component<any, State> {
     constructor(props: any) {
@@ -24,8 +28,11 @@ class Files extends React.Component<any, State> {
         this.state = {
             files: [],
             examples: [],
-            examplesStatus: EXAMPLES_LOADING
+            examplesStatus: EXAMPLES_LOADING,
+            shareLink: ''
         };
+
+        this.modalCloseCallback = this.modalCloseCallback.bind(this);
     }
 
     componentDidMount() {
@@ -33,30 +40,6 @@ class Files extends React.Component<any, State> {
     }
 
     render() {
-        let deleteHandlerFor = (fileName: string) => {
-            return (evt: any) => {
-                Database.getInstance().then((db: Database) => {
-                    return db.deleteFile(fileName);
-                }).then((ok: boolean) => {
-                    if (ok) {
-                        this.refreshFiles();
-                    }
-                });
-            };
-        };
-        let downloadHandlerFor = (fileName: string) => {
-            return (evt: any) => {
-                Database.getInstance().then((db: Database) => {
-                    return db.getFile(fileName);
-                }).then((content: string) => {
-                    let blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
-                    if (fileName.indexOf('.') === -1) {
-                        fileName = fileName + '.sml';
-                    }
-                    FileSaver.saveAs(blob, fileName);
-                });
-            };
-        };
         let filesView = this.state.files.map((file) => {
             return (
                 <tr key={file.name}>
@@ -65,11 +48,15 @@ class Files extends React.Component<any, State> {
                     </td>
                     <td>Lokal</td>
                     <td>
-                        <Button bsStyle="primary" onClick={downloadHandlerFor(file.name)}>
+                        <Button bsStyle="primary" onClick={this.downloadHandlerFor(file.name)}>
                             <Glyphicon glyph={'download-alt'} /> Herunterladen
                         </Button>
                         <div className="miniSpacer" />
-                        <Button bsStyle="danger" onClick={deleteHandlerFor(file.name)} >
+                        <Button bsStyle="primary" onClick={this.shareHandlerFor(file.name)}>
+                            <Glyphicon glyph={'link'} /> Teilen
+                        </Button>
+                        <div className="miniSpacer" />
+                        <Button bsStyle="danger" onClick={this.deleteHandlerFor(file.name)} >
                             <Glyphicon glyph={'trash'} /> Löschen
                         </Button>
                     </td>
@@ -110,6 +97,14 @@ class Files extends React.Component<any, State> {
             );
         }
 
+        let modal: JSX.Element | undefined;
+        if (this.state.shareLink !== '') {
+            modal = (
+                <ShareModal error={this.state.shareLink === SHARE_LINK_ERROR}
+                    link={this.state.shareLink} closeCallback={this.modalCloseCallback} />
+            );
+        }
+
         if (this.state.files.length === 0) {
             return (
                 <Grid className="flexy">
@@ -121,6 +116,7 @@ class Files extends React.Component<any, State> {
                     </p>
                     <h4>Beispieldateien</h4>
                     {examplesView}
+                    {modal}
                 </Grid>
             );
         }
@@ -148,8 +144,15 @@ class Files extends React.Component<any, State> {
                 </Table>
                 <h4>Beispieldateien</h4>
                 {examplesView}
+                {modal}
             </Grid>
         );
+    }
+
+    modalCloseCallback() {
+        this.setState({
+            shareLink: ''
+        });
     }
 
     private refreshFiles() {
@@ -163,6 +166,50 @@ class Files extends React.Component<any, State> {
         }).catch((e) => {
             this.setState({examplesStatus: EXAMPLES_FAILED});
         });
+    }
+
+    private downloadHandlerFor(fileName: string): (evt: any) => void {
+        return (evt: any) => {
+            Database.getInstance().then((db: Database) => {
+                return db.getFile(fileName);
+            }).then((content: string) => {
+                let blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+                if (fileName.indexOf('.') === -1) {
+                    fileName = fileName + '.sml';
+                }
+                FileSaver.saveAs(blob, fileName);
+            });
+        };
+    }
+
+    private deleteHandlerFor(fileName: string): (evt: any) => void {
+        return (evt: any) => {
+            Database.getInstance().then((db: Database) => {
+                return db.deleteFile(fileName);
+            }).then((ok: boolean) => {
+                if (ok) {
+                    this.refreshFiles();
+                }
+            });
+        };
+    }
+
+    private shareHandlerFor(fileName: string): (evt: any) => void {
+        return (evt: any) => {
+            Database.getInstance().then((db: Database) => {
+                return db.getFile(fileName);
+            }).then((content: string) => {
+                return API.shareCode(content);
+            }).then((hash: string) => {
+                this.setState({
+                    shareLink: window.location.host + '/share/' + hash
+                });
+            }).catch((e: any) => {
+                this.setState({
+                    shareLink: SHARE_LINK_ERROR
+                });
+            });
+        };
     }
 }
 
