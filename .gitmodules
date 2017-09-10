@@ -1,12 +1,6 @@
 [submodule "submodules/interpreter"]
 	path = submodules/interpreter
 	url = git@github.com:SOSML/SOSML.git
-[submodule "submodules/backend"]
-	path = submodules/backend
-	url = git@github.com:SOSML/SOSML-backend.git
 [submodule "submodules/webworker"]
 	path = submodules/webworker
 	url = git@github.com:SOSML/SOSML-webworker.git
-[submodule "submodules/fallback"]
-	path = submodules/fallback
-	url = git@github.com:SOSML/SOSML-fallback.git
