@@ -28,3 +28,11 @@ nav {
     padding-right: 10px;
     text-align: right;
 }
+
+body.fullscreen .footer {
+    display: none;
+}
+
+body.fullscreen nav {
+    display: none;
+}

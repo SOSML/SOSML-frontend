@@ -50,6 +50,7 @@ class Playground extends React.Component<Props, State> {
         this.handleSwitchMode = this.handleSwitchMode.bind(this);
         this.handleShare = this.handleShare.bind(this);
         this.modalCloseCallback = this.modalCloseCallback.bind(this);
+        this.handleFullscrenChange = this.handleFullscrenChange.bind(this);
     }
 
     render() {
@@ -117,6 +118,10 @@ class Playground extends React.Component<Props, State> {
                                     Umschalten
                                 </Button>
                                 {executeOnServer}
+                                <div className="miniSpacer" />
+                                <Button bsSize="small" bsStyle="primary" onClick={this.handleFullscrenChange}>
+                                    Vollbild
+                                </Button>
                             </div>
                         ) } />
                     </div>
@@ -138,6 +143,7 @@ class Playground extends React.Component<Props, State> {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleBrowserResize);
+        this.getBodyClassList().remove('fullscreen');
     }
 
     handleSplitterUpdate(sizeAnchor: any) {
@@ -198,6 +204,15 @@ class Playground extends React.Component<Props, State> {
         this.setState(prevState => {
             return {useServer: !prevState.useServer, output: ''};
         });
+    }
+
+    handleFullscrenChange() {
+        this.getBodyClassList().toggle('fullscreen');
+    }
+
+    private getBodyClassList() {
+        let body = document.getElementsByTagName('body')[0];
+        return body.classList;
     }
 
     private parseLine(line: string, key: number): JSX.Element {
