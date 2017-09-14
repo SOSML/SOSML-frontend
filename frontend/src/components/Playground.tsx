@@ -50,7 +50,7 @@ class Playground extends React.Component<Props, State> {
         this.handleSwitchMode = this.handleSwitchMode.bind(this);
         this.handleShare = this.handleShare.bind(this);
         this.modalCloseCallback = this.modalCloseCallback.bind(this);
-        this.handleFullscrenChange = this.handleFullscrenChange.bind(this);
+        this.handleBrowserKeyup = this.handleBrowserKeyup.bind(this);
     }
 
     render() {
@@ -118,10 +118,6 @@ class Playground extends React.Component<Props, State> {
                                     Umschalten
                                 </Button>
                                 {executeOnServer}
-                                <div className="miniSpacer" />
-                                <Button bsSize="small" bsStyle="primary" onClick={this.handleFullscrenChange}>
-                                    Vollbild
-                                </Button>
                             </div>
                         ) } />
                     </div>
@@ -139,10 +135,20 @@ class Playground extends React.Component<Props, State> {
 
     componentDidMount() {
         window.addEventListener('resize', this.handleBrowserResize);
+        window.addEventListener('keyup', this.handleBrowserKeyup);
+
+        let interfaceSettings: string | null = localStorage.getItem('interfaceSettings');
+        if (typeof interfaceSettings === 'string') {
+            let settings = JSON.parse(interfaceSettings);
+            if (settings.fullscreen) {
+                this.getBodyClassList().add('fullscreen');
+            }
+        }
     }
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleBrowserResize);
+        window.removeEventListener('keyup', this.handleBrowserKeyup);
         this.getBodyClassList().remove('fullscreen');
     }
 
@@ -163,6 +169,14 @@ class Playground extends React.Component<Props, State> {
             this.setState({sizeAnchor: -1});
         } else {
             this.setState({sizeAnchor: -2});
+        }
+    }
+
+    handleBrowserKeyup(evt: KeyboardEvent) {
+        if (evt.key === 'Escape') {
+            this.getBodyClassList().remove('fullscreen');
+        } else if (evt.key === 'F11') {
+            this.getBodyClassList().add('fullscreen');
         }
     }
 
@@ -204,10 +218,6 @@ class Playground extends React.Component<Props, State> {
         this.setState(prevState => {
             return {useServer: !prevState.useServer, output: ''};
         });
-    }
-
-    handleFullscrenChange() {
-        this.getBodyClassList().toggle('fullscreen');
     }
 
     private getBodyClassList() {

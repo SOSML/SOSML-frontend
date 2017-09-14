@@ -27,6 +27,10 @@
     min-height: 32px;
 }
 
+body.fullscreen .window-header {
+    display: none;
+}
+
 .window-title {
     font-family: Georgia,sans-serif;
     font-size: 22px;

@@ -38,7 +38,8 @@ class RootPage extends React.Component<any, any> {
                         </a> | <a href="https://github.com/SOSML/SOSML/issues">Einen Fehler melden</a>
                     </div>
                 </div>
-            </Router>);
+            </Router>
+        );
     }
 }
 
