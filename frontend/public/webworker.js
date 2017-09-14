@@ -525,14 +525,14 @@ class IncrementalInterpretation {
         }
         for (let i in dynamicBasis.structureEnvironment) {
             if (dynamicBasis.structureEnvironment.hasOwnProperty(i)) {
-                out += stsym + ' ' + istr + 'structure \\*' + i + ' = {\\*\n';
+                out += stsym + ' ' + istr + 'structure \\*' + i + '\\*: sig\\*\n';
                 if (staticBasis) {
                     out += this.printBasis(state, dynamicBasis.getStructure(i), staticBasis.getStructure(i), indent + 1);
                 }
                 else {
                     out += this.printBasis(state, dynamicBasis.getStructure(i), undefined, indent + 1);
                 }
-                out += stsym + ' ' + istr + '\\*}\\*\n';
+                out += stsym + ' ' + istr + 'end\n';
             }
         }
         return out;
@@ -591,13 +591,18 @@ class IncrementalInterpretation {
             res += 'val';
         }
         if (value) {
-            res += ' \\*' + bnd[0] + ' = ' + this.outputEscape(value.toString(state)) + '\\*';
+            if (type && type.isOpaque()) {
+                res += ' \\*' + bnd[0] + ' = <' + this.outputEscape(type.getOpaqueName()) + '>\\*';
+            }
+            else {
+                res += ' \\*' + bnd[0] + ' = ' + this.outputEscape(value.toString(state)) + '\\*';
+            }
         }
         else {
             return res + ' \\*' + bnd[0] + ' = undefined\\*;';
         }
         if (type) {
-            return res + ': \\_' + this.outputEscape(type.toString()) + '\\_;';
+            return res + ': \\_' + this.outputEscape(type.toString(state)) + '\\_;';
         }
         else {
             return res + ': undefined;';
