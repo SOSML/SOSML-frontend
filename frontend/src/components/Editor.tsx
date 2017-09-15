@@ -45,7 +45,7 @@ class Editor extends React.Component<any, State> {
         if (this.props.history && this.props.history.location.state) {
             let state: any = this.props.history.location.state;
             if (state.fileName) {
-                let promis: Promise<string>;
+                let promis: Promise<String>;
                 if (state.example) {
                     promis = API.getCodeExample(state.fileName);
                 } else {

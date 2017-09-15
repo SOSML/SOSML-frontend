@@ -49,7 +49,8 @@ class MiniWindow extends React.Component<Props, State> {
             footerAdd = 'no-content';
         }
         return (
-            <div className={`mini-window ${classAdd}`} ref={(ref: HTMLElement) => this.mainInstance = ref}>
+            <div className={`mini-window ${classAdd}`} ref={(ref: HTMLElement | null) =>
+                    {if (ref != null) {this.mainInstance = ref}}}>
                 <div className="window-header noselect">
                     <div className="window-title">{this.props.title}</div> {this.props.header}
                 </div>
