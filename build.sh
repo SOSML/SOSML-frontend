@@ -3,7 +3,7 @@
 cd ./submodules/interpreter
 npm run dist
 cd ../webworker
-npm run dist
+npm run build
 cd ../../
 cp ./submodules/interpreter/build/interpreter.min.js ./frontend/public/interpreter.js
 cp ./submodules/webworker/build/webworker.js ./frontend/public/webworker.js
