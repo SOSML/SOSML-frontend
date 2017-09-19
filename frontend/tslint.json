@@ -4,7 +4,6 @@
         "align": [
             true,
             "parameters",
-            "arguments",
             "statements"
         ],
         "ban": false,
@@ -93,6 +92,9 @@
             "check-separator",
             "check-type",
             "check-typecast"
-        ]
+        ],
+        
+        
+        "jsx-alignment": false
     }
 }
