@@ -13,7 +13,7 @@
             "check-space"
         ],
         "curly": true,
-        "eofline": true,
+        "eofline": false,
         "forin": true,
         "indent": [ true, "spaces" ],
         "interface-name": [true, "never-prefix"],
@@ -28,7 +28,6 @@
             "static-before-instance",
             "variables-before-functions"
         ],
-        "no-any": false,
         "no-arg": true,
         "no-bitwise": true,
         "no-console": [
@@ -93,6 +92,9 @@
             "check-separator",
             "check-type",
             "check-typecast"
-        ]
+        ],
+        
+        
+        "jsx-alignment": false
     }
 }
