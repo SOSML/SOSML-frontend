@@ -56,16 +56,16 @@ class Settings extends React.Component<any, State> {
                     onChange={this.changeHandler('inter', 'allowFunctorsAnywhere')}>
                     Erlaube, dass Funktoren auch außerhalb der obersten Programmebene definiert werden können.
                 </Checkbox>
+                <br/>
                 <h4>Verschiedenes</h4>
                 <Checkbox checked={this.state.inter.disableElaboration}
                     onChange={this.changeHandler('inter', 'disableElaboration')}>
                     Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
                         macht oder versucht, wegzurennen.)
                 </Checkbox>
-                <h4>Einstellungen für die Benutzerschnittstelle</h4>
                 <Checkbox checked={this.state.front.fullscreen}
                     onChange={this.changeHandler('front', 'fullscreen')}>
-                    Vollbildmodus im Editor akitivieren
+                    Vollbildmodus im Editor akitivieren (Beenden mit ESC).
                 </Checkbox>
             </div>
         );
