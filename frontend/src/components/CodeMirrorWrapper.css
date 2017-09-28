@@ -17,6 +17,10 @@
     background-color: rgba(220, 255, 220, 200);
 }
 
+.eval-success-odd {
+    background-color: rgba(170, 240, 170, 200);
+}
+
 .eval-fail {
     background-color: rgba(255, 220, 220, 200);
 }

@@ -13,6 +13,7 @@ interface InterpreterSettings {
 
 interface InterfaceSettings {
     fullscreen: boolean;
+    timeout: number;
 }
 
 interface State {
@@ -27,6 +28,8 @@ class Settings extends React.Component<any, State> {
             inter: this.getInterpreterSettings(),
             front: this.getInterfaceSettings()
         };
+
+        this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
     }
 
     render() {
@@ -63,6 +66,8 @@ class Settings extends React.Component<any, State> {
                     Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
                         macht oder versucht, wegzurennen.)
                 </Checkbox>
+                Interpreter Timeout: <input type="number" value={this.state.front.timeout}
+                    onChange={this.timeoutChangeHandler} /> Millisekunden.
                 <Checkbox checked={this.state.front.fullscreen}
                     onChange={this.changeHandler('front', 'fullscreen')}>
                     Vollbildmodus im Editor akitivieren (Beenden mit ESC).
@@ -81,6 +86,17 @@ class Settings extends React.Component<any, State> {
                 this.saveState();
             });
         };
+    }
+
+    private timeoutChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
+        let value = evt.target.value;
+        this.setState((oldState) => {
+            let deepCopy: any = JSON.parse(JSON.stringify(oldState));
+            deepCopy.front.timeout = parseInt(value, 10);
+            return deepCopy;
+        }, () => {
+            this.saveState();
+        });
     }
 
     private saveState() {
@@ -106,7 +122,8 @@ class Settings extends React.Component<any, State> {
     private getInterfaceSettings(): InterfaceSettings {
         let str: string | null = localStorage.getItem('interfaceSettings');
         let ret: InterfaceSettings = {
-            fullscreen: false
+            fullscreen: false,
+            timeout: 5000
         };
         this.fillObjectWithString(ret, str);
         return ret;

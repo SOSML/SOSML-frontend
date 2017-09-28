@@ -35,6 +35,7 @@ class IncrementalInterpretationHelper {
     worker: Worker;
     codemirror: CodeMirrorSubset;
     workerTimeout: any;
+    timeout: number;
     wasTerminated: boolean;
     partialOutput: string;
 
@@ -48,6 +49,11 @@ class IncrementalInterpretationHelper {
         this.workerTimeout = null;
         this.wasTerminated = true;
         this.partialOutput = '';
+        this.timeout = 5000;
+    }
+
+    setTimeout(num: number) {
+        this.timeout = num;
     }
 
     restartWorker() {
@@ -149,7 +155,7 @@ class IncrementalInterpretationHelper {
             this.clearAllMarkers();
             this.wasTerminated = true;
             this.partialOutput = '';
-        }, 5400);
+        }, this.timeout + 400);
     }
 
     private clearAllMarkers() {
@@ -169,6 +175,7 @@ export interface Props {
     readOnly?: boolean;
     outputCallback: (code: string) => any;
     useInterpreter?: boolean;
+    timeout: number;
 }
 
 class CodeMirrorWrapper extends React.Component<Props, any> {
@@ -194,6 +201,7 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             lineWrapping: true,
             readOnly: this.props.readOnly ? true : false
         };
+        this.evalHelper.setTimeout(this.props.timeout);
         let classAdd = '';
         if (this.props.flex) {
             classAdd = 'flexy flexcomponent';

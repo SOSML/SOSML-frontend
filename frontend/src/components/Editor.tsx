@@ -111,8 +111,12 @@ class Editor extends React.Component<any, State> {
                 </Form>
             );
         }
+        let styleS = 'input {border: 1px solid pink;}';
         return (
             <div className="flexy flexcomponent">
+                <style>
+                {styleS}
+                </style>
                 {topBar}
                 <Playground readOnly={this.state.shareReadMode} onCodeChange={this.handleCodeChange}
                     initialCode={this.state.initialCode} fileControls={fileForm}  />
