@@ -4,17 +4,28 @@
 
 ## Prerequisites
 
-Node.JS version 8 or higher and NPM version 5 or higher need to be installed on the system. Linux is recommended.
+Node.JS version 8 or higher and NPM version 5 or higher need to be installed on the system. GNU+Linux is recommended. 
+Make sure you populated the correct and up-to-date submodules installed. If you don't have the SOSML-frontend repository cloned yet use this to also get the submodules:
+```
+git clone --recursive git@github.com:SOSML/SOSML-frontend.git
+```
+If you have the the SOSML-frontend repository but not its submodules (e.g. if you cloned without `--recursive`):
+```
+git submodule update --init --recursive
+```
+
+## Install/Update all NPM dependencies
+To install or(non-exclusive or) update all NPM dependencies and pull all git submodules run:
+```
+./prepare.sh
+```
 
 ## Build the interpreter and frontend
 
-After cloning the repository, first enter the `interpreter` directory.
-In the directory, execute `npm install` and then `npm run build`.
-
-This will create the `build` directory containing a file `interpreter.js`.
-Go back to the root directory of the repository and copy `interpreter/build/interpreter.js` to `frontend/public/interpreter.js`.
-
-Now enter the `frontend` directory. Run `npm install` and then `npm run build`.
+Now you should have beautiful typescript code. To make javascript out of this repo and the submodules run:
+```
+./build.sh
+```
 
 ## Install docker
 
