@@ -67,7 +67,7 @@ class Settings extends React.Component<any, State> {
                         macht oder versucht, wegzurennen.)
                 </Checkbox>
                 Interpreter Timeout: <input type="number" min="0" step="100" value={this.state.front.timeout}
-                    onChange={this.timeoutChangeHandler} /> Millisekunden.
+                    onChange={this.timeoutChangeHandler} placeholder="5000" /> Millisekunden.
                 <Checkbox checked={this.state.front.fullscreen}
                     onChange={this.changeHandler('front', 'fullscreen')}>
                     Vollbildmodus im Editor akitivieren (Beenden mit ESC).
@@ -79,7 +79,7 @@ class Settings extends React.Component<any, State> {
     private changeHandler(scope: string, property: string) {
         return () => {
             this.setState((oldState) => {
-                let deepCopy: any = JSON.parse(JSON.stringify(oldState));
+                let deepCopy: any = this.deepCopy(oldState);
                 deepCopy[scope][property] = !this.state[scope][property];
                 return deepCopy;
             }, () => {
@@ -90,11 +90,11 @@ class Settings extends React.Component<any, State> {
 
     private timeoutChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
         let value = parseInt(evt.target.value, 10);
-        if (value <= 0) {
+        if (value < 0) {
             return;
         }
         this.setState((oldState) => {
-            let deepCopy: any = JSON.parse(JSON.stringify(oldState));
+            let deepCopy: any = this.deepCopy(oldState);
             deepCopy.front.timeout = value;
             return deepCopy;
         }, () => {
@@ -102,9 +102,17 @@ class Settings extends React.Component<any, State> {
         });
     }
 
+    private deepCopy(json: any): any {
+        return JSON.parse(JSON.stringify(json));
+    }
+
     private saveState() {
         localStorage.setItem('interpreterSettings', JSON.stringify(this.state.inter));
-        localStorage.setItem('interfaceSettings', JSON.stringify(this.state.front));
+        let inter = this.deepCopy(this.state.front);
+        if (inter.timeout === null || isNaN(inter.timeout)) {
+            inter.timeout = 5000;
+        }
+        localStorage.setItem('interfaceSettings', JSON.stringify(inter));
     }
 
     private getInterpreterSettings(): InterpreterSettings {
