@@ -89,10 +89,13 @@ class Settings extends React.Component<any, State> {
     }
 
     private timeoutChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
-        let value = evt.target.value;
+        let value = parseInt(evt.target.value, 10);
+        if (value <= 0) {
+            return;
+        }
         this.setState((oldState) => {
             let deepCopy: any = JSON.parse(JSON.stringify(oldState));
-            deepCopy.front.timeout = parseInt(value, 10);
+            deepCopy.front.timeout = value;
             return deepCopy;
         }, () => {
             this.saveState();

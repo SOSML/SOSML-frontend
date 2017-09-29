@@ -14,11 +14,11 @@
 }
 
 .eval-success {
-    background-color: rgba(220, 255, 220, 200);
+    background-color: rgb(210, 255, 210);
 }
 
 .eval-success-odd {
-    background-color: rgba(170, 240, 170, 200);
+    background-color: #dcffff;
 }
 
 .eval-fail {
