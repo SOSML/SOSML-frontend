@@ -66,7 +66,7 @@ class Settings extends React.Component<any, State> {
                     Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
                         macht oder versucht, wegzurennen.)
                 </Checkbox>
-                Interpreter Timeout: <input type="number" value={this.state.front.timeout}
+                Interpreter Timeout: <input type="number" min="0" step="100" value={this.state.front.timeout}
                     onChange={this.timeoutChangeHandler} /> Millisekunden.
                 <Checkbox checked={this.state.front.fullscreen}
                     onChange={this.changeHandler('front', 'fullscreen')}>
