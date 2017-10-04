@@ -19,6 +19,7 @@ interface State {
     sizeAnchor: any;
     useServer: boolean;
     shareLink: string;
+    interpreterTimeout: number;
 }
 
 interface Props {
@@ -37,7 +38,7 @@ class Playground extends React.Component<Props, State> {
 
         this.state = {
             output: '', code: '', sizeAnchor: 0, useServer: false,
-            shareLink: ''
+            shareLink: '', interpreterTimeout: 5000
         };
 
         this.handleLeftResize = this.handleLeftResize.bind(this);
@@ -97,7 +98,7 @@ class Playground extends React.Component<Props, State> {
                         <MiniWindow content={(
                                 <CodeMirrorWrapper flex={true} onChange={this.handleCodeChange} code={code}
                                 readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                                useInterpreter={!this.state.useServer} />
+                                useInterpreter={!this.state.useServer} timeout={this.state.interpreterTimeout} />
                             )}
                             header={(
                             <div className="headerButtons">
@@ -142,6 +143,9 @@ class Playground extends React.Component<Props, State> {
             let settings = JSON.parse(interfaceSettings);
             if (settings.fullscreen) {
                 this.getBodyClassList().add('fullscreen');
+            }
+            if (settings.timeout) {
+                this.setState({interpreterTimeout: settings.timeout});
             }
         }
     }

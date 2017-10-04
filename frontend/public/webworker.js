@@ -128,7 +128,6 @@ class Communication {
         Communication.registerHandler('settings', (settings) => {
             if (settings) {
                 interpreterSettings = JSON.parse(settings);
-                console.log(interpreterSettings);
             }
         });
     }
@@ -310,6 +309,7 @@ class IncrementalInterpretation {
         let partial = '';
         let errorEncountered = false;
         let previousState = (baseIndex === -1) ? null : this.data[baseIndex].state;
+        let previousCounter = (baseIndex === -1) ? -1 : this.data[baseIndex].successCounter;
         for (let i = 0; i < splitByLine.length; i++) {
             let lineOffset = 0;
             if (i === 0) {
@@ -340,7 +340,11 @@ class IncrementalInterpretation {
                             partial += ';';
                         }
                         else if (ret.result === ErrorType.OK) {
-                            this.addSemicolon(semiPos, ret.state, Communication.markText(lastPos, semiPos, 'eval-success'), ret.warnings);
+                            let className = 'eval-success';
+                            if ((previousCounter + 1) % 2 === 1) {
+                                className = 'eval-success-odd';
+                            }
+                            this.addSemicolon(semiPos, ret.state, Communication.markText(lastPos, semiPos, className), ret.warnings, ++previousCounter);
                             lastPos = this.copyPos(semiPos);
                             lastPos.ch++;
                             previousState = ret.state;
@@ -460,7 +464,7 @@ class IncrementalInterpretation {
         }
         return [pos.line + 1, pos.ch + 1];
     }
-    addSemicolon(pos, newState, marker, warnings) {
+    addSemicolon(pos, newState, marker, warnings, newCounter) {
         this.semicoli.push(pos);
         let baseIndex = this.findBaseIndex(this.data.length - 1);
         let baseStateId = this.initialState.id + 1;
@@ -471,7 +475,8 @@ class IncrementalInterpretation {
             state: newState,
             marker: marker,
             error: false,
-            output: this.computeNewStateOutput(newState, baseStateId, warnings)
+            output: this.computeNewStateOutput(newState, baseStateId, warnings),
+            successCounter: newCounter
         });
     }
     addIncompleteSemicolon(pos) {
@@ -480,7 +485,8 @@ class IncrementalInterpretation {
             state: null,
             marker: -1,
             error: false,
-            output: ''
+            output: '',
+            successCounter: 0
         });
     }
     addErrorSemicolon(pos, errorMessage, marker) {
@@ -489,7 +495,8 @@ class IncrementalInterpretation {
             state: null,
             marker: marker,
             error: true,
-            output: errorMessage
+            output: errorMessage,
+            successCounter: 0
         });
     }
     addSMLErrorSemicolon(pos, error, marker) {
@@ -499,7 +506,8 @@ class IncrementalInterpretation {
             state: null,
             marker: marker,
             error: true,
-            output: outputErr
+            output: outputErr,
+            successCounter: 0
         });
     }
     outputEscape(str) {
