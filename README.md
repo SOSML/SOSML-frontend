@@ -7,7 +7,7 @@
 Node.JS version 8 or higher and NPM version 5 or higher need to be installed on the system. GNU+Linux is recommended. 
 Make sure you populated the correct and up-to-date submodules installed. If you don't have the SOSML-frontend repository cloned yet use this to also get the submodules:
 ```
-git clone --recursive git@github.com:SOSML/SOSML-frontend.git
+git clone --recursive https://github.com/SOSML/SOSML-frontend.git
 ```
 If you have the the SOSML-frontend repository but not its submodules (e.g. if you cloned without `--recursive`):
 ```
