@@ -101,9 +101,9 @@ class Editor extends React.Component<any, State> {
             }
             fileForm = (
                 <Form inline={true} className="inlineBlock" onSubmit={this.handleFormSubmit}>
-                    Dateiname: <input className="form-control" type="text" onBlur={this.onFileNameBlur}
+                    <input className="form-control" type="text" onBlur={this.onFileNameBlur}
                         value={this.state.fileName} onChange={this.handleFileNameChange}
-                        style={style} />
+                        style={style} placeholder="Dateiname"/>
                     <div className="miniSpacer" />
                     <Button bsSize="small" bsStyle="primary" onClick={this.handleSave}>
                         <Glyphicon glyph={'floppy-disk'} /> Speichern
