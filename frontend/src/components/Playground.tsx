@@ -61,7 +61,6 @@ class Playground extends React.Component<Props, State> {
             return this.parseLine(line, key++);
         });
         let code: string = this.props.initialCode;
-        let evaluateIn: string = (this.state.useServer) ? 'Ausführen auf dem Server' : 'Ausführen im Browser';
         let executeOnServer: JSX.Element | undefined;
         if (this.state.useServer) {
             executeOnServer = (
@@ -111,16 +110,7 @@ class Playground extends React.Component<Props, State> {
                         <MiniWindow content={
                             <div>{lineItems}</div>}
                         title="Ausgabe" className="flexy" updateAnchor={this.state.sizeAnchor}
-                        header={ (
-                            <div className="headerButtons">
-                                {evaluateIn}
-                                <div className="miniSpacer" />
-                                <Button bsSize="small" bsStyle="primary" onClick={this.handleSwitchMode}>
-                                    Umschalten
-                                </Button>
-                                {executeOnServer}
-                            </div>
-                        ) } />
+                        />
                     </div>
                 </SplitterLayout>
                 {modal}
