@@ -75,18 +75,24 @@ class Files extends React.Component<any, State> {
                 );
             });
 
-            examplesView = (
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {examples}
-                    </tbody>
-                </Table>
-            );
+            if (this.state.examples.length === 0) {
+                examplesView = (
+                    <p>Es gibt noch keine Beispieldateien</p>
+                );
+            } else {
+                examplesView = (
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {examples}
+                        </tbody>
+                    </Table>
+                );
+            }
         } else if (this.state.examplesStatus === EXAMPLES_FAILED) {
             examplesView = (
                 <p>Beispieldateien konnten nicht geladen werden.</p>

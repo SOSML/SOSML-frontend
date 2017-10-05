@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Nav, Navbar, NavItem, Glyphicon } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom';
 const LinkContainer = require('react-router-bootstrap').LinkContainer;
 // ^ this circumvents type checking as the @types/react-router-bootstrap package is buggy
 // it does not know the exact property, although it is clearly specified
@@ -31,7 +32,9 @@ class MenuBar extends React.Component<any, State> {
                         <img src="/logo.png" style={{padding: '10px'}} alt="Logo" />
                     </Navbar.Brand>
                     <Navbar.Brand>
-                        <a href="#">SOSML</a>
+                        <NavLink to="/">
+                            SOSML
+                        </NavLink>
                     </Navbar.Brand>
                     <Navbar.Toggle />
                 </Navbar.Header>
