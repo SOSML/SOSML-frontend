@@ -17,6 +17,7 @@ export interface File {
 
 export class API {
     static EMULATE: boolean = false;
+    static LAST_SHARE: Date | undefined;
 
     static fallbackInterpreter(code: string): Promise<string> {
         if (API.EMULATE) {
@@ -47,13 +48,20 @@ export class API {
     }
 
     static shareCode(code: string): Promise<string> {
+        if (API.LAST_SHARE !== undefined) {
+            if (new Date().getTime() - API.LAST_SHARE.getTime() <= 15000) {
+                return Promise.reject('Warte noch etwas bis Du das nächste mal teilst.');
+            }
+        }
         if (API.EMULATE) {
+            API.LAST_SHARE = new Date();
             return new Promise(
                 (resolve: (val: any) => void, reject: (err: any) => void) => {
                     resolve('0123456');
                 }
             );
         }
+        API.LAST_SHARE = new Date();
         return fetch('/api/share/',
             {
                 headers: {
@@ -101,7 +109,7 @@ export class API {
         if (API.EMULATE) {
             return new Promise(
                 (resolve: (val: any) => void, reject: (err: any) => void) => {
-                    resolve(['example_example.sml']);
+                    resolve(['1.1.1', '11.1.2', '11.1.1', '9.8.1']);
                 }
             );
         }
