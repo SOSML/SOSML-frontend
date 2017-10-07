@@ -1,6 +1,12 @@
 {
   "name": "sosml-frontend",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SOSML/SOSML-frontend.git"
+  },
+  "description": "A frontend for the infamous SOSML interpreter",
+  "license": "GPL-3.0",
   "dependencies": {
     "@types/jest": "^20.0.8",
     "@types/node": "^8.0.28",
