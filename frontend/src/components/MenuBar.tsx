@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Nav, Navbar, NavItem, Glyphicon } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
+import { CONFIG } from '../config';
 const LinkContainer = require('react-router-bootstrap').LinkContainer;
 // ^ this circumvents type checking as the @types/react-router-bootstrap package is buggy
 // it does not know the exact property, although it is clearly specified
@@ -24,6 +25,18 @@ class MenuBar extends React.Component<any, State> {
     }
 
     render() {
+        let extraLinks: JSX.Element[] = [];
+        for (let buttonDef of CONFIG.customLinks) {
+            extraLinks.push((
+                <Nav>
+                    <NavItem onClick={this.overrideLinkHandler()}
+                        href={buttonDef.href}>
+                        {buttonDef.text}
+                    </NavItem>
+                </Nav>
+            ));
+        }
+
         return (
             <Navbar inverse={true} collapseOnSelect={true} staticTop={true}
                 fluid={true} className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
@@ -49,6 +62,7 @@ class MenuBar extends React.Component<any, State> {
                             <NavItem><Glyphicon glyph={'file'} /> Dateien</NavItem>
                         </LinkContainer>
                     </Nav>
+                    {extraLinks}
                     <Nav>
                         <LinkContainer to="/help">
                             <NavItem><Glyphicon glyph={'question-sign'} /> Hilfe</NavItem>
@@ -104,6 +118,10 @@ class MenuBar extends React.Component<any, State> {
                 forcedDisplay: false
             });
         }
+    }
+
+    private overrideLinkHandler() {
+        return (e: any) => {e.preventDefault = () => {/*FFS*/}; };
     }
 
     private isFullscreen() {

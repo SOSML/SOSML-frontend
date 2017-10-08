@@ -12,6 +12,7 @@ SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState
         this.props.onUpdate(this.state.secondaryPaneSize);
     }
 };
+import { CONFIG } from '../config';
 
 interface State {
     output: string;
@@ -80,7 +81,7 @@ class Playground extends React.Component<Props, State> {
             );
         }
         let shareElements: JSX.Element | undefined;
-        if (!this.props.readOnly) {
+        if (!this.props.readOnly && CONFIG.sharingEnabled) {
             shareElements = (
                 <div className="inlineBlock">
                     <div className="miniSpacer" />
