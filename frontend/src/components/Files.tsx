@@ -5,6 +5,7 @@ import { Grid , Table, Button, Glyphicon } from 'react-bootstrap';
 import { File, Database, API } from '../API';
 import './Files.css';
 import { Link } from 'react-router-dom';
+import { CONFIG } from '../config';
 
 const FileSaver = require('file-saver');
 
@@ -41,6 +42,16 @@ class Files extends React.Component<any, State> {
 
     render() {
         let filesView = this.state.files.map((file) => {
+            let shareControl: JSX.Element[] | undefined = ([
+                ( <div className="miniSpacer" /> ), (
+                    <Button bsStyle="primary" onClick={this.shareHandlerFor(file.name)}>
+                        <Glyphicon glyph={'link'} /> Teilen
+                    </Button>
+                )
+            ]);
+            if (!CONFIG.sharingEnabled) {
+                shareControl = undefined;
+            }
             return (
                 <tr key={file.name}>
                     <td>
@@ -51,10 +62,7 @@ class Files extends React.Component<any, State> {
                         <Button bsStyle="primary" onClick={this.downloadHandlerFor(file.name)}>
                             <Glyphicon glyph={'download-alt'} /> Herunterladen
                         </Button>
-                        <div className="miniSpacer" />
-                        <Button bsStyle="primary" onClick={this.shareHandlerFor(file.name)}>
-                            <Glyphicon glyph={'link'} /> Teilen
-                        </Button>
+                        {shareControl}
                         <div className="miniSpacer" />
                         <Button bsStyle="danger" onClick={this.deleteHandlerFor(file.name)} >
                             <Glyphicon glyph={'trash'} /> Löschen
