@@ -29,7 +29,7 @@ class MenuBar extends React.Component<any, State> {
         for (let buttonDef of CONFIG.customLinks) {
             extraLinks.push((
                 <Nav>
-                    <NavItem onClick={(e: any) => {e.preventDefault = () => {/*FFS*/}; }}
+                    <NavItem onClick={this.overrideLinkHandler()}
                         href={buttonDef.href}>
                         {buttonDef.text}
                     </NavItem>
@@ -118,6 +118,10 @@ class MenuBar extends React.Component<any, State> {
                 forcedDisplay: false
             });
         }
+    }
+
+    private overrideLinkHandler() {
+        return (e: any) => {e.preventDefault = () => {/*FFS*/}; };
     }
 
     private isFullscreen() {
