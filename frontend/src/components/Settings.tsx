@@ -14,6 +14,9 @@ interface InterpreterSettings {
 interface InterfaceSettings {
     fullscreen: boolean;
     timeout: number;
+    badCodeColor: string;
+    goodCodeColor1: string;
+    goodCodeColor2: string;
 }
 
 interface State {
@@ -61,6 +64,9 @@ class Settings extends React.Component<any, State> {
                 </Checkbox>
                 <br/>
                 <h4>Verschiedenes</h4>
+                Farbe für falschen Code: <input value={this.state.front.badCodeColor} onChange={this.badCodeColorChangeHandler}/>
+                Erste Farbe für korrekten Code:
+                Zweite Farbe für korrekten Code
                 <Checkbox checked={this.state.inter.disableElaboration}
                     onChange={this.changeHandler('inter', 'disableElaboration')}>
                     Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
@@ -86,6 +92,20 @@ class Settings extends React.Component<any, State> {
                 this.saveState();
             });
         };
+    }
+
+    private badCodeColorChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
+        let value = evt.target.value;
+        if (!/^#(\d|[a-g]|[A-G]){6}$/g.test(value)) {
+            return;
+        }
+        this.setState((oldState) => {
+            let deepCopy: any = this.deepCopy(oldState);
+            deepCopy.front.badCodeColor = value;
+            return deepCopy;
+        }, () => {
+            this.saveState();
+        });
     }
 
     private timeoutChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
@@ -134,7 +154,10 @@ class Settings extends React.Component<any, State> {
         let str: string | null = localStorage.getItem('interfaceSettings');
         let ret: InterfaceSettings = {
             fullscreen: false,
-            timeout: 5000
+            timeout: 5000,
+            badCodeColor: '#ffdcdc',
+            goodCodeColor1: '#d2ffd2',
+            goodCodeColor2: '#dcffff'
         };
         this.fillObjectWithString(ret, str);
         return ret;
