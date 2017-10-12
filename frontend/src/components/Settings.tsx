@@ -33,6 +33,7 @@ class Settings extends React.Component<any, State> {
         };
 
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
+        this.badColorChangeHandler = this.badColorChangeHandler(this);
     }
 
     render() {
@@ -64,9 +65,9 @@ class Settings extends React.Component<any, State> {
                 </Checkbox>
                 <br/>
                 <h4>Verschiedenes</h4>
-                Farbe für falschen Code: <input value={this.state.front.badCodeColor} onChange={this.badCodeColorChangeHandler}/>
-                Erste Farbe für korrekten Code:
-                Zweite Farbe für korrekten Code
+                Farbe für falschen Code: <input type="color" value={this.state.front.badCodeColor} onChange={this.badColorChangeHandler}/><br/>
+                Erste Farbe für korrekten Code:<input type="color" value={this.state.front.goodCodeColor1} /><br/>
+                Zweite Farbe für korrekten Code:<input type="color" value={this.state.front.goodCodeColor2} />
                 <Checkbox checked={this.state.inter.disableElaboration}
                     onChange={this.changeHandler('inter', 'disableElaboration')}>
                     Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
@@ -94,11 +95,8 @@ class Settings extends React.Component<any, State> {
         };
     }
 
-    private badCodeColorChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
+    private badColorChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
         let value = evt.target.value;
-        if (!/^#(\d|[a-g]|[A-G]){6}$/g.test(value)) {
-            return;
-        }
         this.setState((oldState) => {
             let deepCopy: any = this.deepCopy(oldState);
             deepCopy.front.badCodeColor = value;
