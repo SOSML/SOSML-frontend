@@ -89,7 +89,7 @@ class MenuBar extends React.Component<any, State> {
 
     handleBrowserMouseMove(evt: MouseEvent) {
         if (this.isFullscreen()) {
-            if ((evt.pageX < 10 && evt.pageY < 10) && !this.state.forcedDisplay) {
+            if (evt.pageY < 10 && !this.state.forcedDisplay) {
                 this.setState({
                     forcedDisplay: true
                 });
