@@ -21,6 +21,10 @@ interface State {
     useServer: boolean;
     shareLink: string;
     interpreterTimeout: number;
+
+    errorColor: string;
+    successColor1: string;
+    successColor2: string;
 }
 
 interface Props {
@@ -39,7 +43,9 @@ class Playground extends React.Component<Props, State> {
 
         this.state = {
             output: '', code: '', sizeAnchor: 0, useServer: false,
-            shareLink: '', interpreterTimeout: 5000
+            shareLink: '', interpreterTimeout: 5000,
+            errorColor: '', successColor1: '',
+            successColor2: ''
         };
 
         this.handleLeftResize = this.handleLeftResize.bind(this);
@@ -91,8 +97,19 @@ class Playground extends React.Component<Props, State> {
                 </div>
             );
         }
+        let extraCSS = '';
+        if (this.state.errorColor !== '') {
+            extraCSS += '.eval-fail { background-color: ' + this.state.errorColor + ' !important; }';
+        }
+        if (this.state.errorColor !== '') {
+            extraCSS += '.eval-success { background-color: ' + this.state.successColor1 + ' !important; }';
+        }
+        if (this.state.errorColor !== '') {
+            extraCSS += '.eval-success-odd { background-color-: ' + this.state.successColor2 + ' !important; }';
+        }
         return (
             <div className="playground">
+                <style>{extraCSS}</style>
                 <SplitterLayout onUpdate={this.handleSplitterUpdate}>
                     <div className="flexcomponent flexy">
                         <MiniWindow content={(
@@ -135,8 +152,18 @@ class Playground extends React.Component<Props, State> {
             if (settings.fullscreen) {
                 this.getBodyClassList().add('fullscreen');
             }
+
             if (settings.timeout) {
                 this.setState({interpreterTimeout: settings.timeout});
+            }
+            if (settings.errorColor) {
+                this.setState({errorColor: settings.errorColor});
+            }
+            if (settings.successColor1) {
+                this.setState({successColor1: settings.successColor1});
+            }
+            if (settings.successColor2) {
+                this.setState({successColor2: settings.successColor2});
             }
         }
     }

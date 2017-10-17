@@ -14,15 +14,19 @@ interface InterpreterSettings {
 interface InterfaceSettings {
     fullscreen: boolean;
     timeout: number;
-    badCodeColor: string;
-    goodCodeColor1: string;
-    goodCodeColor2: string;
+    errorColor: string;
+    successColor1: string;
+    successColor2: string;
 }
 
 interface State {
     inter: InterpreterSettings;
     front: InterfaceSettings;
 }
+
+const DEFAULT_ERROR_COLOR = '#ffdcdc';
+const DEFAULT_SUCCESS_COLOR1 = '#d2ffd2';
+const DEFAULT_SUCCESS_COLOR2 = '#dcffff';
 
 class Settings extends React.Component<any, State> {
     constructor() {
@@ -33,7 +37,7 @@ class Settings extends React.Component<any, State> {
         };
 
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
-        this.badColorChangeHandler = this.badColorChangeHandler(this);
+        this.resetColorsToDefault = this.resetColorsToDefault.bind(this);
     }
 
     render() {
@@ -65,9 +69,14 @@ class Settings extends React.Component<any, State> {
                 </Checkbox>
                 <br/>
                 <h4>Verschiedenes</h4>
-                Farbe für falschen Code: <input type="color" value={this.state.front.badCodeColor} onChange={this.badColorChangeHandler}/><br/>
-                Erste Farbe für korrekten Code:<input type="color" value={this.state.front.goodCodeColor1} /><br/>
-                Zweite Farbe für korrekten Code:<input type="color" value={this.state.front.goodCodeColor2} />
+                Farbe für falschen Code: <input type="color" value={this.state.front.errorColor}
+                    onChange={this.colorChangeHandler('errorColor')}/><br/>
+                Erste Farbe für korrekten Code:<input type="color" value={this.state.front.successColor1}
+                    onChange={this.colorChangeHandler('successColor1')}/><br/>
+                Zweite Farbe für korrekten Code:<input type="color" value={this.state.front.successColor2}
+                    onChange={this.colorChangeHandler('successColor2')}/><br />
+                <input type="button" value="Farben auf Standardwerte zurücksetzen"
+                    onClick={this.resetColorsToDefault} />
                 <Checkbox checked={this.state.inter.disableElaboration}
                     onChange={this.changeHandler('inter', 'disableElaboration')}>
                     Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
@@ -83,6 +92,18 @@ class Settings extends React.Component<any, State> {
         );
     }
 
+    resetColorsToDefault() {
+        this.setState((oldState) => {
+            let deepCopy: any = this.deepCopy(oldState);
+            deepCopy.front.errorColor = DEFAULT_ERROR_COLOR;
+            deepCopy.front.successColor1 = DEFAULT_SUCCESS_COLOR1;
+            deepCopy.front.successColor2 = DEFAULT_SUCCESS_COLOR2;
+            return deepCopy;
+        }, () => {
+            this.saveState();
+        });
+    }
+
     private changeHandler(scope: string, property: string) {
         return () => {
             this.setState((oldState) => {
@@ -95,15 +116,17 @@ class Settings extends React.Component<any, State> {
         };
     }
 
-    private badColorChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
-        let value = evt.target.value;
-        this.setState((oldState) => {
-            let deepCopy: any = this.deepCopy(oldState);
-            deepCopy.front.badCodeColor = value;
-            return deepCopy;
-        }, () => {
-            this.saveState();
-        });
+    private colorChangeHandler(propName: string) {
+        return (evt: React.ChangeEvent<HTMLInputElement>) => {
+            let value = evt.target.value;
+            this.setState((oldState) => {
+                let deepCopy: any = this.deepCopy(oldState);
+                deepCopy.front[propName] = value;
+                return deepCopy;
+            }, () => {
+                this.saveState();
+            });
+        };
     }
 
     private timeoutChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
@@ -153,9 +176,9 @@ class Settings extends React.Component<any, State> {
         let ret: InterfaceSettings = {
             fullscreen: false,
             timeout: 5000,
-            badCodeColor: '#ffdcdc',
-            goodCodeColor1: '#d2ffd2',
-            goodCodeColor2: '#dcffff'
+            errorColor: DEFAULT_ERROR_COLOR,
+            successColor1: DEFAULT_SUCCESS_COLOR1,
+            successColor2: DEFAULT_SUCCESS_COLOR2
         };
         this.fillObjectWithString(ret, str);
         return ret;
