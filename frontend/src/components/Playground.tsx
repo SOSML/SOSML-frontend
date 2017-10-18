@@ -105,7 +105,7 @@ class Playground extends React.Component<Props, State> {
             extraCSS += '.eval-success { background-color: ' + this.state.successColor1 + ' !important; }';
         }
         if (this.state.errorColor !== '') {
-            extraCSS += '.eval-success-odd { background-color-: ' + this.state.successColor2 + ' !important; }';
+            extraCSS += '.eval-success-odd { background-color: ' + this.state.successColor2 + ' !important; }';
         }
         return (
             <div className="playground">
