@@ -216,7 +216,7 @@ class IncrementalInterpretation {
         this.disabled = false;
         this.debounceCallNecessary = false;
         this.interpreter = untypedGlobal.Interpreter;
-        this.initialState = this.interpreter.getFirstState(true);
+        this.initialState = this.interpreter.getFirstState();
     }
     clear() {
         this.semicoli.length = 0;
