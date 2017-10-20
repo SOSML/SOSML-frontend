@@ -17,6 +17,7 @@ interface InterfaceSettings {
     errorColor: string;
     successColor1: string;
     successColor2: string;
+    outputHighlight: boolean;
 }
 
 interface State {
@@ -76,7 +77,11 @@ class Settings extends React.Component<any, State> {
                 Zweite Farbe für korrekten Code:<input type="color" value={this.state.front.successColor2}
                     onChange={this.colorChangeHandler('successColor2')}/><br />
                 <input type="button" value="Farben auf Standardwerte zurücksetzen"
-                    onClick={this.resetColorsToDefault} />
+                    onClick={this.resetColorsToDefault} /> <br />
+                <Checkbox checked={this.state.front.outputHighlight}
+                    onChange={this.changeHandler('front', 'outputHighlight')}>
+                    Farbige Ausgabe aktivieren
+                </Checkbox> <br />
                 <Checkbox checked={this.state.inter.disableElaboration}
                     onChange={this.changeHandler('inter', 'disableElaboration')}>
                     Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
@@ -178,7 +183,8 @@ class Settings extends React.Component<any, State> {
             timeout: 5000,
             errorColor: DEFAULT_ERROR_COLOR,
             successColor1: DEFAULT_SUCCESS_COLOR1,
-            successColor2: DEFAULT_SUCCESS_COLOR2
+            successColor2: DEFAULT_SUCCESS_COLOR2,
+            outputHighlight: true
         };
         this.fillObjectWithString(ret, str);
         return ret;

@@ -25,6 +25,8 @@ interface State {
     errorColor: string;
     successColor1: string;
     successColor2: string;
+
+    outputHighlight: boolean;
 }
 
 interface Props {
@@ -45,7 +47,7 @@ class Playground extends React.Component<Props, State> {
             output: '', code: '', sizeAnchor: 0, useServer: false,
             shareLink: '', interpreterTimeout: 5000,
             errorColor: '', successColor1: '',
-            successColor2: ''
+            successColor2: '', outputHighlight: true
         };
 
         this.handleLeftResize = this.handleLeftResize.bind(this);
@@ -62,10 +64,17 @@ class Playground extends React.Component<Props, State> {
     }
 
     render() {
-        let lines: string[] = this.state.output.split('\n');
+        let cleanedOutput = this.state.output;
+        if (cleanedOutput.endsWith('\n')) {
+            cleanedOutput = cleanedOutput.substr(0, cleanedOutput.length - 1);
+        }
+        let lines: string[] = cleanedOutput.split('\n');
         var key = 0;
+        var markingColor = 0;
         let lineItems = lines.map((line) => {
-            return this.parseLine(line, key++);
+            let data: [JSX.Element, number] = this.parseLine(line, key++, markingColor);
+            markingColor = data[1];
+            return data[0];
         });
         let code: string = this.props.initialCode;
         let executeOnServer: JSX.Element | undefined;
@@ -165,6 +174,9 @@ class Playground extends React.Component<Props, State> {
             if (settings.successColor2) {
                 this.setState({successColor2: settings.successColor2});
             }
+            if (settings.outputHighlight !== undefined) {
+                this.setState({outputHighlight: settings.outputHighlight});
+            }
         }
     }
 
@@ -247,9 +259,19 @@ class Playground extends React.Component<Props, State> {
         return body.classList;
     }
 
-    private parseLine(line: string, key: number): JSX.Element {
+    private parseLine(line: string, key: number, markingColor: number): [JSX.Element, number] {
         let start = 0;
         let items: any[] = [];
+        if (line.startsWith('\\1')) {
+            line = line.substring(2);
+            markingColor = 1;
+        } else if (line.startsWith('\\2')) {
+            line = line.substring(2);
+            markingColor = 2;
+        } else if (line.startsWith('\\3')) {
+            line = line.substring(2);
+            markingColor = 3;
+        }
         if (line.startsWith('>')) {
             let regex = /^>( *).*$/g;
             let match = regex.exec(line);
@@ -303,10 +325,34 @@ class Playground extends React.Component<Props, State> {
                 break;
             }
         }
+        let addClass = '';
+        if (this.state.outputHighlight) {
+            switch (markingColor) {
+                case 1:
+                    addClass = 'eval-success';
+                    break;
+                case 2:
+                    addClass = 'eval-success-odd';
+                    break;
+                case 3:
+                    addClass = 'eval-fail';
+                    break;
+                default:
+                    break; // Y U WANT DEFAULT
+            }
+        }
         if (items.length === 0) {
-            return <div key={line + (key++)}><div className="miniSpacer" /></div>;
+            return [(
+                <div className={addClass} key={line + (key++)}>
+                    <div className="miniSpacer" />
+                </div>
+            ), markingColor];
         } else {
-            return <div key={line + (key++)}>{items}</div>;
+            return [(
+                <div className={addClass} key={line + (key++)}>
+                    {items}
+                </div>
+            ), markingColor];
         }
     }
 }
