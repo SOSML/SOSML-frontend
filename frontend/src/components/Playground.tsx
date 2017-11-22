@@ -325,17 +325,17 @@ class Playground extends React.Component<Props, State> {
                 break;
             }
         }
-        let addClass = '';
+        let addClass = 'pre-reset ';
         if (this.state.outputHighlight) {
             switch (markingColor) {
                 case 1:
-                    addClass = 'eval-success';
+                    addClass += 'eval-success';
                     break;
                 case 2:
-                    addClass = 'eval-success-odd';
+                    addClass += 'eval-success-odd';
                     break;
                 case 3:
-                    addClass = 'eval-fail';
+                    addClass += 'eval-fail';
                     break;
                 default:
                     break; // Y U WANT DEFAULT
@@ -343,15 +343,15 @@ class Playground extends React.Component<Props, State> {
         }
         if (items.length === 0) {
             return [(
-                <div className={addClass} key={line + (key++)}>
+                <pre className={addClass} key={line + (key++)}>
                     <div className="miniSpacer" />
-                </div>
+                </pre>
             ), markingColor];
         } else {
             return [(
-                <div className={addClass} key={line + (key++)}>
+                <pre className={addClass} key={line + (key++)}>
                     {items}
-                </div>
+                </pre>
             ), markingColor];
         }
     }
