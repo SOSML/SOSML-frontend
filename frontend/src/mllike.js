@@ -43,8 +43,13 @@
             }
         }
 
+<<<<<<< HEAD
         var interfaceSettings = localStorage.getItem('interfaceSettings');
         var autoIndent = true;
+=======
+        let interfaceSettings = localStorage.getItem('interfaceSettings');
+        let autoIndent = true;
+>>>>>>> master
         if (typeof interfaceSettings === 'string') {
             autoIndent = !!JSON.parse(interfaceSettings).autoIndent;
         }
