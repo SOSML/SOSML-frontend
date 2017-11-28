@@ -31,11 +31,10 @@ class RootPage extends React.Component<any, any> {
                     <Route path="/file/:name" component={FileIntermediate} />
                     <Route path="/examplefile/:name" component={FileIntermediate} />
                     <Route path="/share/:hash" component={Editor} />
-
                     <div className="footer">
-                        © 2018 <a href="https://github.com/SOSML">Die SOSML Entwickler
-                        </a> | <a href="https://github.com/SOSML/SOSML">Quellcode auf GitHub
-                        </a> | <a href="https://github.com/SOSML/SOSML/issues">Einen Fehler melden</a>
+                        © 2018 <a href="https://github.com/SOSML">The SOSML developers</a> | <a
+                        href="https://github.com/SOSML/SOSML">Sources on GitHub</a> | <a
+                        href="https://github.com/SOSML/SOSML/issues">Report a bug</a>
                     </div>
                 </div>
             </Router>
