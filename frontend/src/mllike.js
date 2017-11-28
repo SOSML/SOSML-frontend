@@ -43,6 +43,12 @@
             }
         }
 
+        let interfaceSettings = localStorage.getItem('interfaceSettings');
+        let autoIndent = true;
+        if (typeof interfaceSettings === 'string') {
+            autoIndent = !!JSON.parse(interfaceSettings).autoIndent;
+        }
+
         function tokenBase(stream, state) {
             var ch = stream.next();
 
@@ -83,7 +89,7 @@
                 stream.eatWhile(/[\w\xa1-\uffff]/);
                 var cur = stream.current();
                 if (words.hasOwnProperty(cur)) {
-                    if (stream.eol() && (cur == 'let' || cur == 'in' ||cur == 'local')) {
+                    if (stream.eol() && autoIndent && (cur == 'let' || cur == 'in' ||cur == 'local' || cur == 'struct' || cur == 'sig')) {
                         state.indentHint += 2;
                     }
                     return words[cur];
@@ -132,9 +138,13 @@
                 return state.tokenize(stream, state);
             },
             indent: function(state, textAfter) {
+                if (autoIndent && (textAfter === 'in' || textAfter == 'end') && state.indentHint > 1) {
+                    state.indentHint -= 2;
+                }
                 return state.indentHint;
             },
 
+            electricInput: (autoIndent ? /(in|end)$/ : null),
             blockCommentStart: "(*",
             blockCommentEnd: "*)",
             lineComment: parserConfig.slashComments ? "//" : null
