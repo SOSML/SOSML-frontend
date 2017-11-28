@@ -18,6 +18,7 @@ interface InterfaceSettings {
     successColor1: string;
     successColor2: string;
     outputHighlight: boolean;
+    autoIndent: boolean;
 }
 
 interface State {
@@ -81,6 +82,10 @@ class Settings extends React.Component<any, State> {
                 <Checkbox checked={this.state.front.outputHighlight}
                     onChange={this.changeHandler('front', 'outputHighlight')}>
                     Farbige Ausgabe aktivieren
+                </Checkbox>
+                <Checkbox checked={this.state.front.autoIndent}
+                    onChange={this.changeHandler('front', 'autoIndent')}>
+                    Automatisches Einrücken aktivieren
                 </Checkbox> <br />
                 <Checkbox checked={this.state.inter.disableElaboration}
                     onChange={this.changeHandler('inter', 'disableElaboration')}>
@@ -184,7 +189,8 @@ class Settings extends React.Component<any, State> {
             errorColor: DEFAULT_ERROR_COLOR,
             successColor1: DEFAULT_SUCCESS_COLOR1,
             successColor2: DEFAULT_SUCCESS_COLOR2,
-            outputHighlight: true
+            outputHighlight: true,
+            autoIndent: true
         };
         this.fillObjectWithString(ret, str);
         return ret;
