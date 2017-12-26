@@ -20,4 +20,4 @@ yarn-error.log*
 
 __javascript__/
 
-./frontend/public/*.js
+public/*.js
