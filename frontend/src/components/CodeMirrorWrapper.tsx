@@ -3,6 +3,13 @@ import * as React from 'react';
 const CodeMirror: any = require('react-codemirror');
 require('codemirror/lib/codemirror.css');
 require('../mllike.js');
+
+/* imports for code folding */
+require('codemirror/addon/fold/foldgutter.js');
+require('codemirror/addon/fold/foldcode.js');
+require('codemirror/addon/fold/indent-fold.js');
+require('codemirror/addon/fold/foldgutter.css');
+
 require('codemirror/addon/edit/matchbrackets.js');
 import './CodeMirrorWrapper.css';
 
@@ -199,7 +206,11 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             tabSize: 2,
             matchBrackets: true,
             lineWrapping: true,
-            readOnly: this.props.readOnly ? true : false
+            readOnly: this.props.readOnly ? true : false,
+            foldGutter: true,
+            gutters: [
+                'CodeMirror-linenumbers', 'CodeMirror-foldgutter'
+            ]
         };
         this.evalHelper.setTimeout(this.props.timeout);
         let classAdd = '';
