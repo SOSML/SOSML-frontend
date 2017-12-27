@@ -147,7 +147,8 @@
             electricInput: (autoIndent ? /(in|end)$/ : null),
             blockCommentStart: "(*",
             blockCommentEnd: "*)",
-            lineComment: parserConfig.slashComments ? "//" : null
+            lineComment: parserConfig.slashComments ? "//" : null,
+            fold: "indent"
         };
     });
 
