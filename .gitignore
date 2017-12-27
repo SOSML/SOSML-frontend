@@ -19,5 +19,3 @@ yarn-error.log*
 \.idea/
 
 __javascript__/
-
-./frontend/public/*.js
