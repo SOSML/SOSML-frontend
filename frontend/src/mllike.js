@@ -11,7 +11,7 @@
 })(function(CodeMirror) {
     "use strict";
 
-    CodeMirror.defineMode('mllike', function(_config, parserConfig) {
+    CodeMirror.defineMode('mllike', function(config, parserConfig) {
         var words = {
             'let': 'keyword',
             'rec': 'keyword',
@@ -84,7 +84,7 @@
                 var cur = stream.current();
                 if (words.hasOwnProperty(cur)) {
                     if (stream.eol() && (cur == 'let' || cur == 'in' ||cur == 'local' || cur == 'struct' || cur == 'sig')) {
-                        state.indentHint += 2;
+                        state.indentHint += config.indentUnit;
                     }
                     return words[cur];
                 } else {
@@ -132,8 +132,8 @@
                 return state.tokenize(stream, state);
             },
             indent: function(state, textAfter) {
-                if ((textAfter === 'in' || textAfter == 'end') && state.indentHint > 1) {
-                    state.indentHint -= 2;
+                if ((textAfter === 'in' || textAfter == 'end') && state.indentHint > config.indentUnit) {
+                    state.indentHint -= config.indentUnit;
                 }
                 return state.indentHint;
             },
