@@ -29,13 +29,17 @@
                 type: 'keyword'
             },
             'if': {
-                type: 'keyword'
+                type: 'keyword',
+                indent: true
             },
             'then': {
-                type: 'keyword'
+                type: 'keyword',
+                indent: true
             },
             'else': {
-                type: 'keyword'
+                type: 'keyword',
+                indent: true,
+                dedent: true
             },
             'for': {
                 type: 'keyword'
@@ -50,10 +54,12 @@
                 type: 'keyword'
             },
             'fun': {
-                type: 'keyword'
+                type: 'keyword',
+                indent: true
             },
             'val': {
-                type: 'keyword'
+                type: 'keyword',
+                indent: true
             },
             'type': {
                 type: 'keyword'
@@ -85,6 +91,31 @@
                 words[prop] = parserConfig.extraWords[prop];
             }
         }
+
+        var electricRegex = "(";
+        //generate electricInput regular expression
+        for (var word in words) {
+            //go through all words and test if they have the dedent property set
+            if (words.hasOwnProperty(word)) {
+                var wordObject = words[word];
+
+                //if it is set, add them to the regex
+                if (wordObject.hasOwnProperty('dedent') && wordObject.dedent) {
+                    electricRegex += word + '|';
+                }
+
+            }
+        }
+
+        //cut off the last trailing |
+        var regexLength = electricRegex.length;
+        //do not cut off the last character if no word has been added to the regex
+        if (regexLength > 1) {
+            //cut off the last character
+            electricRegex = electricRegex.slice(0,-1);
+        }
+        //finish the regex
+        electricRegex += ')$';
 
         /* Use large numbers to see easily possible misuse */
         const INDENT_OPTIONS = {INDENT: 10, DEDENT: 20, STAY: 30};
@@ -129,6 +160,8 @@
                 return 'number';
             }
             if ( /[+\-*&%=<>!?|]/.test(ch)) {
+                state.indentHint = INDENT_OPTIONS.INDENT;
+
                 return 'operator';
             }
 
@@ -146,6 +179,9 @@
                     }
                     return matchedObject.type;
                 } else {
+
+                    state.indentHint = INDENT_OPTIONS.STAY;
+
                     return 'variable';
                 }
             }
@@ -243,7 +279,7 @@
                 }
             },
 
-            electricInput: /(in|end)$/,
+            electricInput: new RegExp(electricRegex),
             blockCommentStart: "(*",
             blockCommentEnd: "*)",
             lineComment: parserConfig.slashComments ? "//" : null
