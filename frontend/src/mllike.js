@@ -13,27 +13,68 @@
 
     CodeMirror.defineMode('mllike', function(config, parserConfig) {
         var words = {
-            'let': 'keyword',
-            'rec': 'keyword',
-            'in': 'keyword',
-            'of': 'keyword',
-            'and': 'keyword',
-            'if': 'keyword',
-            'then': 'keyword',
-            'else': 'keyword',
-            'for': 'keyword',
-            'do': 'keyword',
-            'of': 'keyword',
-            'while': 'keyword',
-            'fun': 'keyword',
-            'val': 'keyword',
-            'type': 'keyword',
-            'match': 'keyword',
-            'with': 'keyword',
-            'try': 'keyword',
-            'open': 'builtin',
-            'begin': 'keyword',
-            'end': 'keyword'
+            'let': {
+                type: 'keyword',
+                indent: true
+            },
+            'rec': {
+                type: 'keyword'
+            },
+            'in': {
+                type: 'keyword',
+                indent: true
+            },
+            'and': {
+                type: 'keyword'
+            },
+            'if': {
+                type: 'keyword'
+            },
+            'then': {
+                type: 'keyword'
+            },
+            'else': {
+                type: 'keyword'
+            },
+            'for': {
+                type: 'keyword'
+            },
+            'do': {
+                type: 'keyword'
+            },
+            'of': {
+                type: 'keyword'
+            },
+            'while': {
+                type: 'keyword'
+            },
+            'fun': {
+                type: 'keyword'
+            },
+            'val': {
+                type: 'keyword'
+            },
+            'type': {
+                type: 'keyword'
+            },
+            'match': {
+                type: 'keyword'
+            },
+            'with': {
+                type: 'keyword'
+            },
+            'try': {
+                type: 'keyword'
+            },
+            'open': {
+                type: 'builtin'
+            },
+            'begin': {
+                type: 'keyword'
+            },
+            'end': {
+                type: 'keyword'
+            }
         };
 
         var extraWords = parserConfig.extraWords || {};
@@ -41,6 +82,16 @@
             if (extraWords.hasOwnProperty(prop)) {
                 words[prop] = parserConfig.extraWords[prop];
             }
+        }
+
+        function decreaseIndent (indentHint) {
+            // decrease indent if it is possible
+            return (indentHint >= config.indentUnit)
+                ? indentHint - config.indentUnit : indentHint;
+        }
+
+        function increaseIndent (indentHint) {
+            return indentHint + config.indentUnit;
         }
 
         function tokenBase(stream, state) {
@@ -83,14 +134,23 @@
                 stream.eatWhile(/[\w\xa1-\uffff]/);
                 var cur = stream.current();
                 if (words.hasOwnProperty(cur)) {
-                    if (stream.eol() && (cur == 'let' || cur == 'in' ||cur == 'local' || cur == 'struct' || cur == 'sig')) {
-                        state.indentHint += config.indentUnit;
+
+                    var matchedObject = words[cur];
+                    var shouldIndent = matchedObject.hasOwnProperty('indent')
+                        && matchedObject.indent;
+
+                    if (stream.eol() && shouldIndent) {
+                        state.indentHint = increaseIndent(state.indentHint);
                     }
-                    return words[cur];
+                    return matchedObject.type;
                 } else {
                     return 'variable';
                 }
             }
+
+            // decrease the indent if no pattern matches
+            state.indentHint = decreaseIndent(state.indentHint);
+
             return null;
         }
 
@@ -132,8 +192,8 @@
                 return state.tokenize(stream, state);
             },
             indent: function(state, textAfter) {
-                if ((textAfter === 'in' || textAfter == 'end') && state.indentHint > config.indentUnit) {
-                    state.indentHint -= config.indentUnit;
+                if (textAfter === 'in' || textAfter == 'end') {
+                    state.indentHint = decreaseIndent(state.indentHint);
                 }
                 return state.indentHint;
             },
@@ -148,128 +208,346 @@
     CodeMirror.defineMIME('text/x-ocaml', {
         name: 'mllike',
         extraWords: {
-            'succ': 'keyword',
-            'trace': 'builtin',
-            'exit': 'builtin',
-            'print_string': 'builtin',
-            'print_endline': 'builtin',
-            'true': 'atom',
-            'false': 'atom',
-            'raise': 'keyword'
+            'succ': {
+                type: 'keyword'
+            },
+            'trace': {
+                type: 'builtin'
+            },
+            'exit': {
+                type: 'builtin'
+            },
+            'print_string': {
+                type: 'builtin'
+            },
+            'print_endline': {
+                type: 'builtin'
+            },
+            'true': {
+                type: 'atom'
+            },
+            'false': {
+                type: 'atom'
+            },
+            'raise': {
+                type: 'keyword'
+            }
         }
     });
 
     CodeMirror.defineMIME('text/sml', {
         name: 'mllike',
         extraWords: {
-            'datatype': 'keyword',
-            'abstype': 'keyword',
-            'exception': 'keyword',
-            'local': 'keyword',
-            'eqtype': 'keyword',
-            'functor': 'keyword',
-            'include': 'keyword',
-            'sharing': 'keyword',
-            'sig': 'keyword',
-            'signature': 'keyword',
-            'struct': 'keyword',
-            'structure': 'keyword',
-            'where': 'keyword',
-            'andalso': 'keyword',
-            'as': 'keyword',
-            'case': 'keyword',
-            'fn': 'keyword',
-            'handle': 'keyword',
-            'infix': 'keyword',
-            'infixr': 'keyword',
-            'nonfix': 'keyword',
-            'op': 'keyword',
-            'orelse': 'keyword',
-            'raise': 'keyword',
-            'rec': 'keyword',
-            'withtype': 'keyword',
-            ':>': 'keyword',
-            '...': 'keyword',
-            '_': 'keyword',
+            'datatype': {
+                type: 'keyword'
+            },
+            'abstype': {
+                type: 'keyword'
+            },
+            'exception': {
+                type: 'keyword'
+            },
+            'local': {
+                type: 'keyword',
+                indent: true
+            },
+            'eqtype': {
+                type: 'keyword'
+            },
+            'functor': {
+                type: 'keyword'
+            },
+            'include': {
+                type: 'keyword'
+            },
+            'sharing': {
+                type: 'keyword'
+            },
+            'sig': {
+                type: 'keyword',
+                indent: true
+            },
+            'signature': {
+                type: 'keyword'
+            },
+            'struct': {
+                type: 'keyword',
+                indent: true
+            },
+            'structure': {
+                type: 'keyword'
+            },
+            'where': {
+                type: 'keyword'
+            },
+            'andalso': {
+                type: 'keyword'
+            },
+            'as': {
+                type: 'keyword'
+            },
+            'case': {
+                type: 'keyword'
+            },
+            'fn': {
+                type: 'keyword'
+            },
+            'handle': {
+                type: 'keyword'
+            },
+            'infix': {
+                type: 'keyword'
+            },
+            'infixr': {
+                type: 'keyword'
+            },
+            'nonfix': {
+                type: 'keyword'
+            },
+            'op': {
+                type: 'keyword'
+            },
+            'orelse': {
+                type: 'keyword'
+            },
+            'raise': {
+                type: 'keyword'
+            },
+            'rec': {
+                type: 'keyword'
+            },
+            'withtype': {
+                type: 'keyword'
+            },
+            ':>': {
+                type: 'keyword'
+            },
+            '...': {
+                type: 'keyword'
+            },
+            '_': {
+                type: 'keyword'
+            },
 
-            'unit': 'builtin',
-            'bool': 'builtin',
-            'int': 'builtin',
-            'word': 'builtin',
-            'real': 'builtin',
-            'string': 'builtin',
-            'char': 'builtin',
-            'list': 'builtin',
-            'ref': 'builtin',
-            'exn': 'builtin',
+            'unit': {
+                type: 'builtin'
+            },
+            'bool': {
+                type: 'builtin'
+            },
+            'int': {
+                type: 'builtin'
+            },
+            'word': {
+                type: 'builtin'
+            },
+            'real': {
+                type: 'builtin'
+            },
+            'string': {
+                type: 'builtin'
+            },
+            'char': {
+                type: 'builtin'
+            },
+            'list': {
+                type: 'builtin'
+            },
+            'ref': {
+                type: 'builtin'
+            },
+            'exn': {
+                type: 'builtin'
+            },
 
-            'true': 'atom',
-            'false': 'atom',
-            'nil': 'atom',
-            '::': 'atom',
-            'Bind': 'atom',
-            'div': 'atom',
-            'mod': 'atom',
-            'abs': 'atom',
-            'Match': 'atom'
+            'true': {
+                type: 'atom'
+            },
+            'false': {
+                type: 'atom'
+            },
+            'nil': {
+                type: 'atom'
+            },
+            '::': {
+                type: 'atom'
+            },
+            'Bind': {
+                type: 'atom'
+            },
+            'div': {
+                type: 'atom'
+            },
+            'mod': {
+                type: 'atom'
+            },
+            'abs': {
+                type: 'atom'
+            },
+            'Match': {
+                type: 'atom'
+            }
         }
     });
 
     CodeMirror.defineMIME('text/x-fsharp', {
         name: 'mllike',
         extraWords: {
-            'abstract': 'keyword',
-            'as': 'keyword',
-            'assert': 'keyword',
-            'base': 'keyword',
-            'class': 'keyword',
-            'default': 'keyword',
-            'delegate': 'keyword',
-            'downcast': 'keyword',
-            'downto': 'keyword',
-            'elif': 'keyword',
-            'exception': 'keyword',
-            'extern': 'keyword',
-            'finally': 'keyword',
-            'global': 'keyword',
-            'inherit': 'keyword',
-            'inline': 'keyword',
-            'interface': 'keyword',
-            'internal': 'keyword',
-            'lazy': 'keyword',
-            'let!': 'keyword',
-            'member' : 'keyword',
-            'module': 'keyword',
-            'namespace': 'keyword',
-            'new': 'keyword',
-            'null': 'keyword',
-            'override': 'keyword',
-            'private': 'keyword',
-            'public': 'keyword',
-            'return': 'keyword',
-            'return!': 'keyword',
-            'select': 'keyword',
-            'static': 'keyword',
-            'struct': 'keyword',
-            'upcast': 'keyword',
-            'use': 'keyword',
-            'use!': 'keyword',
-            'val': 'keyword',
-            'when': 'keyword',
-            'yield': 'keyword',
-            'yield!': 'keyword',
+            'abstract': {
+                type: 'keyword'
+            },
+            'as': {
+                type: 'keyword'
+            },
+            'assert': {
+                type: 'keyword'
+            },
+            'base': {
+                type: 'keyword'
+            },
+            'class': {
+                type: 'keyword'
+            },
+            'default': {
+                type: 'keyword'
+            },
+            'delegate': {
+                type: 'keyword'
+            },
+            'downcast': {
+                type: 'keyword'
+            },
+            'downto': {
+                type: 'keyword'
+            },
+            'elif': {
+                type: 'keyword'
+            },
+            'exception': {
+                type: 'keyword'
+            },
+            'extern': {
+                type: 'keyword'
+            },
+            'finally': {
+                type: 'keyword'
+            },
+            'global': {
+                type: 'keyword'
+            },
+            'inherit': {
+                type: 'keyword'
+            },
+            'inline': {
+                type: 'keyword'
+            },
+            'interface': {
+                type: 'keyword'
+            },
+            'internal': {
+                type: 'keyword'
+            },
+            'lazy': {
+                type: 'keyword'
+            },
+            'let!': {
+                type: 'keyword'
+            },
+            'member' : {
+                type: 'keyword'
+            },
+            'module': {
+                type: 'keyword'
+            },
+            'namespace': {
+                type: 'keyword'
+            },
+            'new': {
+                type: 'keyword'
+            },
+            'null': {
+                type: 'keyword'
+            },
+            'override': {
+                type: 'keyword'
+            },
+            'private': {
+                type: 'keyword'
+            },
+            'public': {
+                type: 'keyword'
+            },
+            'return': {
+                type: 'keyword'
+            },
+            'return!': {
+                type: 'keyword'
+            },
+            'select': {
+                type: 'keyword'
+            },
+            'static': {
+                type: 'keyword'
+            },
+            'struct': {
+                type: 'keyword',
+                indent: true
+            },
+            'upcast': {
+                type: 'keyword'
+            },
+            'use': {
+                type: 'keyword'
+            },
+            'use!': {
+                type: 'keyword'
+            },
+            'val': {
+                type: 'keyword'
+            },
+            'when': {
+                type: 'keyword'
+            },
+            'yield': {
+                type: 'keyword'
+            },
+            'yield!': {
+                type: 'keyword'
+            },
 
-            'List': 'builtin',
-            'Seq': 'builtin',
-            'Map': 'builtin',
-            'Set': 'builtin',
-            'int': 'builtin',
-            'string': 'builtin',
-            'raise': 'builtin',
-            'failwith': 'builtin',
-            'not': 'builtin',
-            'true': 'builtin',
-            'false': 'builtin'
+            'List': {
+                type: 'builtin'
+            },
+            'Seq': {
+                type: 'builtin'
+            },
+            'Map': {
+                type: 'builtin'
+            },
+            'Set': {
+                type: 'builtin'
+            },
+            'int': {
+                type: 'builtin'
+            },
+            'string': {
+                type: 'builtin'
+            },
+            'raise': {
+                type: 'builtin'
+            },
+            'failwith': {
+                type: 'builtin'
+            },
+            'not': {
+                type: 'builtin'
+            },
+            'true': {
+                type: 'builtin'
+            },
+            'false': {
+                type: 'builtin'
+            }
         },
         slashComments: true
     });
