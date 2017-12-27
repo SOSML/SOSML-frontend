@@ -22,7 +22,8 @@
             },
             'in': {
                 type: 'keyword',
-                indent: true
+                indent: true,
+                dedent: true
             },
             'and': {
                 type: 'keyword'
@@ -73,7 +74,8 @@
                 type: 'keyword'
             },
             'end': {
-                type: 'keyword'
+                type: 'keyword',
+                dedent: true
             }
         };
 
@@ -84,15 +86,8 @@
             }
         }
 
-        function decreaseIndent (indentHint) {
-            // decrease indent if it is possible
-            return (indentHint >= config.indentUnit)
-                ? indentHint - config.indentUnit : indentHint;
-        }
-
-        function increaseIndent (indentHint) {
-            return indentHint + config.indentUnit;
-        }
+        /* Use large numbers to see easily possible misuse */
+        const INDENT_OPTIONS = {INDENT: 10, DEDENT: 20, STAY: 30};
 
         function tokenBase(stream, state) {
             var ch = stream.next();
@@ -120,16 +115,23 @@
                 stream.skipToEnd();
                 return 'comment';
             }
+
+            /* match digits */
             if (/\d/.test(ch)) {
                 stream.eatWhile(/[\d]/);
+                /* match floating numbers */
                 if (stream.eat('.')) {
                     stream.eatWhile(/[\d]/);
                 }
+
+                state.indentHint = INDENT_OPTIONS.STAY;
+
                 return 'number';
             }
             if ( /[+\-*&%=<>!?|]/.test(ch)) {
                 return 'operator';
             }
+
             if (/[\w\xa1-\uffff]/.test(ch)) {
                 stream.eatWhile(/[\w\xa1-\uffff]/);
                 var cur = stream.current();
@@ -140,7 +142,7 @@
                         && matchedObject.indent;
 
                     if (stream.eol() && shouldIndent) {
-                        state.indentHint = increaseIndent(state.indentHint);
+                        state.indentHint = INDENT_OPTIONS.INDENT;
                     }
                     return matchedObject.type;
                 } else {
@@ -149,7 +151,7 @@
             }
 
             // decrease the indent if no pattern matches
-            state.indentHint = decreaseIndent(state.indentHint);
+            state.indentHint = INDENT_OPTIONS.DEDENT;
 
             return null;
         }
@@ -183,19 +185,62 @@
         }
 
         return {
-            startState: function() {return {tokenize: tokenBase, commentLevel: 0, indentHint: 0};},
+            startState: function() {
+                return {
+                    tokenize: tokenBase,
+                    commentLevel: 0,
+                    /*
+                    This will be overwritten in the token function with
+                    the indentation of the current line.
+                     */
+                    indent: 0,
+                    /*
+                    Since there are only three useful possibilities
+                    (increase indent, decrease indent, same indent)
+                    this should be enough. Following functions like
+                    tokenBase() or indent() may overwrite this value
+                    before indent() calculates the real indent of the
+                    next line out of this value together with the indent
+                    of the current line.
+                     */
+                    indentHint: INDENT_OPTIONS.STAY
+                };
+            },
             token: function(stream, state) {
                 if (stream.sol()) {
-                    state.indentHint = stream.indentation();
+                    //save the current indentation
+                    state.indent = stream.indentation();
                 }
                 if (stream.eatSpace()) return null;
                 return state.tokenize(stream, state);
             },
             indent: function(state, textAfter) {
-                if (textAfter === 'in' || textAfter == 'end') {
-                    state.indentHint = decreaseIndent(state.indentHint);
+
+                if (words.hasOwnProperty(textAfter)) {
+
+                    const matchedObject = words[textAfter];
+
+                    const shouldDedent = matchedObject.hasOwnProperty('dedent')
+                        && matchedObject.dedent;
+
+                    if (shouldDedent) {
+                        state.indentHint = INDENT_OPTIONS.DEDENT;
+                    }
                 }
-                return state.indentHint;
+
+                switch (state.indentHint) {
+                    case INDENT_OPTIONS.DEDENT:
+                        //decrease the indent if possible
+                        return state.indent >= config.indentUnit ?
+                            (state.indent - config.indentUnit)
+                            : state.indent;
+
+                    case INDENT_OPTIONS.INDENT:
+                        return state.indent + config.indentUnit;
+
+                    default:
+                        return state.indent;
+                }
             },
 
             electricInput: /(in|end)$/,
