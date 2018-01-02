@@ -15,31 +15,31 @@
         var words = {
             'let': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'rec': {
                 type: 'keyword'
             },
             'in': {
                 type: 'keyword',
-                indent: true,
-                dedent: true
+                indentNewLine: true,
+                dedentCurrentLine: true
             },
             'and': {
                 type: 'keyword'
             },
             'if': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'then': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'else': {
                 type: 'keyword',
-                indent: true,
-                dedent: true
+                indentNewLine: true,
+                dedentCurrentLine: true
             },
             'for': {
                 type: 'keyword'
@@ -55,11 +55,11 @@
             },
             'fun': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'val': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'type': {
                 type: 'keyword'
@@ -81,7 +81,8 @@
             },
             'end': {
                 type: 'keyword',
-                dedent: true
+                dedentCurrentLine: true,
+                dedentNewLine: true
             }
         };
 
@@ -100,7 +101,7 @@
                 var wordObject = words[word];
 
                 //if it is set, add them to the regex
-                if (wordObject.hasOwnProperty('dedent') && wordObject.dedent) {
+                if (wordObject.hasOwnProperty('dedentCurrentLine') && wordObject.dedentCurrentLine) {
                     electricRegex += word + '|';
                 }
 
@@ -116,9 +117,6 @@
         }
         //finish the regex
         electricRegex += ')$';
-
-        /* Use large numbers to see easily possible misuse */
-        const INDENT_OPTIONS = {INDENT: 10, DEDENT: 20, STAY: 30};
 
         function tokenBase(stream, state) {
             var ch = stream.next();
@@ -155,12 +153,13 @@
                     stream.eatWhile(/[\d]/);
                 }
 
-                state.indentHint = INDENT_OPTIONS.STAY;
+                state.indentChange -= config.indentUnit;
 
                 return 'number';
             }
             if ( /[+\-*&%=<>!?|]/.test(ch)) {
-                state.indentHint = INDENT_OPTIONS.INDENT;
+
+                state.indentChange += config.indentUnit;
 
                 return 'operator';
             }
@@ -168,26 +167,35 @@
             if (/[\w\xa1-\uffff]/.test(ch)) {
                 stream.eatWhile(/[\w\xa1-\uffff]/);
                 var cur = stream.current();
+
                 if (words.hasOwnProperty(cur)) {
 
                     var matchedObject = words[cur];
-                    var shouldIndent = matchedObject.hasOwnProperty('indent')
-                        && matchedObject.indent;
+                    var shouldIndent = matchedObject.hasOwnProperty('indentNewLine')
+                        && matchedObject.indentNewLine;
 
-                    if (stream.eol() && shouldIndent) {
-                        state.indentHint = INDENT_OPTIONS.INDENT;
+                    if (shouldIndent) {
+                        state.indentChange += config.indentUnit;
                     }
+
+                    var shouldDedent = matchedObject.hasOwnProperty('dedentNewLine')
+                        && matchedObject.dedentNewLine;
+
+                    if (shouldDedent) {
+                        state.indentChange -= config.indentUnit;
+                    }
+
                     return matchedObject.type;
                 } else {
 
-                    state.indentHint = INDENT_OPTIONS.STAY;
+                    //prevent multiple - when functions they have arguments
+                    if (state.indentChange > 0) {
+                        state.indentChange -= config.indentUnit;
+                    }
 
                     return 'variable';
                 }
             }
-
-            // decrease the indent if no pattern matches
-            state.indentHint = INDENT_OPTIONS.DEDENT;
 
             return null;
         }
@@ -229,23 +237,23 @@
                     This will be overwritten in the token function with
                     the indentation of the current line.
                      */
-                    indent: 0,
+                    currentIndent: 0,
                     /*
-                    Since there are only three useful possibilities
-                    (increase indent, decrease indent, same indent)
-                    this should be enough. Following functions like
-                    tokenBase() or indent() may overwrite this value
-                    before indent() calculates the real indent of the
-                    next line out of this value together with the indent
-                    of the current line.
+                    The change for the next line will be saved here.
+                    Following functions like tokenBase() or indent()
+                    may overwrite this value before indent() calculates
+                    the real indent of the next line out of this value
+                    together with the indent of the current line.
                      */
-                    indentHint: INDENT_OPTIONS.STAY
+                    indentChange: 0
                 };
             },
             token: function(stream, state) {
                 if (stream.sol()) {
                     //save the current indentation
-                    state.indent = stream.indentation();
+                    state.currentIndent = stream.indentation();
+                    //reset the indentation change from the line before
+                    state.indentChange = 0;
                 }
                 if (stream.eatSpace()) return null;
                 return state.tokenize(stream, state);
@@ -256,27 +264,25 @@
 
                     const matchedObject = words[textAfter];
 
-                    const shouldDedent = matchedObject.hasOwnProperty('dedent')
-                        && matchedObject.dedent;
+                    const shouldDedent = matchedObject.hasOwnProperty('dedentCurrentLine')
+                        && matchedObject.dedentCurrentLine;
 
                     if (shouldDedent) {
-                        state.indentHint = INDENT_OPTIONS.DEDENT;
+                        state.indentChange -= config.indentUnit;
                     }
                 }
 
-                switch (state.indentHint) {
-                    case INDENT_OPTIONS.DEDENT:
-                        //decrease the indent if possible
-                        return state.indent >= config.indentUnit ?
-                            (state.indent - config.indentUnit)
-                            : state.indent;
+                const barPosition = textAfter.indexOf('|');
 
-                    case INDENT_OPTIONS.INDENT:
-                        return state.indent + config.indentUnit;
-
-                    default:
-                        return state.indent;
+                //test if it is the only occurrence of |
+                if (barPosition !== -1 && barPosition !== textAfter.lastIndexOf('|')) {
+                    state.indentChange += config.indentUnit;
                 }
+
+                var newIndent = state.currentIndent + state.indentChange;
+
+                //return 0 if the new indent is smaller than 0
+                return newIndent < 0 ? 0 : newIndent;
             },
 
             electricInput: new RegExp(electricRegex),
@@ -411,28 +417,36 @@
             },
 
             'unit': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'bool': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'int': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'word': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'real': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'string': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'char': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'list': {
-                type: 'builtin'
+                type: 'builtin',
+                dedentNewLine: true
             },
             'ref': {
                 type: 'builtin'
@@ -442,10 +456,12 @@
             },
 
             'true': {
-                type: 'atom'
+                type: 'atom',
+                dedentNewLine: true
             },
             'false': {
-                type: 'atom'
+                type: 'atom',
+                dedentNewLine: true
             },
             'nil': {
                 type: 'atom'
