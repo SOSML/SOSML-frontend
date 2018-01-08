@@ -179,7 +179,7 @@
                     }
                     return matchedObject.type;
                 } else {
-
+                    //TODO: this will overwrite if expressions, because there will likely contain a variable
                     state.indentHint = INDENT_OPTIONS.STAY;
 
                     return 'variable';
@@ -238,6 +238,7 @@
                     before indent() calculates the real indent of the
                     next line out of this value together with the indent
                     of the current line.
+                    This property is only used at the beginning of the document
                      */
                     indentHint: INDENT_OPTIONS.STAY
                 };
@@ -246,6 +247,8 @@
                 if (stream.sol()) {
                     //save the current indentation
                     state.indent = stream.indentation();
+                    // overwrite the value after each line
+                    state.indentHint = INDENT_OPTIONS.STAY;
                 }
                 if (stream.eatSpace()) return null;
                 return state.tokenize(stream, state);
