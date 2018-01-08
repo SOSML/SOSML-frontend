@@ -464,7 +464,8 @@
                 dedentNewLine: true
             },
             'nil': {
-                type: 'atom'
+                type: 'atom',
+                dedentNewLine: true
             },
             '::': {
                 type: 'atom'
