@@ -86,6 +86,20 @@
             }
         };
 
+        function decreaseIndentIfPositive (state) {
+            if (state.indentChange > 0) {
+                state.indentChange -= config.indentUnit;
+            }
+        }
+
+        function increaseIndent (state) {
+            state.indentChange += config.indentUnit;
+        }
+
+        function decreaseIndent (state) {
+            state.indentChange -= config.indentUnit;
+        }
+
         var extraWords = parserConfig.extraWords || {};
         for (var prop in extraWords) {
             if (extraWords.hasOwnProperty(prop)) {
@@ -153,13 +167,13 @@
                     stream.eatWhile(/[\d]/);
                 }
 
-                state.indentChange -= config.indentUnit;
+                decreaseIndentIfPositive(state);
 
                 return 'number';
             }
             if ( /[+\-*&%=<>!?|]/.test(ch)) {
 
-                state.indentChange += config.indentUnit;
+                increaseIndent(state);
 
                 return 'operator';
             }
@@ -175,23 +189,20 @@
                         && matchedObject.indentNewLine;
 
                     if (shouldIndent) {
-                        state.indentChange += config.indentUnit;
+                        increaseIndent(state);
                     }
 
                     var shouldDedent = matchedObject.hasOwnProperty('dedentNewLine')
                         && matchedObject.dedentNewLine;
 
                     if (shouldDedent) {
-                        state.indentChange -= config.indentUnit;
+                        decreaseIndent(state);
                     }
 
                     return matchedObject.type;
                 } else {
 
-                    //prevent multiple - when functions they have arguments
-                    if (state.indentChange > 0) {
-                        state.indentChange -= config.indentUnit;
-                    }
+                    decreaseIndentIfPositive(state);
 
                     return 'variable';
                 }
@@ -268,7 +279,7 @@
                         && matchedObject.dedentCurrentLine;
 
                     if (shouldDedent) {
-                        state.indentChange -= config.indentUnit;
+                        decreaseIndent(state);
                     }
                 }
 
@@ -276,7 +287,7 @@
 
                 //test if it is the only occurrence of |
                 if (barPosition !== -1 && barPosition !== textAfter.lastIndexOf('|')) {
-                    state.indentChange += config.indentUnit;
+                    increaseIndent(state);
                 }
 
                 var newIndent = state.currentIndent + state.indentChange;
