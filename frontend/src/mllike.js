@@ -11,6 +11,8 @@
 })(function(CodeMirror) {
     "use strict";
 
+    //ideas: lock indent between if and then, work more with regex, mod etc...
+
     CodeMirror.defineMode('mllike', function(config, parserConfig) {
         var expressions = {
             // match a line beginning with 0 or more whitespaces
@@ -388,7 +390,7 @@
             },
             'local': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'eqtype': {
                 type: 'keyword'
@@ -404,14 +406,14 @@
             },
             'sig': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'signature': {
                 type: 'keyword'
             },
             'struct': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'structure': {
                 type: 'keyword'
@@ -641,7 +643,7 @@
             },
             'struct': {
                 type: 'keyword',
-                indent: true
+                indentNewLine: true
             },
             'upcast': {
                 type: 'keyword'
