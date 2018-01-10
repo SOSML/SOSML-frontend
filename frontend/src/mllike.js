@@ -129,8 +129,8 @@
             //cut off the last character
             electricRegex = electricRegex.slice(0,-1);
         }
-        //finish the regex
-        electricRegex += ')$';
+        //finish the regex and add the | character to it
+        electricRegex += '|\\|)$';
 
         function tokenBase(stream, state) {
             var ch = stream.next();
@@ -283,10 +283,8 @@
                     }
                 }
 
-                const barPosition = textAfter.indexOf('|');
-
-                //test if it is the only occurrence of |
-                if (barPosition !== -1 && barPosition !== textAfter.lastIndexOf('|')) {
+                //test if the lines begin with a |
+                if (/^\s*\|$/.test(textAfter)) {
                     increaseIndent(state);
                 }
 
