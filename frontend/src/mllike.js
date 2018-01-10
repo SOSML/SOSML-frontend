@@ -12,6 +12,14 @@
     "use strict";
 
     CodeMirror.defineMode('mllike', function(config, parserConfig) {
+        var expressions = {
+            // match a line beginning with 0 or more whitespaces
+            // and a vertical bar at the end
+            '^\\s*\\|': {
+                indentCurrentLine: true
+            }
+        };
+
         var words = {
             'let': {
                 type: 'keyword',
@@ -87,7 +95,7 @@
         };
 
         function decreaseIndentIfPositive (state) {
-            if (state.indentChange > 0) {
+            if (state.indentChange >= 0) {
                 state.indentChange -= config.indentUnit;
             }
         }
@@ -117,8 +125,23 @@
                 //if it is set, add them to the regex
                 if (wordObject.hasOwnProperty('dedentCurrentLine') && wordObject.dedentCurrentLine) {
                     electricRegex += word + '|';
+                } else if (wordObject.hasOwnProperty('indentCurrentLine') && wordObject.indentCurrentLine) {
+                    electricRegex += word + '|';
                 }
+            }
+        }
 
+        //do the same for the native regular expressions
+        for (var regex in expressions) {
+            if (expressions.hasOwnProperty(regex)) {
+                var regexObject = expressions[regex];
+
+                //if it is set, add them to the regex
+                if (regexObject.hasOwnProperty('dedentCurrentLine') && regexObject.dedentCurrentLine) {
+                    electricRegex += regex + '|';
+                } else if (regexObject.hasOwnProperty('indentCurrentLine') && regexObject.indentCurrentLine) {
+                    electricRegex += regex + '|';
+                }
             }
         }
 
@@ -129,8 +152,8 @@
             //cut off the last character
             electricRegex = electricRegex.slice(0,-1);
         }
-        //finish the regex and add the | character to it
-        electricRegex += '|\\|)$';
+        //finish the regex
+        electricRegex += ')$';
 
         function tokenBase(stream, state) {
             var ch = stream.next();
@@ -174,6 +197,14 @@
             if ( /[+\-*&%=<>!?|]/.test(ch)) {
 
                 increaseIndent(state);
+
+                if (ch === '=') {
+                    state.indentChange = 2;
+                }
+
+                if (ch === '=' && stream.eat('>')) {
+                    state.indentChange = 2;
+                }
 
                 return 'operator';
             }
@@ -283,9 +314,21 @@
                     }
                 }
 
-                //test if the lines begin with a |
-                if (/^\s*\|$/.test(textAfter)) {
-                    increaseIndent(state);
+                //do the same for the native regular expressions
+                for (var regex in expressions) {
+                    if (expressions.hasOwnProperty(regex)) {
+                        var regexObject = expressions[regex];
+
+                        if (!new RegExp(regex).test(textAfter))
+                            continue;
+
+                        //if it is set, add them to the regex
+                        if (regexObject.hasOwnProperty('dedentCurrentLine') && regexObject.dedentCurrentLine) {
+                            decreaseIndent(state);
+                        } else if (regexObject.hasOwnProperty('indentCurrentLine') && regexObject.indentCurrentLine) {
+                            increaseIndent(state);
+                        }
+                    }
                 }
 
                 var newIndent = state.currentIndent + state.indentChange;
