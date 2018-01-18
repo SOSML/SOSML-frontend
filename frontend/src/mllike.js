@@ -46,12 +46,12 @@
             },
             'then': {
                 type: 'keyword',
+                indentCurrentLine: true,
                 indentNewLine: true
             },
             'else': {
                 type: 'keyword',
                 indentNewLine: true,
-                dedentCurrentLine: true
             },
             'for': {
                 type: 'keyword'
@@ -336,6 +336,13 @@
 
                     if (shouldDedent) {
                         decreaseIndent(state);
+                    }
+
+                    const shouldIndent = matchedObject.hasOwnProperty('indentCurrentLine')
+                        && matchedObject.indentCurrentLine;
+
+                    if (shouldIndent) {
+                        increaseIndent(state);
                     }
                 }
 
