@@ -46,12 +46,11 @@
             },
             'then': {
                 type: 'keyword',
-                indentCurrentLine: true,
                 indentNewLine: true
             },
             'else': {
                 type: 'keyword',
-                indentNewLine: true,
+                indentNewLine: true
             },
             'for': {
                 type: 'keyword'
