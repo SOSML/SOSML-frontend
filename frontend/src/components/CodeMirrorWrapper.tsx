@@ -207,7 +207,9 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             matchBrackets: true,
             lineWrapping: true,
             readOnly: this.props.readOnly ? true : false,
-            foldGutter: true,
+            foldGutter: {
+                minFoldSize: 2
+            },
             gutters: [
                 'CodeMirror-linenumbers', 'CodeMirror-foldgutter'
             ]
