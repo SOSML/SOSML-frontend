@@ -11,9 +11,6 @@
 })(function(CodeMirror) {
     "use strict";
 
-    //ideas: lock indent between if and then, work more with regex, mod etc...
-    //bind some electricCharacters to line beginning / start only with whitespaces
-
     CodeMirror.defineMode('mllike', function(config, parserConfig) {
         var expressions = {
             // match a line beginning with 0 or more whitespaces
@@ -21,6 +18,12 @@
             '^\\s*\\|': {
                 indentCurrentLine: true,
                 dedentNewLine: true
+            },
+            // match a line beginning with 0 or more whitespaces
+            // and a end of block comment *)
+            '^\\s*\\*\\)': {
+                dedentCurrentLine: true,
+                allowInComments: true
             }
         };
 
@@ -119,9 +122,9 @@
         }
 
         var electricRegex = "(";
-        //generate electricInput regular expression
+        // generate electricInput regular expression
         for (var word in words) {
-            //go through all words and test if they have the dedent property set
+            // go through all words and test if they have the dedent property set
             if (words.hasOwnProperty(word)) {
                 var wordObject = words[word];
 
@@ -148,14 +151,14 @@
             }
         }
 
-        //cut off the last trailing |
+        // cut off the last trailing |
         var regexLength = electricRegex.length;
-        //do not cut off the last character if no word has been added to the regex
+        // do not cut off the last character if no word has been added to the regex
         if (regexLength > 1) {
             //cut off the last character
             electricRegex = electricRegex.slice(0,-1);
         }
-        //finish the regex
+        // finish the regex
         electricRegex += ')$';
 
         function tokenBase(stream, state) {
@@ -167,8 +170,12 @@
             }
             if (ch === '(') {
                 if (stream.eat('*')) {
+                    increaseIndent(state);
+
                     state.commentLevel++;
+                    // replace the tokenize function for the further characters
                     state.tokenize = tokenComment;
+
                     return state.tokenize(stream, state);
                 }
             }
@@ -263,11 +270,23 @@
         function tokenComment(stream, state) {
             var prev, next;
             while(state.commentLevel > 0 && (next = stream.next()) != null) {
-                if (prev === '(' && next === '*') state.commentLevel++;
-                if (prev === '*' && next === ')') state.commentLevel--;
+                if (prev === '(' && next === '*') {
+                    increaseIndent(state);
+                    state.commentLevel++;
+                }
+                if (prev === '*' && next === ')') {
+
+                    // decrease the indent manually if the electric regex does not
+                    if (!/'^\s*\*\)'/.test(stream.string)) {
+                        decreaseIndent(state);
+                    }
+
+                    state.commentLevel--;
+                }
                 prev = next;
             }
             if (state.commentLevel <= 0) {
+                // reset the tokenize function after the comment end
                 state.tokenize = tokenBase;
             }
             return 'comment';
@@ -278,18 +297,7 @@
                 return {
                     tokenize: tokenBase,
                     commentLevel: 0,
-                    /*
-                    This will be overwritten in the token function with
-                    the indentation of the current line.
-                     */
                     currentIndent: 0,
-                    /*
-                    The change for the next line will be saved here.
-                    Following functions like tokenBase() or indent()
-                    may overwrite this value before indent() calculates
-                    the real indent of the next line out of this value
-                    together with the indent of the current line.
-                     */
                     indentChange: 0
 
                 };
@@ -319,6 +327,7 @@
                         }
                     }
                 }
+
                 if (stream.eatSpace())
                     return null;
 
