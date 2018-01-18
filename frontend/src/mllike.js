@@ -59,7 +59,8 @@
                 type: 'keyword'
             },
             'of': {
-                type: 'keyword'
+                type: 'keyword',
+                indentCurrentLine: true
             },
             'while': {
                 type: 'keyword'
@@ -92,7 +93,6 @@
             },
             'end': {
                 type: 'keyword',
-                dedentCurrentLine: true,
                 dedentNewLine: true
             }
         };
@@ -457,7 +457,8 @@
                 type: 'keyword'
             },
             'case': {
-                type: 'keyword'
+                type: 'keyword',
+                indentNewLine: true
             },
             'fn': {
                 type: 'keyword'
