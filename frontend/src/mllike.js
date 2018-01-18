@@ -148,7 +148,7 @@
             blockCommentStart: "(*",
             blockCommentEnd: "*)",
             lineComment: parserConfig.slashComments ? "//" : null,
-            fold: "indent"
+            fold: "sml"
         };
     });
 

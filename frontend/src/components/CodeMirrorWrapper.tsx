@@ -7,7 +7,7 @@ require('../mllike.js');
 /* imports for code folding */
 require('codemirror/addon/fold/foldgutter.js');
 require('codemirror/addon/fold/foldcode.js');
-require('codemirror/addon/fold/indent-fold.js');
+require('../sml-fold.js');
 require('codemirror/addon/fold/foldgutter.css');
 
 require('codemirror/addon/edit/matchbrackets.js');
