@@ -12,13 +12,15 @@
     "use strict";
 
     //ideas: lock indent between if and then, work more with regex, mod etc...
+    //bind some electricCharacters to line beginning / start only with whitespaces
 
     CodeMirror.defineMode('mllike', function(config, parserConfig) {
         var expressions = {
             // match a line beginning with 0 or more whitespaces
             // and a vertical bar at the end
             '^\\s*\\|': {
-                indentCurrentLine: true
+                indentCurrentLine: true,
+                dedentNewLine: true
             }
         };
 
@@ -204,7 +206,7 @@
                     state.indentChange = 2;
                 }
 
-                if (ch === '=' && stream.eat('>')) {
+                if (ch === '=' && (stream.eat('>') || stream.eat('<'))) {
                     state.indentChange = 2;
                 }
 
@@ -257,7 +259,7 @@
                 state.tokenize = tokenBase;
             }
             return 'string';
-        };
+        }
 
         function tokenComment(stream, state) {
             var prev, next;
@@ -290,6 +292,7 @@
                     together with the indent of the current line.
                      */
                     indentChange: 0
+
                 };
             },
             token: function(stream, state) {
@@ -298,8 +301,28 @@
                     state.currentIndent = stream.indentation();
                     //reset the indentation change from the line before
                     state.indentChange = 0;
+
+                    for (var regex in expressions) {
+                        if (expressions.hasOwnProperty(regex)) {
+
+                            if(stream.match(new RegExp(regex), false)) {
+
+                                const regexObject = expressions[regex];
+
+                                const shouldDedent = regexObject.hasOwnProperty('dedentNewLine') && regexObject.dedentNewLine;
+
+                                /* Overwrite the start of the next line */
+                                if (shouldDedent) {
+                                    state.currentIndent -= config.indentUnit;
+                                }
+
+                            }
+                        }
+                    }
                 }
-                if (stream.eatSpace()) return null;
+                if (stream.eatSpace())
+                    return null;
+
                 return state.tokenize(stream, state);
             },
             indent: function(state, textAfter) {
