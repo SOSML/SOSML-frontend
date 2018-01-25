@@ -63,7 +63,7 @@
             },
             'of': {
                 type: 'keyword',
-                indentCurrentLine: true
+                indentNewLine: true
             },
             'while': {
                 type: 'keyword'
