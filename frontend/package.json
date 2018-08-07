@@ -5,7 +5,6 @@
     "type": "git",
     "url": "https://github.com/SOSML/SOSML-frontend.git"
   },
-  "homepage": "sosml.github.io",
   "description": "A frontend for the infamous SOSML interpreter",
   "license": "GPL-3.0",
   "dependencies": {
