@@ -60,11 +60,6 @@ class MenuBar extends React.Component<any, State> {
                         </LinkContainer>
                     </Nav>
                     {extraLinks}
-                    <Nav>
-                        <LinkContainer to="/help">
-                            <NavItem><Glyphicon glyph={'question-sign'} /> Help</NavItem>
-                        </LinkContainer>
-                    </Nav>
                     <Nav pullRight={true}>
                         <LinkContainer to="/settings">
                             <NavItem><Glyphicon glyph={'cog'} /> Settings</NavItem>
