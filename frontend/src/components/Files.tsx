@@ -5,7 +5,6 @@ import { Grid , Table, Button, Glyphicon } from 'react-bootstrap';
 import { File, Database, API } from '../API';
 import './Files.css';
 import { Link } from 'react-router-dom';
-import { CONFIG } from '../config';
 
 const FileSaver = require('file-saver');
 
@@ -42,30 +41,18 @@ class Files extends React.Component<any, State> {
 
     render() {
         let filesView = this.state.files.map((file) => {
-            let shareControl: JSX.Element[] | undefined = ([
-                ( <div className="miniSpacer" /> ), (
-                    <Button bsStyle="primary" onClick={this.shareHandlerFor(file.name)}>
-                        <Glyphicon glyph={'link'} /> Teilen
-                    </Button>
-                )
-            ]);
-            if (!CONFIG.sharingEnabled) {
-                shareControl = undefined;
-            }
             return (
                 <tr key={file.name}>
                     <td>
                         <Link to={'/file/' + file.name}>{file.name}</Link>
                     </td>
-                    <td>Local</td>
                     <td>
                         <Button bsStyle="primary" onClick={this.downloadHandlerFor(file.name)}>
-                            <Glyphicon glyph={'download-alt'} /> Herunterladen
+                            <Glyphicon glyph={'download-alt'} /> Download
                         </Button>
-                        {shareControl}
                         <div className="miniSpacer" />
                         <Button bsStyle="danger" onClick={this.deleteHandlerFor(file.name)} >
-                            <Glyphicon glyph={'trash'} /> Löschen
+                            <Glyphicon glyph={'trash'} /> Delete
                         </Button>
                     </td>
                 </tr>
@@ -83,30 +70,37 @@ class Files extends React.Component<any, State> {
         if (this.state.files.length === 0) {
             return (
                 <Grid className="flexy">
-                    <h2>Lokale Dateien und Programmbeispiele</h2>
-                    <hr/>
-                    <h4>Lokale Dateien</h4>
-                    <p>
-                    Du hast noch keine Dateien gespeichert.
-                    </p>
-                </Grid>
+                <h2>Local files</h2>
+                <hr/>
+                <p>
+                You can find your saved files here. Click on a file name to load it into the editor.
+                </p>
+                <Table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filesView}
+                    </tbody>
+                </Table>
+            </Grid>
             );
         }
 
         return (
             <Grid className="flexy">
-                    <h2>Lokale Dateien und Programmbeispiele</h2>
+                    <h2>Local Files</h2>
                     <hr/>
-                    <h4>Lokale Dateien</h4>
                     <p>
-                    Du findest hier Deine gespeicherten Programme. Clicke auf einen Dateinamen, um eine
-                    Datei in den Editor zu laden.
+                    You can find your saved files here. Click on a file name to load it into the editor.
                     </p>
                 <Table>
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Type</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -181,24 +175,6 @@ class Files extends React.Component<any, State> {
                 if (ok) {
                     this.refreshFiles();
                 }
-            });
-        };
-    }
-
-    private shareHandlerFor(fileName: string): (evt: any) => void {
-        return (evt: any) => {
-            Database.getInstance().then((db: Database) => {
-                return db.getFile(fileName);
-            }).then((content: string) => {
-                return API.shareCode(content);
-            }).then((hash: string) => {
-                this.setState({
-                    shareLink: window.location.host + '/share/' + hash
-                });
-            }).catch((e: any) => {
-                this.setState({
-                    shareLink: SHARE_LINK_ERROR
-                });
             });
         };
     }
