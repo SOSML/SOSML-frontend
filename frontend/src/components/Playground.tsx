@@ -77,6 +77,7 @@ class Playground extends React.Component<Props, State> {
             return data[0];
         });
         let code: string = this.props.initialCode;
+        /*
         let executeOnServer: JSX.Element | undefined;
         if (this.state.useServer) {
             executeOnServer = (
@@ -88,6 +89,7 @@ class Playground extends React.Component<Props, State> {
                 </div>
             );
         }
+        */
         let modal: JSX.Element | undefined;
         if (this.state.shareLink !== '') {
             modal = (
