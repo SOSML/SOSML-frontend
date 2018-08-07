@@ -1,18 +1,14 @@
 import * as React from 'react';
 
 import MiniWindow from './MiniWindow';
-import ShareModal from './ShareModal';
 import CodeMirrorWrapper from './CodeMirrorWrapper';
-import { Button , Glyphicon } from 'react-bootstrap';
 import './Playground.css';
-import { API as WebserverAPI } from '../API';
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
 SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
     if (this.props.onUpdate && this.state.secondaryPaneSize !== prevState.secondaryPaneSize) {
         this.props.onUpdate(this.state.secondaryPaneSize);
     }
 };
-import { CONFIG } from '../config';
 
 interface State {
     output: string;
@@ -36,7 +32,6 @@ interface Props {
     fileControls: any;
 }
 
-const SHARE_LINK_ERROR = ':ERROR';
 const OUTPUT_MARKUP_SPECIALS = ['\\*', '\\_'];
 
 class Playground extends React.Component<Props, State> {
@@ -52,13 +47,10 @@ class Playground extends React.Component<Props, State> {
 
         this.handleLeftResize = this.handleLeftResize.bind(this);
         this.handleRightResize = this.handleRightResize.bind(this);
-        this.handleRun = this.handleRun.bind(this);
         this.handleCodeChange = this.handleCodeChange.bind(this);
         this.handleSplitterUpdate = this.handleSplitterUpdate.bind(this);
         this.handleBrowserResize = this.handleBrowserResize.bind(this);
         this.handleOutputChange = this.handleOutputChange.bind(this);
-        this.handleSwitchMode = this.handleSwitchMode.bind(this);
-        this.handleShare = this.handleShare.bind(this);
         this.modalCloseCallback = this.modalCloseCallback.bind(this);
         this.handleBrowserKeyup = this.handleBrowserKeyup.bind(this);
     }
@@ -77,35 +69,6 @@ class Playground extends React.Component<Props, State> {
             return data[0];
         });
         let code: string = this.props.initialCode;
-        let executeOnServer: JSX.Element | undefined;
-        if (this.state.useServer) {
-            executeOnServer = (
-                <div className="inlineBlock">
-                    <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="primary" onClick={this.handleRun}>
-                        <Glyphicon glyph={'play'} /> Ausführen
-                    </Button>
-                </div>
-            );
-        }
-        let modal: JSX.Element | undefined;
-        if (this.state.shareLink !== '') {
-            modal = (
-                <ShareModal error={this.state.shareLink === SHARE_LINK_ERROR}
-                    link={this.state.shareLink} closeCallback={this.modalCloseCallback} />
-            );
-        }
-        let shareElements: JSX.Element | undefined;
-        if (!this.props.readOnly && CONFIG.sharingEnabled) {
-            shareElements = (
-                <div className="inlineBlock">
-                    <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="primary" onClick={this.handleShare}>
-                        <Glyphicon glyph={'link'} /> Teilen
-                    </Button>
-                </div>
-            );
-        }
         let extraCSS = '';
         if (this.state.errorColor !== '') {
             extraCSS += '.eval-fail { background-color: ' + this.state.errorColor + ' !important; }';
@@ -129,18 +92,16 @@ class Playground extends React.Component<Props, State> {
                             header={(
                             <div className="headerButtons">
                                 {this.props.fileControls}
-                                {shareElements}
                             </div>
                         )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
                     </div>
                     <div className="flexcomponent flexy">
                         <MiniWindow content={
                             <div>{lineItems}</div>}
-                        title="Ausgabe" className="flexy" updateAnchor={this.state.sizeAnchor}
+                        title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}
                         />
                     </div>
                 </SplitterLayout>
-                {modal}
             </div>
         );
     }
@@ -219,14 +180,6 @@ class Playground extends React.Component<Props, State> {
         }
     }
 
-    handleRun() {
-        WebserverAPI.fallbackInterpreter(this.state.code).then((val) => {
-            this.setState({output: val.replace(/\\/g, '\\\\')});
-        }).catch(() => {
-            this.setState({output: 'Fehler: Es konnte keine Verbindung zum Server hergestellt werden.'});
-        });
-    }
-
     handleCodeChange(newCode: string) {
         this.setState(prevState => {
             return {code: newCode};
@@ -240,22 +193,6 @@ class Playground extends React.Component<Props, State> {
         this.setState(prevState => {
             let ret: any = {output: newOutput};
             return ret;
-        });
-    }
-
-    handleShare() {
-        WebserverAPI.shareCode(this.state.code).then((hash) => {
-            this.setState(prevState => {
-                return {shareLink: window.location.host + '/share/' + hash};
-            });
-        }).catch(() => {
-            this.setState({shareLink: SHARE_LINK_ERROR});
-        });
-    }
-
-    handleSwitchMode() {
-        this.setState(prevState => {
-            return {useServer: !prevState.useServer, output: ''};
         });
     }
 
