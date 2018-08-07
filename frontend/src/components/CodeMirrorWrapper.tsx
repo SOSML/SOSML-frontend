@@ -7,7 +7,7 @@ require('../mllike.js');
 /* imports for code folding */
 require('codemirror/addon/fold/foldgutter.js');
 require('codemirror/addon/fold/foldcode.js');
-require('codemirror/addon/fold/indent-fold.js');
+require('../sml-fold.js');
 require('codemirror/addon/fold/foldgutter.css');
 
 require('codemirror/addon/edit/matchbrackets.js');
@@ -215,7 +215,9 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             matchBrackets: true,
             lineWrapping: true,
             readOnly: this.props.readOnly ? true : false,
-            foldGutter: true,
+            foldGutter: {
+                minFoldSize: 2
+            },
             gutters: [
                 'CodeMirror-linenumbers', 'CodeMirror-foldgutter'
             ]
