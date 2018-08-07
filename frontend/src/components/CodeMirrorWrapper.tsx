@@ -199,10 +199,18 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
     }
 
     render() {
+        /* Get the autoIndent setting from the local storage */
+        const interfaceSettings = localStorage.getItem('interfaceSettings');
+        let autoIndent = true;
+        if (typeof interfaceSettings === 'string') {
+            autoIndent = !!JSON.parse(interfaceSettings).autoIndent;
+        }
+
         const options = {
             lineNumbers: true,
             mode: 'text/sml',
             indentUnit: 2,
+            smartIndent: autoIndent,
             tabSize: 2,
             matchBrackets: true,
             lineWrapping: true,

@@ -11,30 +11,108 @@
 })(function(CodeMirror) {
     "use strict";
 
-    CodeMirror.defineMode('mllike', function(_config, parserConfig) {
-        var words = {
-            'let': 'keyword',
-            'rec': 'keyword',
-            'in': 'keyword',
-            'of': 'keyword',
-            'and': 'keyword',
-            'if': 'keyword',
-            'then': 'keyword',
-            'else': 'keyword',
-            'for': 'keyword',
-            'do': 'keyword',
-            'of': 'keyword',
-            'while': 'keyword',
-            'fun': 'keyword',
-            'val': 'keyword',
-            'type': 'keyword',
-            'match': 'keyword',
-            'with': 'keyword',
-            'try': 'keyword',
-            'open': 'builtin',
-            'begin': 'keyword',
-            'end': 'keyword'
+    CodeMirror.defineMode('mllike', function(config, parserConfig) {
+        var expressions = {
+            // match a line beginning with 0 or more whitespaces
+            // and a vertical bar at the end
+            '^\\s*\\|': {
+                indentCurrentLine: true,
+                dedentNewLine: true
+            },
+            // match a line beginning with 0 or more whitespaces
+            // and a end of block comment *)
+            '^\\s*\\*\\)': {
+                dedentCurrentLine: true,
+                allowInComments: true
+            }
         };
+
+        var words = {
+            'let': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'rec': {
+                type: 'keyword'
+            },
+            'in': {
+                type: 'keyword',
+                indentNewLine: true,
+                dedentCurrentLine: true
+            },
+            'and': {
+                type: 'keyword'
+            },
+            'if': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'then': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'else': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'for': {
+                type: 'keyword'
+            },
+            'do': {
+                type: 'keyword'
+            },
+            'of': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'while': {
+                type: 'keyword'
+            },
+            'fun': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'val': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'type': {
+                type: 'keyword'
+            },
+            'match': {
+                type: 'keyword'
+            },
+            'with': {
+                type: 'keyword'
+            },
+            'try': {
+                type: 'keyword'
+            },
+            'open': {
+                type: 'builtin'
+            },
+            'begin': {
+                type: 'keyword'
+            },
+            'end': {
+                type: 'keyword',
+                dedentNewLine: true
+            }
+        };
+
+        function decreaseIndentIfPositive (state) {
+            if (state.indentChange >= 0) {
+                state.indentChange -= config.indentUnit;
+            }
+        }
+
+        function increaseIndent (state) {
+            state.indentChange += config.indentUnit;
+        }
+
+        function decreaseIndent (state) {
+            state.indentChange -= config.indentUnit;
+        }
 
         var extraWords = parserConfig.extraWords || {};
         for (var prop in extraWords) {
@@ -43,11 +121,45 @@
             }
         }
 
-        var interfaceSettings = localStorage.getItem('interfaceSettings');
-        var autoIndent = true;
-        if (typeof interfaceSettings === 'string') {
-            autoIndent = !!JSON.parse(interfaceSettings).autoIndent;
+        var electricRegex = "(";
+        // generate electricInput regular expression
+        for (var word in words) {
+            // go through all words and test if they have the dedent property set
+            if (words.hasOwnProperty(word)) {
+                var wordObject = words[word];
+
+                //if it is set, add them to the regex
+                if (wordObject.hasOwnProperty('dedentCurrentLine') && wordObject.dedentCurrentLine) {
+                    electricRegex += word + '|';
+                } else if (wordObject.hasOwnProperty('indentCurrentLine') && wordObject.indentCurrentLine) {
+                    electricRegex += word + '|';
+                }
+            }
         }
+
+        //do the same for the native regular expressions
+        for (var regex in expressions) {
+            if (expressions.hasOwnProperty(regex)) {
+                var regexObject = expressions[regex];
+
+                //if it is set, add them to the regex
+                if (regexObject.hasOwnProperty('dedentCurrentLine') && regexObject.dedentCurrentLine) {
+                    electricRegex += regex + '|';
+                } else if (regexObject.hasOwnProperty('indentCurrentLine') && regexObject.indentCurrentLine) {
+                    electricRegex += regex + '|';
+                }
+            }
+        }
+
+        // cut off the last trailing |
+        var regexLength = electricRegex.length;
+        // do not cut off the last character if no word has been added to the regex
+        if (regexLength > 1) {
+            //cut off the last character
+            electricRegex = electricRegex.slice(0,-1);
+        }
+        // finish the regex
+        electricRegex += ')$';
 
         function tokenBase(stream, state) {
             var ch = stream.next();
@@ -58,8 +170,12 @@
             }
             if (ch === '(') {
                 if (stream.eat('*')) {
+                    increaseIndent(state);
+
                     state.commentLevel++;
+                    // replace the tokenize function for the further characters
                     state.tokenize = tokenComment;
+
                     return state.tokenize(stream, state);
                 }
             }
@@ -75,28 +191,64 @@
                 stream.skipToEnd();
                 return 'comment';
             }
+
+            /* match digits */
             if (/\d/.test(ch)) {
                 stream.eatWhile(/[\d]/);
+                /* match floating numbers */
                 if (stream.eat('.')) {
                     stream.eatWhile(/[\d]/);
                 }
+
+                decreaseIndentIfPositive(state);
+
                 return 'number';
             }
             if ( /[+\-*&%=<>!?|]/.test(ch)) {
+
+                increaseIndent(state);
+
+                if (ch === '=') {
+                    state.indentChange = 2;
+                }
+
+                if (ch === '=' && (stream.eat('>') || stream.eat('<'))) {
+                    state.indentChange = 2;
+                }
+
                 return 'operator';
             }
+
             if (/[\w\xa1-\uffff]/.test(ch)) {
                 stream.eatWhile(/[\w\xa1-\uffff]/);
                 var cur = stream.current();
+
                 if (words.hasOwnProperty(cur)) {
-                    if (stream.eol() && autoIndent && (cur == 'let' || cur == 'in' ||cur == 'local' || cur == 'struct' || cur == 'sig')) {
-                        state.indentHint += 2;
+
+                    var matchedObject = words[cur];
+                    var shouldIndent = matchedObject.hasOwnProperty('indentNewLine')
+                        && matchedObject.indentNewLine;
+
+                    if (shouldIndent) {
+                        increaseIndent(state);
                     }
-                    return words[cur];
+
+                    var shouldDedent = matchedObject.hasOwnProperty('dedentNewLine')
+                        && matchedObject.dedentNewLine;
+
+                    if (shouldDedent) {
+                        decreaseIndent(state);
+                    }
+
+                    return matchedObject.type;
                 } else {
+
+                    decreaseIndentIfPositive(state);
+
                     return 'variable';
                 }
             }
+
             return null;
         }
 
@@ -113,38 +265,119 @@
                 state.tokenize = tokenBase;
             }
             return 'string';
-        };
+        }
 
         function tokenComment(stream, state) {
             var prev, next;
             while(state.commentLevel > 0 && (next = stream.next()) != null) {
-                if (prev === '(' && next === '*') state.commentLevel++;
-                if (prev === '*' && next === ')') state.commentLevel--;
+                if (prev === '(' && next === '*') {
+                    increaseIndent(state);
+                    state.commentLevel++;
+                }
+                if (prev === '*' && next === ')') {
+
+                    // decrease the indent manually if the electric regex does not
+                    if (!/'^\s*\*\)'/.test(stream.string)) {
+                        decreaseIndent(state);
+                    }
+
+                    state.commentLevel--;
+                }
                 prev = next;
             }
             if (state.commentLevel <= 0) {
+                // reset the tokenize function after the comment end
                 state.tokenize = tokenBase;
             }
             return 'comment';
         }
 
         return {
-            startState: function() {return {tokenize: tokenBase, commentLevel: 0, indentHint: 0};},
+            startState: function() {
+                return {
+                    tokenize: tokenBase,
+                    commentLevel: 0,
+                    currentIndent: 0,
+                    indentChange: 0
+
+                };
+            },
             token: function(stream, state) {
                 if (stream.sol()) {
-                    state.indentHint = stream.indentation();
+                    //save the current indentation
+                    state.currentIndent = stream.indentation();
+                    //reset the indentation change from the line before
+                    state.indentChange = 0;
+
+                    for (var regex in expressions) {
+                        if (expressions.hasOwnProperty(regex)) {
+
+                            if(stream.match(new RegExp(regex), false)) {
+
+                                const regexObject = expressions[regex];
+
+                                const shouldDedent = regexObject.hasOwnProperty('dedentNewLine') && regexObject.dedentNewLine;
+
+                                /* Overwrite the start of the next line */
+                                if (shouldDedent) {
+                                    state.currentIndent -= config.indentUnit;
+                                }
+
+                            }
+                        }
+                    }
                 }
-                if (stream.eatSpace()) return null;
+
+                if (stream.eatSpace())
+                    return null;
+
                 return state.tokenize(stream, state);
             },
             indent: function(state, textAfter) {
-                if (autoIndent && (textAfter === 'in' || textAfter == 'end') && state.indentHint > 1) {
-                    state.indentHint -= 2;
+
+                if (words.hasOwnProperty(textAfter)) {
+
+                    const matchedObject = words[textAfter];
+
+                    const shouldDedent = matchedObject.hasOwnProperty('dedentCurrentLine')
+                        && matchedObject.dedentCurrentLine;
+
+                    if (shouldDedent) {
+                        decreaseIndent(state);
+                    }
+
+                    const shouldIndent = matchedObject.hasOwnProperty('indentCurrentLine')
+                        && matchedObject.indentCurrentLine;
+
+                    if (shouldIndent) {
+                        increaseIndent(state);
+                    }
                 }
-                return state.indentHint;
+
+                //do the same for the native regular expressions
+                for (var regex in expressions) {
+                    if (expressions.hasOwnProperty(regex)) {
+                        var regexObject = expressions[regex];
+
+                        if (!new RegExp(regex).test(textAfter))
+                            continue;
+
+                        //if it is set, add them to the regex
+                        if (regexObject.hasOwnProperty('dedentCurrentLine') && regexObject.dedentCurrentLine) {
+                            decreaseIndent(state);
+                        } else if (regexObject.hasOwnProperty('indentCurrentLine') && regexObject.indentCurrentLine) {
+                            increaseIndent(state);
+                        }
+                    }
+                }
+
+                var newIndent = state.currentIndent + state.indentChange;
+
+                //return 0 if the new indent is smaller than 0
+                return newIndent < 0 ? 0 : newIndent;
             },
 
-            electricInput: (autoIndent ? /(in|end)$/ : null),
+            electricInput: new RegExp(electricRegex),
             blockCommentStart: "(*",
             blockCommentEnd: "*)",
             lineComment: parserConfig.slashComments ? "//" : null,
@@ -155,128 +388,358 @@
     CodeMirror.defineMIME('text/x-ocaml', {
         name: 'mllike',
         extraWords: {
-            'succ': 'keyword',
-            'trace': 'builtin',
-            'exit': 'builtin',
-            'print_string': 'builtin',
-            'print_endline': 'builtin',
-            'true': 'atom',
-            'false': 'atom',
-            'raise': 'keyword'
+            'succ': {
+                type: 'keyword'
+            },
+            'trace': {
+                type: 'builtin'
+            },
+            'exit': {
+                type: 'builtin'
+            },
+            'print_string': {
+                type: 'builtin'
+            },
+            'print_endline': {
+                type: 'builtin'
+            },
+            'true': {
+                type: 'atom'
+            },
+            'false': {
+                type: 'atom'
+            },
+            'raise': {
+                type: 'keyword'
+            }
         }
     });
 
     CodeMirror.defineMIME('text/sml', {
         name: 'mllike',
         extraWords: {
-            'datatype': 'keyword',
-            'abstype': 'keyword',
-            'exception': 'keyword',
-            'local': 'keyword',
-            'eqtype': 'keyword',
-            'functor': 'keyword',
-            'include': 'keyword',
-            'sharing': 'keyword',
-            'sig': 'keyword',
-            'signature': 'keyword',
-            'struct': 'keyword',
-            'structure': 'keyword',
-            'where': 'keyword',
-            'andalso': 'keyword',
-            'as': 'keyword',
-            'case': 'keyword',
-            'fn': 'keyword',
-            'handle': 'keyword',
-            'infix': 'keyword',
-            'infixr': 'keyword',
-            'nonfix': 'keyword',
-            'op': 'keyword',
-            'orelse': 'keyword',
-            'raise': 'keyword',
-            'rec': 'keyword',
-            'withtype': 'keyword',
-            ':>': 'keyword',
-            '...': 'keyword',
-            '_': 'keyword',
+            'datatype': {
+                type: 'keyword'
+            },
+            'abstype': {
+                type: 'keyword'
+            },
+            'exception': {
+                type: 'keyword'
+            },
+            'local': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'eqtype': {
+                type: 'keyword'
+            },
+            'functor': {
+                type: 'keyword'
+            },
+            'include': {
+                type: 'keyword'
+            },
+            'sharing': {
+                type: 'keyword'
+            },
+            'sig': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'signature': {
+                type: 'keyword'
+            },
+            'struct': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'structure': {
+                type: 'keyword'
+            },
+            'where': {
+                type: 'keyword'
+            },
+            'andalso': {
+                type: 'keyword'
+            },
+            'as': {
+                type: 'keyword'
+            },
+            'case': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'fn': {
+                type: 'keyword'
+            },
+            'handle': {
+                type: 'keyword'
+            },
+            'infix': {
+                type: 'keyword'
+            },
+            'infixr': {
+                type: 'keyword'
+            },
+            'nonfix': {
+                type: 'keyword'
+            },
+            'op': {
+                type: 'keyword'
+            },
+            'orelse': {
+                type: 'keyword'
+            },
+            'raise': {
+                type: 'keyword'
+            },
+            'rec': {
+                type: 'keyword'
+            },
+            'withtype': {
+                type: 'keyword'
+            },
+            ':>': {
+                type: 'keyword'
+            },
+            '...': {
+                type: 'keyword'
+            },
+            '_': {
+                type: 'keyword'
+            },
 
-            'unit': 'builtin',
-            'bool': 'builtin',
-            'int': 'builtin',
-            'word': 'builtin',
-            'real': 'builtin',
-            'string': 'builtin',
-            'char': 'builtin',
-            'list': 'builtin',
-            'ref': 'builtin',
-            'exn': 'builtin',
+            'unit': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'bool': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'int': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'word': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'real': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'string': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'char': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'list': {
+                type: 'builtin',
+                dedentNewLine: true
+            },
+            'ref': {
+                type: 'builtin'
+            },
+            'exn': {
+                type: 'builtin'
+            },
 
-            'true': 'atom',
-            'false': 'atom',
-            'nil': 'atom',
-            '::': 'atom',
-            'Bind': 'atom',
-            'div': 'atom',
-            'mod': 'atom',
-            'abs': 'atom',
-            'Match': 'atom'
+            'true': {
+                type: 'atom',
+                dedentNewLine: true
+            },
+            'false': {
+                type: 'atom',
+                dedentNewLine: true
+            },
+            'nil': {
+                type: 'atom',
+                dedentNewLine: true
+            },
+            '::': {
+                type: 'atom'
+            },
+            'Bind': {
+                type: 'atom'
+            },
+            'div': {
+                type: 'atom'
+            },
+            'mod': {
+                type: 'atom'
+            },
+            'abs': {
+                type: 'atom'
+            },
+            'Match': {
+                type: 'atom'
+            }
         }
     });
 
     CodeMirror.defineMIME('text/x-fsharp', {
         name: 'mllike',
         extraWords: {
-            'abstract': 'keyword',
-            'as': 'keyword',
-            'assert': 'keyword',
-            'base': 'keyword',
-            'class': 'keyword',
-            'default': 'keyword',
-            'delegate': 'keyword',
-            'downcast': 'keyword',
-            'downto': 'keyword',
-            'elif': 'keyword',
-            'exception': 'keyword',
-            'extern': 'keyword',
-            'finally': 'keyword',
-            'global': 'keyword',
-            'inherit': 'keyword',
-            'inline': 'keyword',
-            'interface': 'keyword',
-            'internal': 'keyword',
-            'lazy': 'keyword',
-            'let!': 'keyword',
-            'member' : 'keyword',
-            'module': 'keyword',
-            'namespace': 'keyword',
-            'new': 'keyword',
-            'null': 'keyword',
-            'override': 'keyword',
-            'private': 'keyword',
-            'public': 'keyword',
-            'return': 'keyword',
-            'return!': 'keyword',
-            'select': 'keyword',
-            'static': 'keyword',
-            'struct': 'keyword',
-            'upcast': 'keyword',
-            'use': 'keyword',
-            'use!': 'keyword',
-            'val': 'keyword',
-            'when': 'keyword',
-            'yield': 'keyword',
-            'yield!': 'keyword',
+            'abstract': {
+                type: 'keyword'
+            },
+            'as': {
+                type: 'keyword'
+            },
+            'assert': {
+                type: 'keyword'
+            },
+            'base': {
+                type: 'keyword'
+            },
+            'class': {
+                type: 'keyword'
+            },
+            'default': {
+                type: 'keyword'
+            },
+            'delegate': {
+                type: 'keyword'
+            },
+            'downcast': {
+                type: 'keyword'
+            },
+            'downto': {
+                type: 'keyword'
+            },
+            'elif': {
+                type: 'keyword'
+            },
+            'exception': {
+                type: 'keyword'
+            },
+            'extern': {
+                type: 'keyword'
+            },
+            'finally': {
+                type: 'keyword'
+            },
+            'global': {
+                type: 'keyword'
+            },
+            'inherit': {
+                type: 'keyword'
+            },
+            'inline': {
+                type: 'keyword'
+            },
+            'interface': {
+                type: 'keyword'
+            },
+            'internal': {
+                type: 'keyword'
+            },
+            'lazy': {
+                type: 'keyword'
+            },
+            'let!': {
+                type: 'keyword'
+            },
+            'member' : {
+                type: 'keyword'
+            },
+            'module': {
+                type: 'keyword'
+            },
+            'namespace': {
+                type: 'keyword'
+            },
+            'new': {
+                type: 'keyword'
+            },
+            'null': {
+                type: 'keyword'
+            },
+            'override': {
+                type: 'keyword'
+            },
+            'private': {
+                type: 'keyword'
+            },
+            'public': {
+                type: 'keyword'
+            },
+            'return': {
+                type: 'keyword'
+            },
+            'return!': {
+                type: 'keyword'
+            },
+            'select': {
+                type: 'keyword'
+            },
+            'static': {
+                type: 'keyword'
+            },
+            'struct': {
+                type: 'keyword',
+                indentNewLine: true
+            },
+            'upcast': {
+                type: 'keyword'
+            },
+            'use': {
+                type: 'keyword'
+            },
+            'use!': {
+                type: 'keyword'
+            },
+            'val': {
+                type: 'keyword'
+            },
+            'when': {
+                type: 'keyword'
+            },
+            'yield': {
+                type: 'keyword'
+            },
+            'yield!': {
+                type: 'keyword'
+            },
 
-            'List': 'builtin',
-            'Seq': 'builtin',
-            'Map': 'builtin',
-            'Set': 'builtin',
-            'int': 'builtin',
-            'string': 'builtin',
-            'raise': 'builtin',
-            'failwith': 'builtin',
-            'not': 'builtin',
-            'true': 'builtin',
-            'false': 'builtin'
+            'List': {
+                type: 'builtin'
+            },
+            'Seq': {
+                type: 'builtin'
+            },
+            'Map': {
+                type: 'builtin'
+            },
+            'Set': {
+                type: 'builtin'
+            },
+            'int': {
+                type: 'builtin'
+            },
+            'string': {
+                type: 'builtin'
+            },
+            'raise': {
+                type: 'builtin'
+            },
+            'failwith': {
+                type: 'builtin'
+            },
+            'not': {
+                type: 'builtin'
+            },
+            'true': {
+                type: 'builtin'
+            },
+            'false': {
+                type: 'builtin'
+            }
         },
         slashComments: true
     });
