@@ -15,7 +15,7 @@ interface State {
 
 class MenuBar extends React.Component<any, State> {
     constructor() {
-        super();
+        super({});
 
         this.state = {
             forcedDisplay: false

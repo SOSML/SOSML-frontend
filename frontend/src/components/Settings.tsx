@@ -32,7 +32,7 @@ const DEFAULT_SUCCESS_COLOR2 = '#dcffff';
 
 class Settings extends React.Component<any, State> {
     constructor() {
-        super();
+        super({});
         this.state = {
             inter: this.getInterpreterSettings(),
             front: this.getInterfaceSettings()

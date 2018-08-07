@@ -38,7 +38,7 @@ export class API {
                 method: 'POST',
                 body: JSON.stringify({'code': code})
             }
-        ).then(function(response: any){
+        ).then(function(response: any) {
             if (!response.ok) {
                 return Promise.reject(response.status);
             } else {
@@ -71,7 +71,7 @@ export class API {
                 method: 'PUT',
                 body: JSON.stringify({'code': code})
             }
-        ).then(function(response: any){
+        ).then(function(response: any) {
             if (!response.ok) {
                 return Promise.reject(response.status);
             } else {
@@ -96,7 +96,7 @@ export class API {
                 },
                 method: 'GET'
             }
-        ).then(function(response: any){
+        ).then(function(response: any) {
             if (!response.ok) {
                 return Promise.reject(response.status);
             } else {
@@ -121,7 +121,7 @@ export class API {
                 },
                 method: 'GET'
             }
-        ).then(function(response: any){
+        ).then(function(response: any) {
             if (!response.ok) {
                 return Promise.reject(response.status);
             } else {
@@ -150,7 +150,7 @@ export class API {
                 },
                 method: 'GET'
             }
-        ).then(function(response: any){
+        ).then(function(response: any) {
             if (!response.ok) {
                 return Promise.reject(response.status);
             } else {
