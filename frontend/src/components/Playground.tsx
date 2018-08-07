@@ -210,7 +210,12 @@ class Playground extends React.Component<Props, State> {
         if (evt.key === 'Escape') {
             this.getBodyClassList().remove('fullscreen');
         } else if (evt.key === 'F11') {
-            this.getBodyClassList().add('fullscreen');
+            // Toggle the fullscreen mode
+            if (this.getBodyClassList().contains('fullscreen')) {
+                this.getBodyClassList().remove('fullscreen');
+            } else {
+                this.getBodyClassList().add('fullscreen');
+            }
         }
     }
 
