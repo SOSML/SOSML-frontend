@@ -25,12 +25,14 @@
     "react-router-dom": "^4.2.2",
     "react-scripts-ts": "^2.7.0",
     "react-splitter-layout": "^0.2.1",
-    "tslint": "^5.0.0",
-    "typescript": "<3.0.0"
+    "tslint": "^5.0.0"
   },
   "scripts": {
     "start": "react-scripts-ts start",
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom"
+  },
+  "devDependencies": {
+    "typescript": "^2.9.2"
   }
 }

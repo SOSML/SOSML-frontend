@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import ShareModal from './ShareModal';
 import { Grid , Table, Button, Glyphicon } from 'react-bootstrap';
 import { File, Database, API } from '../API';
 import './Files.css';
@@ -18,8 +17,6 @@ interface State {
     examplesStatus: number;
     shareLink: string;
 }
-
-const SHARE_LINK_ERROR = ':ERROR';
 
 class Files extends React.Component<any, State> {
     constructor(props: any) {
@@ -58,14 +55,6 @@ class Files extends React.Component<any, State> {
                 </tr>
             );
         });
-
-        let modal: JSX.Element | undefined;
-        if (this.state.shareLink !== '') {
-            modal = (
-                <ShareModal error={this.state.shareLink === SHARE_LINK_ERROR}
-                    link={this.state.shareLink} closeCallback={this.modalCloseCallback} />
-            );
-        }
 
         if (this.state.files.length === 0) {
             return (

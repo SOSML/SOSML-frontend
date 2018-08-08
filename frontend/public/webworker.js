@@ -442,11 +442,11 @@ class IncrementalInterpretation {
     getErrorMessage(error, partial, startPos) {
         if (error.position !== undefined) {
             let position = this.calculateErrorPos(partial, startPos, error.position);
-            return 'Zeile ' + position[0] + ' Spalte ' + position[1] + ': \\*' +
+            return 'Line ' + position[0] + ': \\*' +
                 this.getPrototypeName(error) + '\\*: ' + this.outputEscape(error.message);
         }
         else {
-            return 'Unbekannte Position: ' + this.getPrototypeName(error) + ': ' +
+            return this.getPrototypeName(error) + ': ' +
                 this.outputEscape(error.message);
         }
     }
