@@ -50,13 +50,6 @@
         }
 
         if (lastLineInFold) {
-
-
-            console.log(
-                (start.line + 1) + ", " +
-                (lastLineInFold + 1)
-            );
-
             return {
                 from: CodeMirror.Pos(start.line, cm.getLine(start.line).length),
                 to: CodeMirror.Pos(lastLineInFold, cm.getLine(lastLineInFold).length)
