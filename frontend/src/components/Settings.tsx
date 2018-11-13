@@ -86,11 +86,6 @@ class Settings extends React.Component<any, State> {
                 <Checkbox checked={this.state.front.autoIndent}
                     onChange={this.changeHandler('front', 'autoIndent')}>
                     Automatisches Einrücken aktivieren
-                </Checkbox> <br />
-                <Checkbox checked={this.state.inter.disableElaboration}
-                    onChange={this.changeHandler('inter', 'disableElaboration')}>
-                    Elaborierung <b>abschalten</b>. (Benutze diese Option, falls der Interpreter komische Geräusche
-                        macht oder versucht, wegzurennen.)
                 </Checkbox>
                 Interpreter Timeout: <input type="number" min="0" step="100" value={this.state.front.timeout}
                     onChange={this.timeoutChangeHandler} placeholder="5000" /> Millisekunden.
