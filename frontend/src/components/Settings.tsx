@@ -5,6 +5,7 @@ interface InterpreterSettings {
     allowUnicodeInStrings: boolean;
     allowSuccessorML: boolean;
     disableElaboration: boolean;
+    disableEvaluation: boolean;
     allowLongFunctionNames: boolean;
     allowStructuresAnywhere: boolean;
     allowSignaturesAnywhere: boolean;
@@ -82,6 +83,12 @@ class Settings extends React.Component<any, State> {
                     onChange={this.changeHandler('inter', 'disableElaboration')}>
                     <b>Disable</b> elaboration. (Use this if the interpreter makes some weird noises
                         or wants to run away.)
+                </Checkbox>
+                <Checkbox checked={this.state.inter.disablevaluation}
+                    onChange={this.changeHandler('inter', 'disableEvaluation')}>
+                    <b>Disable</b> evaluation. (Use this if your childhood friend SOSML takes too
+                        long to compute its feelings for you but you really care about,
+                        of what type an answer would be.)
                 </Checkbox>
                 Abort evaluation after <input type="number" min="0" step="100" value={this.state.front.timeout}
                     onChange={this.timeoutChangeHandler} placeholder="9029"/> ms.
@@ -182,6 +189,7 @@ class Settings extends React.Component<any, State> {
             allowUnicodeInStrings: false,
             allowSuccessorML : false,
             disableElaboration: false,
+            disableEvaluation: false,
             allowLongFunctionNames: false,
             allowStructuresAnywhere: false,
             allowSignaturesAnywhere: false,
