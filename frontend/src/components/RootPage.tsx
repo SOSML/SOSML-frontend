@@ -3,7 +3,7 @@ import * as React from 'react';
 import MenuBar from './MenuBar';
 import Editor from './Editor';
 import Files from './Files';
-// import Help from './Help';
+import Help from './Help';
 import Settings from './Settings';
 import FileIntermediate from './FileIntermediate';
 // import ShareIntermediate from './ShareIntermediate';
@@ -25,7 +25,7 @@ class RootPage extends React.Component<any, any> {
                     <MenuBar />
                     <Route exact={true} path="/" component={Editor} />
                     <Route path="/files" component={Files} />
-                    // <Route path="/help" component={Help} />
+                    <Route path="/help" component={Help} />
                     <Route path="/settings" component={Settings} />
 
                     <Route path="/file/:name" component={FileIntermediate} />

@@ -110,6 +110,7 @@ let interpreterSettings = {
     'allowUnicodeInStrings': false,
     'allowSuccessorML': false,
     'disableElaboration': false,
+    'disableEvaluation': false,
     'allowLongFunctionNames': false
 };
 class Communication {
@@ -440,30 +441,29 @@ class IncrementalInterpretation {
         }
     }
     getErrorMessage(error, partial, startPos) {
-        if (error.position !== undefined) {
-            let position = this.calculateErrorPos(partial, startPos, error.position);
-            return 'Line ' + position[0] + ': \\*' +
-                this.getPrototypeName(error) + '\\*: ' + this.outputEscape(error.message);
-        }
-        else {
-            return this.getPrototypeName(error) + ': ' +
-                this.outputEscape(error.message);
+        // if (error.position !== undefined) {
+        //    let position = this.calculateErrorPos(partial, startPos, error.position);
+        //    return 'Line ' + position[0] + /* ' Spalte ' + position[1] + */ ': \\*' +
+        //        this.getPrototypeName(error) + '\\*: ' + this.outputEscape(error.message);
+        // } else {
+        return '\\*' + this.outputEscape(error.name) + '\\*: ' +
+            this.outputEscape(error.message);
+        // }
+    }
+    /*
+private calculateErrorPos(partial: string, startPos: any, offset: number): [number, number] {
+    let pos = {line: startPos.line, ch: startPos.ch};
+    for (let i = 0; i < offset; i++) {
+        let char = partial.charAt(i);
+        if (char === '\n') {
+            pos.line ++;
+            pos.ch = 0;
+        } else {
+            pos.ch++;
         }
     }
-    calculateErrorPos(partial, startPos, offset) {
-        let pos = { line: startPos.line, ch: startPos.ch };
-        for (let i = 0; i < offset; i++) {
-            let char = partial.charAt(i);
-            if (char === '\n') {
-                pos.line++;
-                pos.ch = 0;
-            }
-            else {
-                pos.ch++;
-            }
-        }
-        return [pos.line + 1, pos.ch + 1];
-    }
+    return [pos.line + 1, pos.ch + 1];
+} */
     addSemicolon(pos, newState, marker, warnings, newCounter) {
         this.semicoli.push(pos);
         let baseIndex = this.findBaseIndex(this.data.length - 1);
@@ -544,53 +544,100 @@ class IncrementalInterpretation {
         for (let i = 0; i < indent; ++i) {
             istr += '  ';
         }
-        for (let i in dynamicBasis.valueEnvironment) {
-            if (dynamicBasis.valueEnvironment.hasOwnProperty(i)) {
-                if (staticBasis) {
-                    out += stsym + ' ' + istr + this.printBinding(state, [i, dynamicBasis.valueEnvironment[i],
-                        staticBasis.getValue(i)], false) + '\n';
-                }
-                else {
-                    out += stsym + ' ' + istr + this.printBinding(state, [i, dynamicBasis.valueEnvironment[i], undefined], false) + '\n';
+        if (dynamicBasis === undefined) {
+            for (let i in staticBasis.valueEnvironment) {
+                if (staticBasis.valueEnvironment.hasOwnProperty(i)) {
+                    out += stsym + ' ' + istr + this.printBinding(state, [i, undefined,
+                        staticBasis.getValue(i)]) + '\n';
                 }
             }
-        }
-        for (let i in dynamicBasis.typeEnvironment) {
-            if (dynamicBasis.typeEnvironment.hasOwnProperty(i)) {
+            for (let i in staticBasis.typeEnvironment) {
                 if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                    if (this.getPrototypeName(staticBasis.getType(i).type) === "CustomType") {
-                        out += stsym + ' ' + istr + 'datatype \\*' + staticBasis.getType(i).type
-                            + '\\* = {\n';
-                        for (let j of staticBasis.getType(i).constructors) {
-                            out += emptyst + '   ' + istr + this.printBinding(state, [j, dynamicBasis.valueEnvironment[j],
-                                staticBasis.getValue(j)]) + '\n';
+                    if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
+                        if (this.getPrototypeName(staticBasis.getType(i).type) === "CustomType") {
+                            out += stsym + ' ' + istr + 'datatype \\*' + staticBasis.getType(i).type
+                                + '\\* : {\n';
+                            for (let j of staticBasis.getType(i).constructors) {
+                                out += emptyst + '   ' + istr + this.printBinding(state, [j, undefined, staticBasis.getValue(j)]) + '\n';
+                            }
+                            out += emptyst + ' ' + istr + '};\n';
                         }
-                        out += emptyst + ' ' + istr + '};\n';
                     }
                 }
             }
-        }
-        for (let i in dynamicBasis.typeEnvironment) {
-            if (dynamicBasis.typeEnvironment.hasOwnProperty(i)) {
+            for (let i in staticBasis.typeEnvironment) {
                 if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                    if (this.getPrototypeName(staticBasis.getType(i).type) === "FunctionType") {
-                        out += stsym + ' ' + istr + 'type \\*'
-                            + staticBasis.getType(i).type.parameterType + ' = '
-                            + staticBasis.getType(i).type.returnType + '\\*;\n';
+                    if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
+                        if (this.getPrototypeName(staticBasis.getType(i).type) === "FunctionType") {
+                            out += stsym + ' ' + istr + 'type \\*'
+                                + staticBasis.getType(i).type.parameterType + ' = '
+                                + staticBasis.getType(i).type.returnType + '\\*;\n';
+                        }
                     }
                 }
             }
+            for (let i in staticBasis.structureEnvironment) {
+                if (staticBasis.structureEnvironment.hasOwnProperty(i)) {
+                    out += stsym + ' ' + istr + 'structure \\*' + i + '\\*: sig\n';
+                    if (staticBasis) {
+                        out += this.printBasis(state, undefined, staticBasis.getStructure(i), indent + 1);
+                    }
+                    else {
+                        out += this.printBasis(state, undefined, undefined, indent + 1);
+                    }
+                    out += emptyst + ' ' + istr + 'end;\n';
+                }
+            }
         }
-        for (let i in dynamicBasis.structureEnvironment) {
-            if (dynamicBasis.structureEnvironment.hasOwnProperty(i)) {
-                out += stsym + ' ' + istr + 'structure \\*' + i + '\\* = struct\n';
-                if (staticBasis) {
-                    out += this.printBasis(state, dynamicBasis.getStructure(i), staticBasis.getStructure(i), indent + 1);
+        else {
+            for (let i in dynamicBasis.valueEnvironment) {
+                if (dynamicBasis.valueEnvironment.hasOwnProperty(i)) {
+                    if (staticBasis) {
+                        out += stsym + ' ' + istr + this.printBinding(state, [i, dynamicBasis.valueEnvironment[i],
+                            staticBasis.getValue(i)], false) + '\n';
+                    }
+                    else {
+                        out += stsym + ' ' + istr + this.printBinding(state, [i, dynamicBasis.valueEnvironment[i], undefined], false) + '\n';
+                    }
                 }
-                else {
-                    out += this.printBasis(state, dynamicBasis.getStructure(i), undefined, indent + 1);
+            }
+            for (let i in dynamicBasis.typeEnvironment) {
+                if (dynamicBasis.typeEnvironment.hasOwnProperty(i)) {
+                    if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
+                        if (this.getPrototypeName(staticBasis.getType(i).type) === "CustomType") {
+                            out += stsym + ' ' + istr + 'datatype \\*' + staticBasis.getType(i).type
+                                + '\\* = {\n';
+                            for (let j of staticBasis.getType(i).constructors) {
+                                out += emptyst + '   ' + istr + this.printBinding(state, [j, dynamicBasis.valueEnvironment[j],
+                                    staticBasis.getValue(j)]) + '\n';
+                            }
+                            out += emptyst + ' ' + istr + '};\n';
+                        }
+                    }
                 }
-                out += emptyst + ' ' + istr + 'end;\n';
+            }
+            for (let i in dynamicBasis.typeEnvironment) {
+                if (dynamicBasis.typeEnvironment.hasOwnProperty(i)) {
+                    if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
+                        if (this.getPrototypeName(staticBasis.getType(i).type) === "FunctionType") {
+                            out += stsym + ' ' + istr + 'type \\*'
+                                + staticBasis.getType(i).type.parameterType + ' = '
+                                + staticBasis.getType(i).type.returnType + '\\*;\n';
+                        }
+                    }
+                }
+            }
+            for (let i in dynamicBasis.structureEnvironment) {
+                if (dynamicBasis.structureEnvironment.hasOwnProperty(i)) {
+                    out += stsym + ' ' + istr + 'structure \\*' + i + '\\* = struct\n';
+                    if (staticBasis) {
+                        out += this.printBasis(state, dynamicBasis.getStructure(i), staticBasis.getStructure(i), indent + 1);
+                    }
+                    else {
+                        out += this.printBasis(state, dynamicBasis.getStructure(i), undefined, indent + 1);
+                    }
+                    out += emptyst + ' ' + istr + 'end;\n';
+                }
             }
         }
         return out;
@@ -601,7 +648,12 @@ class IncrementalInterpretation {
         let curst = state;
         for (let i = state.id; i >= id; --i) {
             if (curst.id === i) {
-                res = this.printBasis(curst, curst.getDynamicChanges(i - 1), curst.getStaticChanges(i - 1), 0) + res;
+                if (interpreterSettings.disableEvaluation) {
+                    res = this.printBasis(curst, undefined, curst.getStaticChanges(i - 1), 0) + res;
+                }
+                else {
+                    res = this.printBasis(curst, curst.getDynamicChanges(i - 1), curst.getStaticChanges(i - 1), 0) + res;
+                }
             }
             while (curst.id >= i) {
                 curst = curst.parent;
@@ -621,38 +673,17 @@ class IncrementalInterpretation {
         res = startWith + res;
         return res;
     }
-    /*
-    private computeNewStateOutputInternal(state: any, id: number) {
-        if ( state.id < id ) {
-            return '';
-        }
-        let output = '';
-        if ( state.parent !== undefined ) {
-            output += this.computeNewStateOutputInternal(state.parent, id);
-        }
-        if (state.dynamicBasis.valueEnvironment !== undefined) {
-            let valEnv = state.dynamicBasis.valueEnvironment;
-            for (let i in valEnv) {
-                if (valEnv.hasOwnProperty(i)) {
-                    if (state.getDynamicValue(i, false) === undefined) {
-                        continue;
-                    }
-                    output += this.printBinding(state, [i, state.getDynamicValue(i),
-                        state.getStaticValue(i)]);
-                    output += '\n';
-                }
-            }
-        }
-        return output;
-    }*/
     printBinding(state, bnd, acon = true) {
         let res = '';
-        let value = bnd[1][0];
+        let value = bnd[1];
+        if (value) {
+            value = value[0];
+        }
         let type = bnd[2];
         if (type) {
             type = type[0];
         }
-        let protoName = this.getPrototypeName(value);
+        let protoName = value ? this.getPrototypeName(value) : this.getPrototypeName(type);
         if (protoName === 'ValueConstructor' && acon) {
             res += 'con';
         }
@@ -671,7 +702,7 @@ class IncrementalInterpretation {
             }
         }
         else {
-            return res + ' \\*' + bnd[0] + ' = undefined\\*;';
+            res += ' \\*' + bnd[0] + '\\*';
         }
         if (type) {
             return res + ': \\_' + this.outputEscape(type.toString(state)) + '\\_;';
