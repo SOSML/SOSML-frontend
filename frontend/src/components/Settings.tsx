@@ -194,7 +194,7 @@ class Settings extends React.Component<any, State> {
             allowSuccessorML : false,
             disableElaboration: false,
             disableEvaluation: false,
-            allowVector: true,
+            allowVector: false,
             allowLongFunctionNames: false,
             allowStructuresAnywhere: false,
             allowSignaturesAnywhere: false,
