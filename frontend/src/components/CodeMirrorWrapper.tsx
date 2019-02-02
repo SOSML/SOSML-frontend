@@ -149,7 +149,7 @@ class IncrementalInterpretationHelper {
         this.workerTimeout = setTimeout(() => {
             this.restartWorker();
             let out = '';
-            let timeoutStr = 'Die Ausführung wurde unterbrochen, da sie zu lange gedauert hat.';
+            let timeoutStr = 'Execution terminated due to time limit violation';
             if (this.partialOutput.trim() === '') {
                 out = timeoutStr;
             } else if (this.partialOutput.endsWith('\n')) {

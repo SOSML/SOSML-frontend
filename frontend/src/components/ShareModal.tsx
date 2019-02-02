@@ -20,7 +20,7 @@ class ShareModal extends React.Component<Props, any> {
             return (
                 <Modal show={true} onHide={this.closeShareModal}>
                     <Modal.Header closeButton={true}>
-                        <Modal.Title>Erstellung des Teilen-Links erfolgreich</Modal.Title>
+                        <Modal.Title>Share link creation successful</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <div className="input-group">
@@ -32,13 +32,13 @@ class ShareModal extends React.Component<Props, any> {
                             </span>
                         </div>
                         <p className="text-justify">
-                            Nutze den obigen Link, um deinen Code mit deinen Freunden zu teilen.<br/>
-                            <b>Hinweis:</b> Unter dem Link befindet sich eine schreibgeschützte Version Deines Codes.
-                            Für veränderte Versionen Deines Codes musst Du also einen neuen Teilen-Link erstellen.
+                            Use the above link to share your code.<br/>
+                            <b>Attention:</b> The link refers to a read-only version of your code.
+                            To share a modified version of your code, please create a new share link.
                         </p>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={this.closeShareModal}>Schließen</Button>
+                        <Button onClick={this.closeShareModal}>Close</Button>
                     </Modal.Footer>
                 </Modal>
             );
@@ -46,14 +46,14 @@ class ShareModal extends React.Component<Props, any> {
             return (
                 <Modal show={true} onHide={this.closeShareModal}>
                     <Modal.Header closeButton={true}>
-                        <Modal.Title>Fehler beim Erstellen des Teilen-Links</Modal.Title>
+                        <Modal.Title>Share link creation failed</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        Es konnte leider kein Teilen-Link erstellt werden.<br/>
-                        Versuche es später noch einmal.
+                        Creating a share link for your code failed.<br/>
+                        Please try again later.
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={this.closeShareModal}>Schließen</Button>
+                        <Button onClick={this.closeShareModal}>Close</Button>
                     </Modal.Footer>
                 </Modal>
             );

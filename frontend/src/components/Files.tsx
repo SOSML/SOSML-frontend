@@ -55,6 +55,45 @@ class Files extends React.Component<any, State> {
                 </tr>
             );
         });
+        let examplesView: any;
+        if (this.state.examplesStatus === EXAMPLES_LOADED) {
+            let examples = this.state.examples.map((example) => {
+                return (
+                    <tr key={example}>
+                        <td>
+                            <Link to={'/examplefile/' + example}>{example}</Link>
+                        </td>
+                    </tr>
+                );
+            });
+
+            if (this.state.examples.length === 0) {
+                examplesView = (
+                    <p>There is no such thing as a sample file.</p>
+                );
+            } else {
+                examplesView = (
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {examples}
+                        </tbody>
+                    </Table>
+                );
+            }
+        } else if (this.state.examplesStatus === EXAMPLES_FAILED) {
+            examplesView = (
+                <p>Sample files unavailable.</p>
+            );
+        } else {
+            examplesView = (
+                <p>Loading sample files...</p>
+            );
+        }
 
         if (this.state.files.length === 0) {
             return (
@@ -62,20 +101,13 @@ class Files extends React.Component<any, State> {
                 <h2>Local files</h2>
                 <hr/>
                 <p>
-                You can find your saved files here. Click on a file name to load it into the editor.
+                Files saved from the editor will appear here.
                 </p>
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filesView}
-                    </tbody>
-                </Table>
-            </Grid>
+                <br/>
+                <h2>Sample files</h2>
+                <hr/>
+                {examplesView}
+                </Grid>
             );
         }
 
@@ -97,6 +129,10 @@ class Files extends React.Component<any, State> {
                         {filesView}
                     </tbody>
                 </Table>
+                <br/>
+                <h2>Sample files</h2>
+                <hr/>
+                {examplesView}
             </Grid>
         );
     }
