@@ -42,9 +42,6 @@ class MenuBar extends React.Component<any, State> {
                 fluid={true} className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
                 <Navbar.Header>
                     <Navbar.Brand>
-                        <img src="/logo.png" style={{padding: '10px'}} alt="Logo" />
-                    </Navbar.Brand>
-                    <Navbar.Brand>
                         <NavLink to="/">
                             SOSML
                         </NavLink>
@@ -59,18 +56,13 @@ class MenuBar extends React.Component<any, State> {
                     </Nav>
                     <Nav>
                         <LinkContainer to="/files">
-                            <NavItem><Glyphicon glyph={'file'} /> Dateien</NavItem>
+                            <NavItem><Glyphicon glyph={'file'} /> Files</NavItem>
                         </LinkContainer>
                     </Nav>
                     {extraLinks}
-                    <Nav>
-                        <LinkContainer to="/help">
-                            <NavItem><Glyphicon glyph={'question-sign'} /> Hilfe</NavItem>
-                        </LinkContainer>
-                    </Nav>
                     <Nav pullRight={true}>
                         <LinkContainer to="/settings">
-                            <NavItem><Glyphicon glyph={'cog'} /> Einstellungen</NavItem>
+                            <NavItem><Glyphicon glyph={'cog'} /> Settings</NavItem>
                         </LinkContainer>
                     </Nav>
                 </Navbar.Collapse>
@@ -78,7 +70,7 @@ class MenuBar extends React.Component<any, State> {
         );
     }
 
-    // Hover controll
+    // Hover control
     componentDidMount() {
         window.addEventListener('mousemove', this.handleBrowserMouseMove);
     }

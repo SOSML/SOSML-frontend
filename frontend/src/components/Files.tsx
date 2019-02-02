@@ -1,11 +1,9 @@
 import * as React from 'react';
 
-import ShareModal from './ShareModal';
 import { Grid , Table, Button, Glyphicon } from 'react-bootstrap';
 import { File, Database, API } from '../API';
 import './Files.css';
 import { Link } from 'react-router-dom';
-import { CONFIG } from '../config';
 
 const FileSaver = require('file-saver');
 
@@ -19,8 +17,6 @@ interface State {
     examplesStatus: number;
     shareLink: string;
 }
-
-const SHARE_LINK_ERROR = ':ERROR';
 
 class Files extends React.Component<any, State> {
     constructor(props: any) {
@@ -42,123 +38,65 @@ class Files extends React.Component<any, State> {
 
     render() {
         let filesView = this.state.files.map((file) => {
-            let shareControl: JSX.Element[] | undefined = ([
-                ( <div className="miniSpacer" /> ), (
-                    <Button bsStyle="primary" onClick={this.shareHandlerFor(file.name)}>
-                        <Glyphicon glyph={'link'} /> Teilen
-                    </Button>
-                )
-            ]);
-            if (!CONFIG.sharingEnabled) {
-                shareControl = undefined;
-            }
             return (
                 <tr key={file.name}>
                     <td>
                         <Link to={'/file/' + file.name}>{file.name}</Link>
                     </td>
-                    <td>Lokal</td>
                     <td>
                         <Button bsStyle="primary" onClick={this.downloadHandlerFor(file.name)}>
-                            <Glyphicon glyph={'download-alt'} /> Herunterladen
+                            <Glyphicon glyph={'download-alt'} /> Download
                         </Button>
-                        {shareControl}
                         <div className="miniSpacer" />
                         <Button bsStyle="danger" onClick={this.deleteHandlerFor(file.name)} >
-                            <Glyphicon glyph={'trash'} /> Löschen
+                            <Glyphicon glyph={'trash'} /> Delete
                         </Button>
                     </td>
                 </tr>
             );
         });
-        let examplesView: any;
-        if (this.state.examplesStatus === EXAMPLES_LOADED) {
-            let examples = this.state.examples.map((example) => {
-                return (
-                    <tr key={example}>
-                        <td>
-                            <Link to={'/examplefile/' + example}>{example}</Link>
-                        </td>
-                    </tr>
-                );
-            });
-
-            if (this.state.examples.length === 0) {
-                examplesView = (
-                    <p>Es gibt noch keine Beispieldateien</p>
-                );
-            } else {
-                examplesView = (
-                    <Table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {examples}
-                        </tbody>
-                    </Table>
-                );
-            }
-        } else if (this.state.examplesStatus === EXAMPLES_FAILED) {
-            examplesView = (
-                <p>Beispieldateien konnten nicht geladen werden.</p>
-            );
-        } else {
-            examplesView = (
-                <p>Beispieldateien werden geladen...</p>
-            );
-        }
-
-        let modal: JSX.Element | undefined;
-        if (this.state.shareLink !== '') {
-            modal = (
-                <ShareModal error={this.state.shareLink === SHARE_LINK_ERROR}
-                    link={this.state.shareLink} closeCallback={this.modalCloseCallback} />
-            );
-        }
 
         if (this.state.files.length === 0) {
             return (
                 <Grid className="flexy">
-                    <h2>Lokale Dateien und Programmbeispiele</h2>
-                    <hr/>
-                    <h4>Lokale Dateien</h4>
-                    <p>
-                    Du hast noch keine Dateien gespeichert.
-                    </p>
-                    <h4>Beispieldateien</h4>
-                    {examplesView}
-                    {modal}
-                </Grid>
-            );
-        }
-
-        return (
-            <Grid className="flexy">
-                    <h2>Lokale Dateien und Programmbeispiele</h2>
-                    <hr/>
-                    <h4>Lokale Dateien</h4>
-                    <p>
-                    Du findest hier Deine gespeicherten Programme. Clicke auf einen Dateinamen, um eine
-                    Datei in den Editor zu laden.
-                    </p>
+                <h2>Local files</h2>
+                <hr/>
+                <p>
+                You can find your saved files here. Click on a file name to load it into the editor.
+                </p>
                 <Table>
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Typ</th>
-                            <th>Aktionen</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filesView}
                     </tbody>
                 </Table>
-                <h4>Beispieldateien</h4>
-                {examplesView}
-                {modal}
+            </Grid>
+            );
+        }
+
+        return (
+            <Grid className="flexy">
+                    <h2>Local Files</h2>
+                    <hr/>
+                    <p>
+                    You can find your saved files here. Click on a file name to load it into the editor.
+                    </p>
+                <Table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filesView}
+                    </tbody>
+                </Table>
             </Grid>
         );
     }
@@ -226,24 +164,6 @@ class Files extends React.Component<any, State> {
                 if (ok) {
                     this.refreshFiles();
                 }
-            });
-        };
-    }
-
-    private shareHandlerFor(fileName: string): (evt: any) => void {
-        return (evt: any) => {
-            Database.getInstance().then((db: Database) => {
-                return db.getFile(fileName);
-            }).then((content: string) => {
-                return API.shareCode(content);
-            }).then((hash: string) => {
-                this.setState({
-                    shareLink: window.location.host + '/share/' + hash
-                });
-            }).catch((e: any) => {
-                this.setState({
-                    shareLink: SHARE_LINK_ERROR
-                });
             });
         };
     }
