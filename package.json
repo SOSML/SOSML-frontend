@@ -1,6 +1,6 @@
 {
   "name": "@sosml/frontend",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/SOSML/SOSML-frontend.git"
@@ -22,7 +22,8 @@
   "scripts": {
     "start": "cp node_modules/@sosml/webworker/build/webworker.js public/webworker.js && react-scripts-ts start",
     "build": "cp node_modules/@sosml/webworker/build/webworker.js public/webworker.js && react-scripts-ts build",
-    "test": "react-scripts-ts test --env=jsdom"
+    "version": "npm install && npm run build && git add -A",
+    "postversion": "git push && git push --tags"
   },
   "devDependencies": {
     "@types/node": "^8.0.28",
