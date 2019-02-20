@@ -1,5 +1,4 @@
 import * as React from 'react';
-import new_worker from '@sosml/webworker';
 
 const CodeMirror: any = require('react-codemirror');
 require('codemirror/lib/codemirror.css');
@@ -52,7 +51,7 @@ class IncrementalInterpretationHelper {
         this.outputCallback = outputCallback;
         this.markers = {};
 
-        this.worker = new_worker();
+        this.worker = new Worker(process.env.PUBLIC_URL + '/webworker.js');
         this.worker.onmessage = this.onWorkerMessage.bind(this);
         this.workerTimeout = null;
         this.wasTerminated = true;
@@ -66,7 +65,7 @@ class IncrementalInterpretationHelper {
 
     restartWorker() {
         this.worker.terminate();
-        this.worker = new_worker();
+        this.worker = new Worker(process.env.PUBLIC_URL + '/webworker.js');
         this.worker.onmessage = this.onWorkerMessage.bind(this);
     }
 

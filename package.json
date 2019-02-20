@@ -1,5 +1,5 @@
 {
-  "name": "sosml-frontend",
+  "name": "@sosml/frontend",
   "version": "1.0.0",
   "repository": {
     "type": "git",
@@ -17,12 +17,11 @@
     "react-router-bootstrap": "^0.24.4",
     "react-router-dom": "^4.2.2",
     "react-scripts-ts": "^2.7.0",
-    "react-splitter-layout": "^0.2.1",
-    "@sosml/webworker": "^1.0.2"
+    "react-splitter-layout": "^0.2.1"
   },
   "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
+    "start": "cp node_modules/@sosml/webworker/build/webworker.js public/webworker.js && react-scripts-ts start",
+    "build": "cp node_modules/@sosml/webworker/build/webworker.js public/webworker.js && react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom"
   },
   "devDependencies": {
@@ -33,6 +32,7 @@
     "@types/react-router": "^4.0.15",
     "@types/react-router-dom": "^4.0.7",
     "typescript": "^2.9.2",
-    "tslint": "^5.0.0"
+    "tslint": "^5.0.0",
+    "@sosml/webworker": "^1.0.2"
   }
 }
