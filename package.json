@@ -6,6 +6,9 @@
     "url": "https://github.com/SOSML/SOSML-frontend.git"
   },
   "description": "A frontend for the infamous SOSML interpreter",
+  "files": [
+    "build"
+  ],
   "license": "GPL-3.0",
   "dependencies": {
     "file-saver": "^1.3.3",
