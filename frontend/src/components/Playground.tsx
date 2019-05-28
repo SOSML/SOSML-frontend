@@ -77,17 +77,6 @@ class Playground extends React.Component<Props, State> {
             return data[0];
         });
         let code: string = this.props.initialCode;
-        let executeOnServer: JSX.Element | undefined;
-        if (this.state.useServer) {
-            executeOnServer = (
-                <div className="inlineBlock">
-                    <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="primary" onClick={this.handleRun}>
-                        <Glyphicon glyph={'play'} /> Run
-                    </Button>
-                </div>
-            );
-        }
         let modal: JSX.Element | undefined;
         if (this.state.shareLink !== '') {
             modal = (
