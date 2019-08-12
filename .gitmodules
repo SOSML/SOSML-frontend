@@ -1,6 +1,8 @@
 [submodule "submodules/interpreter"]
 	path = submodules/interpreter
-	url = https://github.com/SOSML/SOSML.git
+    url = https://github.com/SOSML/SOSML.git
+    branch = exp
 [submodule "submodules/webworker"]
 	path = submodules/webworker
-	url = https://github.com/SOSML/SOSML-webworker.git
+    url = https://github.com/SOSML/SOSML-webworker.git
+    branch = legacy
