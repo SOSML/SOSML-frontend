@@ -25,11 +25,12 @@
     "react-router-dom": "^4.2.2",
     "react-scripts-ts": "^2.7.0",
     "react-splitter-layout": "^0.2.1",
-    "tslint": "^5.0.0"
+    "tslint": "^5.0.0",
+    "workbox-cli": "^4.3.1"
   },
   "scripts": {
     "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
+    "build": "react-scripts-ts build && workbox generateSW workbox-config.js",
     "test": "react-scripts-ts test --env=jsdom"
   },
   "devDependencies": {
