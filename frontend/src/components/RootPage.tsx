@@ -34,7 +34,8 @@ class RootPage extends React.Component<any, any> {
                     <div className="footer">
                         © 2019 <a href="https://github.com/SOSML">The SOSML developers</a> | <a
                         href="https://github.com/SOSML/SOSML">Sources on GitHub</a> | <a
-                        href="https://github.com/SOSML/SOSML/issues">Report a bug</a>
+                        href="https://github.com/SOSML/SOSML/issues">Report a bug</a> | <a
+                        href="https://www.uni-saarland.de/footer/dialog/impressum.html">Imprint</a>
                     </div>
                 </div>
             </Router>
