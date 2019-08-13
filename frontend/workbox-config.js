@@ -11,5 +11,6 @@ module.exports = {
     modifyURLPrefix: {
         'build/': ''
     },
-    importWorkboxFrom: 'local'
+    importWorkboxFrom: 'local',
+    navigateFallback: '/'
 }
