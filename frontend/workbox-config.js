@@ -10,5 +10,6 @@ module.exports = {
     globDirectory: '.',
     modifyURLPrefix: {
         'build/': ''
-    }
+    },
+    importWorkboxFrom: 'local'
 }
