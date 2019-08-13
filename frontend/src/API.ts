@@ -50,7 +50,7 @@ export class API {
     static shareCode(code: string): Promise<string> {
         if (API.LAST_SHARE !== undefined) {
             if (new Date().getTime() - API.LAST_SHARE.getTime() <= 15000) {
-                return Promise.reject('Warte noch etwas bis Du das nächste mal teilst.');
+                return Promise.reject('Please wait a little until you try to share again.');
             }
         }
         if (API.EMULATE) {

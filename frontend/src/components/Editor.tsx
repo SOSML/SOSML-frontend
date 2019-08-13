@@ -87,9 +87,9 @@ class Editor extends React.Component<any, State> {
         if (this.state.shareReadMode) {
             topBar = (
                 <Alert bsStyle="info">
-                    Du betrachtest eine geteilte Datei. Um deine eigene Version dieser zu erstellen
+                    This is a read-only file. To create your own editable copy,
                     <div className="miniSpacer" />
-                    <Button bsStyle="success" onClick={this.handleRedirectToEdit}>klicke hier</Button>
+                    <Button bsStyle="success" onClick={this.handleRedirectToEdit}>click here.</Button>
                 </Alert>
             );
         } else {
