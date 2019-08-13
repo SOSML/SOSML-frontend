@@ -12,5 +12,5 @@ module.exports = {
         'build/': ''
     },
     importWorkboxFrom: 'local',
-    navigateFallback: '/'
+    navigateFallback: 'index.html'
 }
