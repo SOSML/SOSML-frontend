@@ -2,6 +2,7 @@ module.exports = {
     globPatterns: [
         'build/static/css/**.css',
         'build/static/js/**.js',
+        'build/static/fonts/*',
         'build/interpreter.js',
         'build/webworker.js',
         'build/index.html'
