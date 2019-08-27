@@ -396,8 +396,7 @@ class IncrementalInterpretation {
             }
         }
         catch (e) {
-            // TODO: switch over e's type
-            if (this.getPrototypeName(e) === 'IncompleteError') {
+            if (e.name === 'Input Incomplete') {
                 return {
                     state: null,
                     result: ErrorType.INCOMPLETE,
