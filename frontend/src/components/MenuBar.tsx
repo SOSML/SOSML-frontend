@@ -50,7 +50,7 @@ class MenuBar extends React.Component<any, State> {
                 </Navbar.Header>
                 <Navbar.Collapse>
                     <Nav>
-                        <LinkContainer exact={true} to="/">
+                        <LinkContainer exact={true} to="/editor">
                             <NavItem><Glyphicon glyph={'edit'} /> Editor</NavItem>
                         </LinkContainer>
                     </Nav>
