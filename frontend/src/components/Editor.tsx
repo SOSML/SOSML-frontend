@@ -126,7 +126,7 @@ class Editor extends React.Component<any, State> {
     }
 
     handleRedirectToEdit() {
-        this.props.history.push('/', {shareHash: this.state.shareHash});
+        this.props.history.push('/editor', {shareHash: this.state.shareHash});
     }
 
     handleFileNameChange(evt: any) {
