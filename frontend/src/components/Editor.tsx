@@ -58,7 +58,7 @@ class Editor extends React.Component<any, State> {
                         return {initialCode: content, fileName: state.fileName};
                     });
                 });
-                this.props.history.replace('/', {});
+                this.props.history.replace('/editor', {});
                 return;
             } else if (state.shareHash) {
                 API.loadSharedCode(state.shareHash).then((content: string) => {
@@ -66,7 +66,7 @@ class Editor extends React.Component<any, State> {
                         return {initialCode: content};
                     });
                 });
-                this.props.history.replace('/', {});
+                this.props.history.replace('/editor', {});
                 return;
             }
         }
