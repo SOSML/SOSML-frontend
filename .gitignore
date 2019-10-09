@@ -8,6 +8,7 @@
 
 # production
 /build
+frontend/src/components/Version.tsx
 
 # misc
 .DS_Store
