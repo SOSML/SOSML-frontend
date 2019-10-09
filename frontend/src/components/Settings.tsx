@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Checkbox } from 'react-bootstrap';
+import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 
 interface InterpreterSettings {
     allowUnicodeInStrings: boolean;
@@ -51,6 +52,8 @@ class Settings extends React.Component<any, State> {
             <h2>Interpreter settings</h2>
                 <hr/>
                 <p>
+                My name is "{REF_NAME}-{COMMIT_SHA} run {PIPELINE_ID}/{BUILD_DATE}" aka. FRONTEND.
+                    <br/>
                 You can enable some additional features and extensions here.
                 Things may break so be warned, though.
                 </p>

@@ -29,9 +29,10 @@
     "workbox-cli": "^4.3.1"
   },
   "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build && workbox generateSW workbox-config.js",
-    "test": "react-scripts-ts test --env=jsdom"
+    "start": "npm run version-ts; react-scripts-ts start",
+    "build": "npm run version-ts; react-scripts-ts build && workbox generateSW workbox-config.js",
+    "test": "react-scripts-ts test --env=jsdom",
+    "version-ts": "echo \"export const REF_NAME = '${CI_COMMIT_REF_NAME}';\nexport const COMMIT_SHA = '`git rev-parse --short HEAD`';\nexport const PIPELINE_ID = '${CI_PIPELINE_ID}';\nexport const BUILD_DATE = '`date --utc`';\" > ./src/components/Version.tsx"
   },
   "devDependencies": {
     "typescript": "^2.9.2"
