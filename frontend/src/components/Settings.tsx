@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 
-interface InterpreterSettings {
+export interface InterpreterSettings {
     allowUnicodeInStrings: boolean;
     allowVector: boolean;
     allowSuccessorML: boolean;
@@ -15,7 +15,7 @@ interface InterpreterSettings {
     strictMode: boolean;
 }
 
-interface InterfaceSettings {
+export interface InterfaceSettings {
     fullscreen: boolean;
     timeout: number;
     errorColor: string;
@@ -23,6 +23,7 @@ interface InterfaceSettings {
     successColor2: string;
     outputHighlight: boolean;
     autoIndent: boolean;
+    userContributesEnergy: boolean;
 }
 
 interface State {
@@ -34,12 +35,57 @@ const DEFAULT_ERROR_COLOR = '#ffdcdc';
 const DEFAULT_SUCCESS_COLOR1 = '#d2ffd2';
 const DEFAULT_SUCCESS_COLOR2 = '#dcffff';
 
+function fillObjectWithString(obj: any, str: string | null) {
+    if (typeof str === 'string') {
+        let data: any = JSON.parse(str);
+        for (let name in data) {
+            if (data.hasOwnProperty(name)) {
+                obj[name] = data[name];
+            }
+        }
+    }
+}
+
+export function getInterpreterSettings(): InterpreterSettings {
+    let str: string | null = localStorage.getItem('interpreterSettings');
+    let ret: InterpreterSettings = {
+        allowUnicodeInStrings: false,
+        allowSuccessorML : false,
+        disableElaboration: false,
+        disableEvaluation: false,
+        allowVector: false,
+        allowLongFunctionNames: false,
+        allowStructuresAnywhere: false,
+        allowSignaturesAnywhere: false,
+        allowFunctorsAnywhere: false,
+        strictMode: true
+    };
+    fillObjectWithString(ret, str);
+    return ret;
+}
+
+export function getInterfaceSettings(): InterfaceSettings {
+    let str: string | null = localStorage.getItem('interfaceSettings');
+    let ret: InterfaceSettings = {
+        fullscreen: false,
+        timeout: 5000,
+        errorColor: DEFAULT_ERROR_COLOR,
+        successColor1: DEFAULT_SUCCESS_COLOR1,
+        successColor2: DEFAULT_SUCCESS_COLOR2,
+        outputHighlight: true,
+        autoIndent: true,
+        userContributesEnergy: false
+    };
+    fillObjectWithString(ret, str);
+    return ret;
+}
+
 class Settings extends React.Component<any, State> {
     constructor() {
         super({});
         this.state = {
-            inter: this.getInterpreterSettings(),
-            front: this.getInterfaceSettings()
+            inter: getInterpreterSettings(),
+            front: getInterfaceSettings()
         };
 
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
@@ -190,49 +236,6 @@ class Settings extends React.Component<any, State> {
         localStorage.setItem('interfaceSettings', JSON.stringify(inter));
     }
 
-    private getInterpreterSettings(): InterpreterSettings {
-        let str: string | null = localStorage.getItem('interpreterSettings');
-        let ret: InterpreterSettings = {
-            allowUnicodeInStrings: false,
-            allowSuccessorML : false,
-            disableElaboration: false,
-            disableEvaluation: false,
-            allowVector: false,
-            allowLongFunctionNames: false,
-            allowStructuresAnywhere: false,
-            allowSignaturesAnywhere: false,
-            allowFunctorsAnywhere: false,
-            strictMode: true
-        };
-        this.fillObjectWithString(ret, str);
-        return ret;
-    }
-
-    private getInterfaceSettings(): InterfaceSettings {
-        let str: string | null = localStorage.getItem('interfaceSettings');
-        let ret: InterfaceSettings = {
-            fullscreen: false,
-            timeout: 5000,
-            errorColor: DEFAULT_ERROR_COLOR,
-            successColor1: DEFAULT_SUCCESS_COLOR1,
-            successColor2: DEFAULT_SUCCESS_COLOR2,
-            outputHighlight: true,
-            autoIndent: true
-        };
-        this.fillObjectWithString(ret, str);
-        return ret;
-    }
-
-    private fillObjectWithString(obj: any, str: string | null) {
-        if (typeof str === 'string') {
-            let data: any = JSON.parse(str);
-            for (let name in data) {
-                if (data.hasOwnProperty(name)) {
-                    obj[name] = data[name];
-                }
-            }
-        }
-    }
 }
 
 export default Settings;

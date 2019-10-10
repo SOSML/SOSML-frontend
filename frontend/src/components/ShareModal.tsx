@@ -6,6 +6,8 @@ interface Props {
     error: boolean;
     link: string;
     closeCallback: () => void;
+    formContractCallback: () => void;
+    enocontract: boolean;
 }
 
 class ShareModal extends React.Component<Props, any> {
@@ -13,6 +15,7 @@ class ShareModal extends React.Component<Props, any> {
         super(props);
 
         this.closeShareModal = this.closeShareModal.bind(this);
+        this.formContract = this.formContract.bind(this);
     }
 
     render() {
@@ -42,6 +45,24 @@ class ShareModal extends React.Component<Props, any> {
                     </Modal.Footer>
                 </Modal>
             );
+        } else if (this.props.enocontract) {
+            return (
+                <Modal show={true} onHide={this.closeShareModal}>
+                    <Modal.Header closeButton={true}>
+                        <Modal.Title>Share link creation failed</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Creating a share link for your code failed.<br/>
+                        But I think only other <em>Magical Users</em> have the right to
+                        criticize that.
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button bsStyle="danger" onClick={this.formContract}>Become a <em>Magical
+                        User</em></Button>
+                        <Button onClick={this.closeShareModal}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
+            );
         } else {
             return (
                 <Modal show={true} onHide={this.closeShareModal}>
@@ -58,6 +79,10 @@ class ShareModal extends React.Component<Props, any> {
                 </Modal>
             );
         }
+    }
+
+    formContract() {
+        this.props.formContractCallback();
     }
 
     closeShareModal() {
