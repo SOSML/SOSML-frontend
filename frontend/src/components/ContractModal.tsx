@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Button, Modal } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 
 interface Props {
     closeCallback: () => void;
@@ -36,9 +36,10 @@ class ContractModal extends React.Component<Props, any> {
                     Further, the availability of your uploaded files is not guaranteed.
                 </Modal.Body>
             <Modal.Footer>
-            <Button bsStyle="suc-alt" onClick={this.createContract}>
-            I accept. Turn me into a <em>Magical User</em></Button>
-            <Button bsStyle="def-alt" onClick={this.closeShareModal}>I will decide later.</Button>
+            <button className="btn btn-suc-alt" onClick={this.createContract} type="button">
+            I accept. Turn me into a <em>Magical User</em></button>
+            <button className="btn btn-def-alt" onClick={this.closeShareModal} type="button">
+            I will decide later.</button>
             </Modal.Footer>
             </Modal>
         );

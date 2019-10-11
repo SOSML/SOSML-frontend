@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Grid, Alert, Button } from 'react-bootstrap';
+import { Grid, Alert } from 'react-bootstrap';
 
 class Landing extends React.Component<any, any> {
     constructor(props: any) {
@@ -14,7 +14,7 @@ class Landing extends React.Component<any, any> {
 
     render() {
         let style: any = {};
-        style['margin-bottom'] = '20px';
+        style.marginBottom = '20px';
         style.float = 'right';
 
         return (
@@ -84,10 +84,10 @@ class Landing extends React.Component<any, any> {
                     </Alert>
                 </div>
 
-                <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}
-                    style={style}>
+                <button className="btn btn-suc-alt" onClick={this.handleRedirectToEdit}
+                    style={style} type="button">
                     Take me to the editor.
-                </Button>
+                </button>
 
                 <br/>
                 <br/>

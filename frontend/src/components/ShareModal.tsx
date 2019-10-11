@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Button, Modal , Glyphicon } from 'react-bootstrap';
+import { Modal , Glyphicon } from 'react-bootstrap';
 
 interface Props {
     error: boolean;
@@ -43,7 +43,8 @@ class ShareModal extends React.Component<Props, any> {
                         </p>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button bsStyle="def-alt" onClick={this.closeShareModal}>Close</Button>
+                        <button className="btn btn-def-alt" type="button"
+                        onClick={this.closeShareModal}>Close</button>
                     </Modal.Footer>
                 </Modal>
             );
@@ -59,9 +60,11 @@ class ShareModal extends React.Component<Props, any> {
                         criticize that.
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button bsStyle="suc-alt" onClick={this.formContract}>Become a <em>Magical
-                        User</em></Button>
-                        <Button bsStyle="def-alt" onClick={this.closeShareModal}>Close</Button>
+                        <button className="btn btn-suc-alt" type="button"
+                        onClick={this.formContract}>Become a <em>Magical
+                        User</em></button>
+                        <button className="btn btn-def-alt" type="button"
+                        onClick={this.closeShareModal}>Close</button>
                     </Modal.Footer>
                 </Modal>
             );
@@ -76,7 +79,8 @@ class ShareModal extends React.Component<Props, any> {
                         Please try again later.
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button bsStyle="def-alt" onClick={this.closeShareModal}>Close</Button>
+                        <button className="btn btn-def-alt" type="button"
+                        onClick={this.closeShareModal}>Close</button>
                     </Modal.Footer>
                 </Modal>
             );

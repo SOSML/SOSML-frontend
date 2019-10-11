@@ -103,8 +103,8 @@ class Playground extends React.Component<Props, State> {
             );
         }
         let style: any = {};
-        style['margin-right'] = '-3px';
-        style['margin-top'] = '-.5px';
+        style.marginRight = '-3px';
+        style.marginTop = '-.5px';
         let inputHeadBar: JSX.Element = (
 
             <div className="inlineBlock" style={style}>

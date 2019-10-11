@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Button, Checkbox } from 'react-bootstrap';
+import { Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
-import { getColor } from '../themes';
+import { getColor, getTheme } from '../themes';
 
 export interface InterpreterSettings {
     allowUnicodeInStrings: boolean;
@@ -91,9 +91,15 @@ class Settings extends React.Component<any, State> {
 
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
         this.resetColorsToDefault = this.resetColorsToDefault.bind(this);
+        this.themeChangeHandler = this.themeChangeHandler.bind(this);
     }
 
     render() {
+        let style: any = {};
+        style.textAlign = 'right';
+        style.width = '4.5em';
+        style.border = 'none';
+
         return (
             <div className="container flexy">
             <h2>Interpreter settings</h2>
@@ -144,10 +150,13 @@ class Settings extends React.Component<any, State> {
                         long to compute its feelings for you but you really care about
                         of what type an answer would be.)
                 </Checkbox>
-                Abort evaluation after <input type="number" min="0" step="100" value={this.state.front.timeout}
+                Abort evaluation after <input type="number" min="0" step="100"
+                    value={this.state.front.timeout} style={style}
                     onChange={this.timeoutChangeHandler} placeholder="9029"/> ms.
                 <br/><br/>
                 <h4>Editor settings</h4>
+                Using general theme <input placeholder={this.state.front.theme}
+                style={style} onChange={this.themeChangeHandler} />.<br/>
                 Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
                     onChange={this.colorChangeHandler('errorColor')}/><br/>
                 Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
@@ -155,9 +164,9 @@ class Settings extends React.Component<any, State> {
                 Alternative background color for evaluated code: <input type="color"
                 value={this.state.front.successColor2}
                     onChange={this.colorChangeHandler('successColor2')}/><br /><br />
-                <Button bsStyle="dng-alt" onClick={this.resetColorsToDefault}>
-                    Reset colors
-                </Button> <br /><br />
+                <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
+                    Reset colors to theme default
+                </button> <br /><br />
                 <Checkbox checked={this.state.front.outputHighlight}
                     onChange={this.changeHandler('front', 'outputHighlight')}>
                     Enable colored output
@@ -223,6 +232,24 @@ class Settings extends React.Component<any, State> {
         }, () => {
             this.saveState();
         });
+    }
+
+    private themeChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
+        let value = evt.target.value;
+
+        if (!getTheme(value) || this.state.front.theme === value) {
+            return;
+        }
+
+        this.setState((oldState) => {
+            let deepCopy: any = this.deepCopy(oldState);
+            deepCopy.front.theme = value;
+            return deepCopy;
+        }, () => {
+            this.saveState();
+        });
+        evt.target.value = '';
+        window.location.reload();
     }
 
     private deepCopy(json: any): any {

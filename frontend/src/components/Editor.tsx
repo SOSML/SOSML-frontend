@@ -100,9 +100,9 @@ class Editor extends React.Component<any, State> {
         } else {
             let style: any = {};
             if (this.state.savedFeedback === FEEDBACK_SUCCESS) {
-                style['background-color'] = getColor(getInterfaceSettings().theme, 'success');
+                style.backgroundColor = getColor(getInterfaceSettings().theme, 'success');
             } else if (this.state.savedFeedback === FEEDBACK_FAIL) {
-                style['background-color'] = getColor(getInterfaceSettings().theme, 'error');
+                style.backgroundColor = getColor(getInterfaceSettings().theme, 'error');
             }
             fileForm = (
                 <Form inline={true} className="inlineBlock" onSubmit={this.handleFormSubmit}>

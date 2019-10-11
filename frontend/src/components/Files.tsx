@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Grid, Table, Button, Glyphicon } from 'react-bootstrap';
+import { Grid, Table, Glyphicon } from 'react-bootstrap';
 import { File, Database, API } from '../API';
 import './Files.css';
 import { Link } from 'react-router-dom';
@@ -44,13 +44,15 @@ class Files extends React.Component<any, State> {
                         <Link to={'/file/' + file.name}>{file.name}</Link>
                     </td>
                     <td>
-                        <Button bsStyle="pri-alt" onClick={this.downloadHandlerFor(file.name)}>
+                        <button className="btn btn-pri-alt" type="button"
+                        onClick={this.downloadHandlerFor(file.name)}>
                             <Glyphicon glyph={'download-alt'} /> Download
-                        </Button>
+                        </button>
                         <div className="miniSpacer" />
-                        <Button bsStyle="dng-alt" onClick={this.deleteHandlerFor(file.name)} >
+                        <button className="btn btn-dng-alt" type="button"
+                        onClick={this.deleteHandlerFor(file.name)} >
                             <Glyphicon glyph={'trash'} /> Delete
-                        </Button>
+                        </button>
                     </td>
                 </tr>
             );
