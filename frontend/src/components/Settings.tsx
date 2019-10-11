@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Checkbox } from 'react-bootstrap';
+import { Button, Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 
 export interface InterpreterSettings {
@@ -24,6 +24,7 @@ export interface InterfaceSettings {
     outputHighlight: boolean;
     autoIndent: boolean;
     userContributesEnergy: boolean;
+    theme: string;
 }
 
 interface State {
@@ -74,7 +75,8 @@ export function getInterfaceSettings(): InterfaceSettings {
         successColor2: DEFAULT_SUCCESS_COLOR2,
         outputHighlight: true,
         autoIndent: true,
-        userContributesEnergy: false
+        userContributesEnergy: false,
+        theme: 'default'
     };
     fillObjectWithString(ret, str);
     return ret;
@@ -145,7 +147,7 @@ class Settings extends React.Component<any, State> {
                 </Checkbox>
                 Abort evaluation after <input type="number" min="0" step="100" value={this.state.front.timeout}
                     onChange={this.timeoutChangeHandler} placeholder="9029"/> ms.
-                <br/>
+                <br/><br/>
                 <h4>Editor settings</h4>
                 Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
                     onChange={this.colorChangeHandler('errorColor')}/><br/>
@@ -153,9 +155,10 @@ class Settings extends React.Component<any, State> {
                     onChange={this.colorChangeHandler('successColor1')}/><br/>
                 Alternative background color for evaluated code: <input type="color"
                 value={this.state.front.successColor2}
-                    onChange={this.colorChangeHandler('successColor2')}/><br />
-                <input type="button" value="Reset colors"
-                    onClick={this.resetColorsToDefault} /> <br />
+                    onChange={this.colorChangeHandler('successColor2')}/><br /><br />
+                <Button bsStyle="dng-alt" onClick={this.resetColorsToDefault}>
+                    Reset colors
+                </Button> <br /><br />
                 <Checkbox checked={this.state.front.outputHighlight}
                     onChange={this.changeHandler('front', 'outputHighlight')}>
                     Enable colored output

@@ -4,7 +4,7 @@ import MiniWindow from './MiniWindow';
 import ShareModal from './ShareModal';
 import ContractModal from './ContractModal';
 import CodeMirrorWrapper from './CodeMirrorWrapper';
-import { Button , Glyphicon } from 'react-bootstrap';
+import { Button, Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import { API as WebserverAPI } from '../API';
 import { InterfaceSettings, getInterfaceSettings } from './Settings';
@@ -22,18 +22,9 @@ interface State {
     sizeAnchor: any;
     useServer: boolean;
     shareLink: string;
-    interpreterTimeout: number;
-
-    errorColor: string;
-    successColor1: string;
-    successColor2: string;
-
-    outputHighlight: boolean;
-    userContributesEnergy: boolean;
 
     formContract: boolean;
-
-    interfaceSettings: any;
+    interfaceSettings: InterfaceSettings;
 }
 
 interface Props {
@@ -53,11 +44,7 @@ class Playground extends React.Component<Props, State> {
 
         this.state = {
             output: '', code: '', sizeAnchor: 0, useServer: false,
-            shareLink: '', interpreterTimeout: 5000,
-            errorColor: '', successColor1: '',
-            successColor2: '', outputHighlight: true,
-            userContributesEnergy: false, formContract: false,
-            interfaceSettings: null
+            shareLink: '', formContract: false, interfaceSettings: getInterfaceSettings()
         };
 
         this.handleLeftResize = this.handleLeftResize.bind(this);
@@ -110,24 +97,30 @@ class Playground extends React.Component<Props, State> {
         let shareElements: JSX.Element | undefined;
         if (!this.props.readOnly && CONFIG.sharingEnabled) {
             shareElements = (
-                <div className="inlineBlock">
-                <div className="miniSpacer" />
-                <Button bsSize="small" bsStyle="primary" onClick={this.handleShareWrapper}>
+                <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleShareWrapper}>
                 <Glyphicon glyph={'link'} /> Share
                 </Button>
-                </div>
             );
         }
+        let style: any = {};
+        style['margin-right'] = '-3px';
+        style['margin-top'] = '-.5px';
+        let inputHeadBar: JSX.Element = (
+
+            <div className="inlineBlock" style={style}>
+                {this.props.fileControls}
+                <div className="miniSpacer" />
+                {shareElements}
+            </div>
+        );
+
         let extraCSS = '';
-        if (this.state.errorColor !== '') {
-            extraCSS += '.eval-fail { background-color: ' + this.state.errorColor + ' !important; }';
-        }
-        if (this.state.errorColor !== '') {
-            extraCSS += '.eval-success { background-color: ' + this.state.successColor1 + ' !important; }';
-        }
-        if (this.state.errorColor !== '') {
-            extraCSS += '.eval-success-odd { background-color: ' + this.state.successColor2 + ' !important; }';
-        }
+        extraCSS += '.eval-fail { background-color: '
+        + this.state.interfaceSettings.errorColor + ' !important; }';
+        extraCSS += '.eval-success { background-color: '
+        + this.state.interfaceSettings.successColor1 + ' !important; }';
+        extraCSS += '.eval-success-odd { background-color: '
+        + this.state.interfaceSettings.successColor2 + ' !important; }';
         return (
             <div className="playground">
             <style>{extraCSS}</style>
@@ -136,12 +129,12 @@ class Playground extends React.Component<Props, State> {
             <MiniWindow content={(
                 <CodeMirrorWrapper flex={true} onChange={this.handleCodeChange} code={code}
                 readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                useInterpreter={!this.state.useServer} timeout={this.state.interpreterTimeout} />
+                useInterpreter={!this.state.useServer}
+                timeout={this.state.interfaceSettings.timeout} />
             )}
             header={(
                 <div className="headerButtons">
-                {this.props.fileControls}
-                {shareElements}
+                {inputHeadBar}
                 </div>
             )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
             </div>
@@ -173,8 +166,7 @@ class Playground extends React.Component<Props, State> {
     modalCreateContractCallback() {
         this.setState({
             formContract: false,
-            shareLink: '',
-            userContributesEnergy: true
+            shareLink: ''
         });
 
         if (this.state.interfaceSettings.userContributesEnergy !== undefined) {
@@ -194,25 +186,6 @@ class Playground extends React.Component<Props, State> {
 
         if (settings.fullscreen) {
             this.getBodyClassList().add('fullscreen');
-        }
-
-        if (settings.timeout) {
-            this.setState({interpreterTimeout: settings.timeout});
-        }
-        if (settings.errorColor) {
-            this.setState({errorColor: settings.errorColor});
-        }
-        if (settings.successColor1) {
-            this.setState({successColor1: settings.successColor1});
-        }
-        if (settings.successColor2) {
-            this.setState({successColor2: settings.successColor2});
-        }
-        if (settings.outputHighlight !== undefined) {
-            this.setState({outputHighlight: settings.outputHighlight});
-        }
-        if (settings.userContributesEnergy !== undefined) {
-            this.setState({userContributesEnergy: settings.userContributesEnergy});
         }
     }
 
@@ -284,7 +257,7 @@ class Playground extends React.Component<Props, State> {
     }
 
     handleShare(forceAllow: boolean = false) {
-        if (this.state.userContributesEnergy || forceAllow) {
+        if (this.state.interfaceSettings.userContributesEnergy || forceAllow) {
             // We have the user's soul, so we can get "energy"
             WebserverAPI.shareCode(this.state.code).then((hash) => {
                 this.setState(prevState => {
@@ -376,7 +349,7 @@ class Playground extends React.Component<Props, State> {
             }
         }
         let addClass = 'pre-reset ';
-        if (this.state.outputHighlight) {
+        if (this.state.interfaceSettings.outputHighlight) {
             switch (markingColor) {
                 case 1:
                     addClass += 'eval-success';
@@ -388,7 +361,7 @@ class Playground extends React.Component<Props, State> {
                     addClass += 'eval-fail';
                     break;
                 default:
-                    break; // Y U WANT DEFAULT
+                    break;
             }
         }
         if (items.length === 0) {

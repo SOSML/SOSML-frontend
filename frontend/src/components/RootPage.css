@@ -1,5 +1,6 @@
 .rootPage {
-    min-height: 100vh;
+    height: stretch;
+    min-height: calc(100vh - 55px);
     flex-direction: column;
     display: flex;
 }
@@ -14,19 +15,24 @@
     flex: 1 0 auto;
 }
 
-nav {
-    margin-bottom: 3px !important;
-}
-
 .miniSpacer {
     display: inline-block;
     margin-left: 0.4em;
 }
 
 .footer {
-    background-color: #ffffff;
     padding-right: 10px;
     text-align: right;
+}
+
+body {
+    padding-top: 55px;
+}
+
+body.fullscreen {
+    padding-top: 3px;
+    height: calc(100vh - 3px);
+    min-height: calc(100vh - 3px);
 }
 
 body.fullscreen .footer {
@@ -35,4 +41,49 @@ body.fullscreen .footer {
 
 body.fullscreen nav {
     display: none;
+}
+
+.form-control, .btn-group-sm>.btn, .btn-sm, .btn-default, .btn, .alert, .modal-content {
+    border-radius: 0;
+}
+
+input {
+    border: 1px solid;
+}
+
+input[type=checkbox] {
+    -webkit-appearance: none;
+    border: 1px solid;
+    box-shadow: none;
+    padding: 5px;
+    border-radius: 0px;
+    display: inline-block;
+    position: relative;
+}
+input[type=checkbox]:checked:after {
+    content: 'on';
+    font-size: 10px;
+    position: absolute;
+    top: -1px;
+    left: -1px;
+}
+
+.table>tbody>tr>td {
+    vertical-align: middle;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.modal-footer {
+    padding: 0;
+    margin-right: -1px;
+    margin-bottom: -1px;
+    border-top: none;
+}
+
+.modal-content {
+    box-shadow: none;
 }

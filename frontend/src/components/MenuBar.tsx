@@ -38,7 +38,7 @@ class MenuBar extends React.Component<any, State> {
         }
 
         return (
-            <Navbar inverse={true} collapseOnSelect={true} staticTop={true}
+            <Navbar inverse={true} collapseOnSelect={true} fixedTop={true}
                 fluid={true} className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
                 <Navbar.Header>
                     <Navbar.Brand>

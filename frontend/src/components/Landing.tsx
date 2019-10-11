@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Alert, Button } from 'react-bootstrap';
+import { Grid, Alert, Button } from 'react-bootstrap';
 
 class Landing extends React.Component<any, any> {
     constructor(props: any) {
@@ -14,7 +14,7 @@ class Landing extends React.Component<any, any> {
 
     render() {
         return (
-           <div className="container flexy">
+            <Grid className="flexy">
                 <h2>SOSML - Online Interpreter for Standard ML</h2>
                 <hr />
                 <p>
@@ -26,7 +26,7 @@ class Landing extends React.Component<any, any> {
                 </p>
 
                 <h3>How to use SOSML</h3>
-                <p>
+                <div>
                     The editor shows two columns. The left column allows to write Standard ML code
                     and the interpreter output is shown in the right column. Code is evaluated after
                     typing a semicolon (;). The interpreter runs locally in your browser, so no
@@ -42,10 +42,10 @@ class Landing extends React.Component<any, any> {
                     due to limitations for how long a script is allowed to run.
                     This time limit may be changed on the <a href="/settings">settings page</a>.
                     </Alert>
-                </p>
+                </div>
 
                 <h3>Save your work!</h3>
-                <p>
+                <div>
                     If you want to keep SML programs in the interpreter you have to save them.
                     You can find a text field in which you can enter a file name next to
                     a &ldquo;Save&rdquo; button. When you change your code, you have to save the
@@ -58,10 +58,10 @@ class Landing extends React.Component<any, any> {
                     The files are saved locally inside your browser. If you delete website data of
                     sosml.org, all your files are deleted.
                     </Alert>
-                </p>
+                </div>
 
                 <h3>Code Sharing</h3>
-                <p>
+                <div>
                     You can share the code that is currently shown in the interpreter by using
                     the &ldquo;Share&rdquo; button. Your code will be uploaded to the servers
                     of Saarland University and you are provided with a link to download your file.
@@ -78,12 +78,15 @@ class Landing extends React.Component<any, any> {
                     license to use, publish, and create derivative works of your uploaded file.
                     Further, we cannot guarantee the availability of your uploaded files.
                     </Alert>
-                </p>
+                </div>
 
-                <Button bsStyle="success" onClick={this.handleRedirectToEdit}>
+                <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}>
                     Take me to the editor.
                 </Button>
-            </div>
+
+                <br/>
+                <br/>
+            </Grid>
         );
     }
 }

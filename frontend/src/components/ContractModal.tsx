@@ -18,7 +18,7 @@ class ContractModal extends React.Component<Props, any> {
     render() {
         return (
             <Modal show={true} onHide={this.closeShareModal}>
-            <Modal.Header closeButton={true}>
+            <Modal.Header closeButton={false}>
             <Modal.Title>Form an <em>Agreement</em> with me and become a <em>
             Magical User</em></Modal.Title>
             </Modal.Header>
@@ -36,9 +36,9 @@ class ContractModal extends React.Component<Props, any> {
                     Further, the availability of your uploaded files is not guaranteed.
                 </Modal.Body>
             <Modal.Footer>
-            <Button bsStyle="danger" onClick={this.createContract}>
+            <Button bsStyle="dng-alt" onClick={this.createContract}>
             I accept. Turn me into a <em>Magical User</em></Button>
-            <Button onClick={this.closeShareModal}>I will decide later.</Button>
+            <Button bsStyle="def-alt" onClick={this.closeShareModal}>I will decide later.</Button>
             </Modal.Footer>
             </Modal>
         );
