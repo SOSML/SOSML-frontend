@@ -36,7 +36,7 @@ class ContractModal extends React.Component<Props, any> {
                     Further, the availability of your uploaded files is not guaranteed.
                 </Modal.Body>
             <Modal.Footer>
-            <Button bsStyle="dng-alt" onClick={this.createContract}>
+            <Button bsStyle="suc-alt" onClick={this.createContract}>
             I accept. Turn me into a <em>Magical User</em></Button>
             <Button bsStyle="def-alt" onClick={this.closeShareModal}>I will decide later.</Button>
             </Modal.Footer>

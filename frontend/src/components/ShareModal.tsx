@@ -59,7 +59,7 @@ class ShareModal extends React.Component<Props, any> {
                         criticize that.
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button bsStyle="dng-alt" onClick={this.formContract}>Become a <em>Magical
+                        <Button bsStyle="suc-alt" onClick={this.formContract}>Become a <em>Magical
                         User</em></Button>
                         <Button bsStyle="def-alt" onClick={this.closeShareModal}>Close</Button>
                     </Modal.Footer>

@@ -6,6 +6,7 @@ export type Theme = {
     'background': string;
     'foreground': string;
     'border': string;
+    'navbar_hover': string;
     'navbar_bg': string;
     'navbar_fg': string;
     'navbar_focus_fg': string;
@@ -34,13 +35,46 @@ export type Theme = {
 export type ThemeCollection = { [name: string]: Theme };
 
 let THEMES: ThemeCollection = {
+    'madoka': {
+        'error': '#ffdcdc',
+        'success': '#d2ffd2',
+        'success_alt': '#dcffff',
+        'background': '#fefdfd',
+        'foreground': '#883747',
+        'border': 'deeppink',
+        'navbar_hover': 'darkred',
+        'navbar_bg': '#ffe4e8',
+        'navbar_fg': 'crimson',
+        'navbar_focus_bg': '#fd8da2',
+        'navbar_focus_fg': '#fff',
+        'link': 'lightcoral',
+        'link_hover': 'crimson',
+        'minihead_bg': '#fefdfd',
+        'minihead_fg': 'crimson',
+        'editor_bg': '#4f4f4f',
+        'editor_fg': '#ddd',
+        'alert_fg': 'crimson',
+        'alert_bg': '#ffe4e8',
+        'alert_border': 'deeppink',
+        'btn_pri_fg': 'crimson',
+        'btn_pri_bg': '#ffe4e8',
+        'btn_pri_border': 'deeppink',
+        'btn_dng_fg': '#fff',
+        'btn_dng_bg': '#333',
+        'btn_dng_border': '#d43f3a',
+        'btn_suc_fg': '#266726',
+        'btn_suc_bg': '#a9e7a9',
+        'btn_suc_border': '#4cae4c',
+        'btn_hover': '#23527c',
+    },
     'sayaka': {
         'error': '#ffdcdc',
         'success_alt': '#d2ffd2',
         'success': '#dcffff',
         'background': '#fff',
         'foreground': '#333',
-        'border': '#ccc',
+        'border': '#2f2f2f',
+        'navbar_hover': '#fff',
         'navbar_bg': '#2f2f2f',
         'navbar_fg': '#bbb',
         'navbar_focus_bg': '#4f4f4f',
@@ -72,6 +106,7 @@ let THEMES: ThemeCollection = {
         'background': '#4f4f4f',
         'foreground': '#ddd',
         'border': '#ddd',
+        'navbar_hover': '#fff',
         'navbar_bg': '#2f2f2f',
         'navbar_fg': '#bbb',
         'navbar_focus_bg': '#4f4f4f',
@@ -157,6 +192,23 @@ export function renderTheme (theme: Theme): string {
     .navbar-inverse .navbar-brand {
         color: ${theme.navbar_fg};
     }
+    .navbar-inverse .navbar-nav > li > a:hover,
+    .navbar-inverse .navbar-nav > li > a:focus,
+    .navbar-inverse .navbar-brand:hover,
+    .navbar-inverse .navbar-brand:focus,
+    .navbar-inverse .navbar-nav > .open > a,
+    .navbar-inverse .navbar-nav > .open > a:hover,
+    .navbar-inverse .navbar-nav > .open > a:focus,
+    .navbar-inverse .navbar-link:hover,
+    .navbar-inverse .btn-link:hover,
+    .navbar-inverse .btn-link:focus
+    {
+        color: ${theme.navbar_hover};
+        background-color: transparent;
+    }
+    .navbar-inverse .navbar-toggle {
+        border-color: ${theme.border};
+    }
     .navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus,
     .navbar-inverse .navbar-nav>.active>a:hover {
         color: ${theme.navbar_focus_fg};
@@ -166,6 +218,11 @@ export function renderTheme (theme: Theme): string {
         color: ${theme.navbar_fg};
         background-color: ${theme.navbar_bg};
     }
+    .navbar-inverse .navbar-toggle:focus, .navbar-inverse .navbar-toggle:hover {
+        color: ${theme.navbar_focus_fg};
+        background-color: ${theme.navbar_focus_bg};
+    }
+
     .footer { color: ${theme.foreground}; background-color: ${theme.background}; }
     a { color: ${theme.link}; }
     a:focus, a:hover { color: ${theme.link_hover}; text-decoration: none; }

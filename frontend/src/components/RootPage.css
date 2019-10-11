@@ -79,11 +79,19 @@ input[type=checkbox]:checked:after {
 
 .modal-footer {
     padding: 0;
-    margin-right: -1px;
-    margin-bottom: -1px;
+    margin-right: -.5px;
+    margin-bottom: -.5px;
     border-top: none;
 }
 
 .modal-content {
     box-shadow: none;
+}
+
+a {
+    font-weight: bold;
+}
+
+.footer a {
+    font-weight: normal;
 }
