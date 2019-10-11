@@ -13,6 +13,10 @@ class Landing extends React.Component<any, any> {
     }
 
     render() {
+        let style: any = {};
+        style['margin-bottom'] = '20px';
+        style.float = 'right';
+
         return (
             <Grid className="flexy">
                 <h2>SOSML - Online Interpreter for Standard ML</h2>
@@ -80,7 +84,8 @@ class Landing extends React.Component<any, any> {
                     </Alert>
                 </div>
 
-                <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}>
+                <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}
+                    style={style}>
                     Take me to the editor.
                 </Button>
 
