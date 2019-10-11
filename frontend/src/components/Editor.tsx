@@ -3,6 +3,8 @@ import * as React from 'react';
 import Playground from './Playground';
 import { Form , Alert, Button, Glyphicon } from 'react-bootstrap';
 import { Database, API } from '../API';
+import { getColor } from '../themes';
+import { getInterfaceSettings } from './Settings';
 import './Editor.css';
 
 const FEEDBACK_NONE = 0;
@@ -98,9 +100,9 @@ class Editor extends React.Component<any, State> {
         } else {
             let style: any = {};
             if (this.state.savedFeedback === FEEDBACK_SUCCESS) {
-                style['background-color'] = '#AAFFAA'; // TODO
+                style['background-color'] = getColor(getInterfaceSettings().theme, 'success');
             } else if (this.state.savedFeedback === FEEDBACK_FAIL) {
-                style['background-color'] = '#FFAAAA'; // TODO
+                style['background-color'] = getColor(getInterfaceSettings().theme, 'error');
             }
             fileForm = (
                 <Form inline={true} className="inlineBlock" onSubmit={this.handleFormSubmit}>

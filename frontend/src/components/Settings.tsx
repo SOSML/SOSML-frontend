@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button, Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
+import { getColor } from '../themes';
 
 export interface InterpreterSettings {
     allowUnicodeInStrings: boolean;
@@ -32,9 +33,7 @@ interface State {
     front: InterfaceSettings;
 }
 
-const DEFAULT_ERROR_COLOR = '#ffdcdc';
-const DEFAULT_SUCCESS_COLOR1 = '#d2ffd2';
-const DEFAULT_SUCCESS_COLOR2 = '#dcffff';
+const DEFAULT_THEME = 'sayaka';
 
 function fillObjectWithString(obj: any, str: string | null) {
     if (typeof str === 'string') {
@@ -70,13 +69,13 @@ export function getInterfaceSettings(): InterfaceSettings {
     let ret: InterfaceSettings = {
         fullscreen: false,
         timeout: 5000,
-        errorColor: DEFAULT_ERROR_COLOR,
-        successColor1: DEFAULT_SUCCESS_COLOR1,
-        successColor2: DEFAULT_SUCCESS_COLOR2,
+        errorColor: getColor(DEFAULT_THEME, 'error'),
+        successColor1: getColor(DEFAULT_THEME, 'success'),
+        successColor2: getColor(DEFAULT_THEME, 'success_alt'),
         outputHighlight: true,
         autoIndent: true,
         userContributesEnergy: false,
-        theme: 'default'
+        theme: 'sayaka'
     };
     fillObjectWithString(ret, str);
     return ret;
@@ -178,9 +177,9 @@ class Settings extends React.Component<any, State> {
     resetColorsToDefault() {
         this.setState((oldState) => {
             let deepCopy: any = this.deepCopy(oldState);
-            deepCopy.front.errorColor = DEFAULT_ERROR_COLOR;
-            deepCopy.front.successColor1 = DEFAULT_SUCCESS_COLOR1;
-            deepCopy.front.successColor2 = DEFAULT_SUCCESS_COLOR2;
+            deepCopy.front.errorColor = getColor(deepCopy.front.theme, 'error');
+            deepCopy.front.successColor1 = getColor(deepCopy.front.theme, 'success');
+            deepCopy.front.successColor2 = getColor(deepCopy.front.theme, 'success_alt');
             return deepCopy;
         }, () => {
             this.saveState();
