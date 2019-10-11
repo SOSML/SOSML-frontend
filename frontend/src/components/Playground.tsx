@@ -216,15 +216,25 @@ class Playground extends React.Component<Props, State> {
     }
 
     handleBrowserKeyup(evt: KeyboardEvent) {
+        let newval: boolean = false;
         if (evt.key === 'Escape') {
             this.getBodyClassList().remove('fullscreen');
+            newval = false;
         } else if (evt.key === 'F11') {
             // Toggle the fullscreen mode
             if (this.getBodyClassList().contains('fullscreen')) {
                 this.getBodyClassList().remove('fullscreen');
+                newval = false;
             } else {
                 this.getBodyClassList().add('fullscreen');
+                newval = true;
             }
+        }
+
+        if (this.state.interfaceSettings.fullscreen !== undefined) {
+            this.state.interfaceSettings.fullscreen = newval;
+            localStorage.setItem('interfaceSettings',
+                                 JSON.stringify(this.state.interfaceSettings));
         }
     }
 
