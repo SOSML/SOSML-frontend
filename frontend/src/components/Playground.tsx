@@ -94,8 +94,12 @@ class Playground extends React.Component<Props, State> {
                 );
             }
         }
+        let spacer: JSX.Element | undefined;
         let shareElements: JSX.Element | undefined;
         if (!this.props.readOnly && CONFIG.sharingEnabled) {
+            spacer = (
+                <div className="miniSpacer" />
+            );
             shareElements = (
                 <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleShareWrapper}>
                 <Glyphicon glyph={'link'} /> Share
@@ -109,7 +113,7 @@ class Playground extends React.Component<Props, State> {
 
             <div className="inlineBlock" style={style}>
                 {this.props.fileControls}
-                <div className="miniSpacer" />
+                {spacer}
                 {shareElements}
             </div>
         );
