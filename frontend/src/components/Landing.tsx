@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Grid, Alert } from 'react-bootstrap';
 
+import { CONFIG } from '../config';
+
 class Landing extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
@@ -16,6 +18,35 @@ class Landing extends React.Component<any, any> {
         let style: any = {};
         style.marginBottom = '20px';
         style.float = 'right';
+
+        let sharingH: JSX.Element | undefined;
+        let sharing: JSX.Element | undefined;
+
+        if (CONFIG.sharingEnabled) {
+            sharingH = (
+                <h3>Code Sharing</h3>
+            );
+            sharing = (
+                <div>
+                    You can share the code that is currently shown in the interpreter by using
+                    the &ldquo;Share&rdquo; button. Your code will be uploaded to the servers
+                    of Saarland University and you are provided with a link to download your file.
+                    Files are always snapshots, neither you nor anyone with the link is able to
+                    modify the file. If you want to share an updated version, you have to share the
+                    file again (getting a new link for it).
+
+                    <br/><br/>
+                    <Alert bsStyle="info"><strong>Warning: </strong>
+                    Only upload files and content to which you own the copyright.
+                    By uploading a file to the servers of Saarland University, you grant Saarland
+                    University and the <a href="https://github.com/SOSML"> SOSML Developers </a>
+                    a non-exclusive, worldwide, royalty-free, sub-licensable, and transferable
+                    license to use, publish, and create derivative works of your uploaded file.
+                    Further, we cannot guarantee the availability of your uploaded files.
+                    </Alert>
+                </div>
+            );
+        }
 
         return (
             <Grid className="flexy">
@@ -64,25 +95,8 @@ class Landing extends React.Component<any, any> {
                     </Alert>
                 </div>
 
-                <h3>Code Sharing</h3>
-                <div>
-                    You can share the code that is currently shown in the interpreter by using
-                    the &ldquo;Share&rdquo; button. Your code will be uploaded to the servers
-                    of Saarland University and you are provided with a link to download your file.
-                    Files are always snapshots, neither you nor anyone with the link is able to
-                    modify the file. If you want to share an updated version, you have to share the
-                    file again (getting a new link for it).
-
-                    <br/><br/>
-                    <Alert bsStyle="info"><strong>Warning: </strong>
-                    Only upload files and content to which you own the copyright.
-                    By uploading a file to the servers of Saarland University, you grant Saarland
-                    University and the <a href="https://github.com/SOSML"> SOSML Developers </a>
-                    a non-exclusive, worldwide, royalty-free, sub-licensable, and transferable
-                    license to use, publish, and create derivative works of your uploaded file.
-                    Further, we cannot guarantee the availability of your uploaded files.
-                    </Alert>
-                </div>
+                {sharingH}
+                {sharing}
 
                 <button className="btn btn-suc-alt" onClick={this.handleRedirectToEdit}
                     style={style} type="button">
