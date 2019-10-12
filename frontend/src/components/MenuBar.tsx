@@ -38,7 +38,7 @@ class MenuBar extends React.Component<any, State> {
         }
 
         return (
-            <Navbar inverse={true} collapseOnSelect={true} staticTop={true}
+            <Navbar inverse={true} collapseOnSelect={true} fixedTop={true}
                 fluid={true} className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
                 <Navbar.Header>
                     <Navbar.Brand>
@@ -50,7 +50,7 @@ class MenuBar extends React.Component<any, State> {
                 </Navbar.Header>
                 <Navbar.Collapse>
                     <Nav>
-                        <LinkContainer exact={true} to="/">
+                        <LinkContainer exact={true} to="/editor">
                             <NavItem><Glyphicon glyph={'edit'} /> Editor</NavItem>
                         </LinkContainer>
                     </Nav>

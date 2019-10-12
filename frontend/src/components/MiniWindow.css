@@ -1,6 +1,6 @@
 .mini-window {
-    border: 2px solid #A4A4A4;
-    border-radius: .25rem;
+    border: 1px solid;
+    border-radius: 0;
     height: 100%;
     max-height: 100%;
 
@@ -23,7 +23,6 @@
 
 .window-header {
     padding: 0rem .20rem;
-    background-color: #C4C4C4;
     min-height: 32px;
 }
 
@@ -32,7 +31,7 @@ body.fullscreen .window-header {
 }
 
 .window-title {
-    font-family: Georgia,sans-serif;
+    font-family: Helvetica,sans-serif;
     font-size: 22px;
     display: inline-block;
 }
@@ -42,7 +41,6 @@ body.fullscreen .window-header {
 }
 
 .window-footer {
-    background-color: #DDDDDD;
     padding: .1rem 1rem;
 }
 

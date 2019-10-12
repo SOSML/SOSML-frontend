@@ -2,10 +2,12 @@ import * as React from 'react';
 
 import MiniWindow from './MiniWindow';
 import ShareModal from './ShareModal';
+import ContractModal from './ContractModal';
 import CodeMirrorWrapper from './CodeMirrorWrapper';
-import { Button , Glyphicon } from 'react-bootstrap';
+import { Button, Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import { API as WebserverAPI } from '../API';
+import { InterfaceSettings, getInterfaceSettings } from './Settings';
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
 SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
     if (this.props.onUpdate && this.state.secondaryPaneSize !== prevState.secondaryPaneSize) {
@@ -20,13 +22,9 @@ interface State {
     sizeAnchor: any;
     useServer: boolean;
     shareLink: string;
-    interpreterTimeout: number;
 
-    errorColor: string;
-    successColor1: string;
-    successColor2: string;
-
-    outputHighlight: boolean;
+    formContract: boolean;
+    interfaceSettings: InterfaceSettings;
 }
 
 interface Props {
@@ -37,6 +35,7 @@ interface Props {
 }
 
 const SHARE_LINK_ERROR = ':ERROR';
+const SHARE_LINK_ERROR_NO_CONTRACT = ':ERROR_CONTRACT';
 const OUTPUT_MARKUP_SPECIALS = ['\\*', '\\_'];
 
 class Playground extends React.Component<Props, State> {
@@ -45,9 +44,7 @@ class Playground extends React.Component<Props, State> {
 
         this.state = {
             output: '', code: '', sizeAnchor: 0, useServer: false,
-            shareLink: '', interpreterTimeout: 5000,
-            errorColor: '', successColor1: '',
-            successColor2: '', outputHighlight: true
+            shareLink: '', formContract: false, interfaceSettings: getInterfaceSettings()
         };
 
         this.handleLeftResize = this.handleLeftResize.bind(this);
@@ -59,7 +56,10 @@ class Playground extends React.Component<Props, State> {
         this.handleOutputChange = this.handleOutputChange.bind(this);
         this.handleSwitchMode = this.handleSwitchMode.bind(this);
         this.handleShare = this.handleShare.bind(this);
+        this.handleShareWrapper = this.handleShareWrapper.bind(this);
         this.modalCloseCallback = this.modalCloseCallback.bind(this);
+        this.modalFormContractCallback = this.modalFormContractCallback.bind(this);
+        this.modalCreateContractCallback = this.modalCreateContractCallback.bind(this);
         this.handleBrowserKeyup = this.handleBrowserKeyup.bind(this);
     }
 
@@ -79,93 +79,113 @@ class Playground extends React.Component<Props, State> {
         let code: string = this.props.initialCode;
         let modal: JSX.Element | undefined;
         if (this.state.shareLink !== '') {
-            modal = (
-                <ShareModal error={this.state.shareLink === SHARE_LINK_ERROR}
-                    link={this.state.shareLink} closeCallback={this.modalCloseCallback} />
-            );
+            if (this.state.formContract) {
+                modal = (
+                    <ContractModal closeCallback={this.modalCloseCallback}
+                        createCallback={this.modalCreateContractCallback}/>
+                );
+            } else {
+                modal = (
+                    <ShareModal error={this.state.shareLink === SHARE_LINK_ERROR
+                        || this.state.shareLink === SHARE_LINK_ERROR_NO_CONTRACT}
+                        link={this.state.shareLink} closeCallback={this.modalCloseCallback}
+                        enocontract={this.state.shareLink === SHARE_LINK_ERROR_NO_CONTRACT}
+                        formContractCallback={this.modalFormContractCallback}/>
+                );
+            }
         }
         let shareElements: JSX.Element | undefined;
         if (!this.props.readOnly && CONFIG.sharingEnabled) {
             shareElements = (
-                <div className="inlineBlock">
-                    <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="primary" onClick={this.handleShare}>
-                        <Glyphicon glyph={'link'} /> Share
-                    </Button>
-                </div>
+                <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleShareWrapper}>
+                <Glyphicon glyph={'link'} /> Share
+                </Button>
             );
         }
+        let style: any = {};
+        style.marginRight = '-3px';
+        style.marginTop = '-.5px';
+        let inputHeadBar: JSX.Element = (
+
+            <div className="inlineBlock" style={style}>
+                {this.props.fileControls}
+                <div className="miniSpacer" />
+                {shareElements}
+            </div>
+        );
+
         let extraCSS = '';
-        if (this.state.errorColor !== '') {
-            extraCSS += '.eval-fail { background-color: ' + this.state.errorColor + ' !important; }';
-        }
-        if (this.state.errorColor !== '') {
-            extraCSS += '.eval-success { background-color: ' + this.state.successColor1 + ' !important; }';
-        }
-        if (this.state.errorColor !== '') {
-            extraCSS += '.eval-success-odd { background-color: ' + this.state.successColor2 + ' !important; }';
-        }
+        extraCSS += '.eval-fail { background-color: '
+        + this.state.interfaceSettings.errorColor + ' !important; }';
+        extraCSS += '.eval-success { background-color: '
+        + this.state.interfaceSettings.successColor1 + ' !important; }';
+        extraCSS += '.eval-success-odd { background-color: '
+        + this.state.interfaceSettings.successColor2 + ' !important; }';
         return (
             <div className="playground">
-                <style>{extraCSS}</style>
-                <SplitterLayout onUpdate={this.handleSplitterUpdate}>
-                    <div className="flexcomponent flexy">
-                        <MiniWindow content={(
-                                <CodeMirrorWrapper flex={true} onChange={this.handleCodeChange} code={code}
-                                readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                                useInterpreter={!this.state.useServer} timeout={this.state.interpreterTimeout} />
-                            )}
-                            header={(
-                            <div className="headerButtons">
-                                {this.props.fileControls}
-                                {shareElements}
-                            </div>
-                        )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
-                    </div>
-                    <div className="flexcomponent flexy">
-                        <MiniWindow content={
-                            <div>{lineItems}</div>}
-                        title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}
-                        />
-                    </div>
+            <style>{extraCSS}</style>
+            <SplitterLayout onUpdate={this.handleSplitterUpdate}>
+            <div className="flexcomponent flexy">
+            <MiniWindow content={(
+                <CodeMirrorWrapper flex={true} onChange={this.handleCodeChange} code={code}
+                readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
+                useInterpreter={!this.state.useServer}
+                timeout={this.state.interfaceSettings.timeout} />
+            )}
+            header={(
+                <div className="headerButtons">
+                {inputHeadBar}
+                </div>
+            )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
+            </div>
+            <div className="flexcomponent flexy">
+            <MiniWindow content={
+                <div>{lineItems}</div>}
+                title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}
+                />
+                </div>
                 </SplitterLayout>
                 {modal}
-            </div>
+                </div>
         );
     }
 
     modalCloseCallback() {
         this.setState({
+            shareLink: '',
+            formContract: false
+        });
+    }
+
+    modalFormContractCallback() {
+        this.setState({
+            formContract: true
+        });
+    }
+
+    modalCreateContractCallback() {
+        this.setState({
+            formContract: false,
             shareLink: ''
         });
+
+        if (this.state.interfaceSettings.userContributesEnergy !== undefined) {
+            this.state.interfaceSettings.userContributesEnergy = true;
+            localStorage.setItem('interfaceSettings',
+                                 JSON.stringify(this.state.interfaceSettings));
+        }
+        this.handleShare(true);
     }
 
     componentDidMount() {
         window.addEventListener('resize', this.handleBrowserResize);
         window.addEventListener('keyup', this.handleBrowserKeyup);
 
-        let interfaceSettings: string | null = localStorage.getItem('interfaceSettings');
-        if (typeof interfaceSettings === 'string') {
-            let settings = JSON.parse(interfaceSettings);
-            if (settings.fullscreen) {
-                this.getBodyClassList().add('fullscreen');
-            }
+        let settings: InterfaceSettings = getInterfaceSettings();
+        this.setState({'interfaceSettings': settings});
 
-            if (settings.timeout) {
-                this.setState({interpreterTimeout: settings.timeout});
-            }
-            if (settings.errorColor) {
-                this.setState({errorColor: settings.errorColor});
-            }
-            if (settings.successColor1) {
-                this.setState({successColor1: settings.successColor1});
-            }
-            if (settings.successColor2) {
-                this.setState({successColor2: settings.successColor2});
-            }
-            if (settings.outputHighlight !== undefined) {
-                this.setState({outputHighlight: settings.outputHighlight});
-            }
+        if (settings.fullscreen) {
+            this.getBodyClassList().add('fullscreen');
         }
     }
 
@@ -232,14 +252,23 @@ class Playground extends React.Component<Props, State> {
         });
     }
 
-    handleShare() {
-        WebserverAPI.shareCode(this.state.code).then((hash) => {
-            this.setState(prevState => {
-                return {shareLink: window.location.host + '/share/' + hash};
+    handleShareWrapper() {
+        this.handleShare(false);
+    }
+
+    handleShare(forceAllow: boolean = false) {
+        if (this.state.interfaceSettings.userContributesEnergy || forceAllow) {
+            // We have the user's soul, so we can get "energy"
+            WebserverAPI.shareCode(this.state.code).then((hash) => {
+                this.setState(prevState => {
+                    return {shareLink: window.location.host + '/share/' + hash};
+                });
+            }).catch(() => {
+                this.setState({shareLink: SHARE_LINK_ERROR});
             });
-        }).catch(() => {
-            this.setState({shareLink: SHARE_LINK_ERROR});
-        });
+        } else {
+            this.setState({shareLink: SHARE_LINK_ERROR_NO_CONTRACT});
+        }
     }
 
     handleSwitchMode() {
@@ -320,7 +349,7 @@ class Playground extends React.Component<Props, State> {
             }
         }
         let addClass = 'pre-reset ';
-        if (this.state.outputHighlight) {
+        if (this.state.interfaceSettings.outputHighlight) {
             switch (markingColor) {
                 case 1:
                     addClass += 'eval-success';
@@ -332,7 +361,7 @@ class Playground extends React.Component<Props, State> {
                     addClass += 'eval-fail';
                     break;
                 default:
-                    break; // Y U WANT DEFAULT
+                    break;
             }
         }
         if (items.length === 0) {

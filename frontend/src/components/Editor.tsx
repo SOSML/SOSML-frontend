@@ -3,6 +3,8 @@ import * as React from 'react';
 import Playground from './Playground';
 import { Form , Alert, Button, Glyphicon } from 'react-bootstrap';
 import { Database, API } from '../API';
+import { getColor } from '../themes';
+import { getInterfaceSettings } from './Settings';
 import './Editor.css';
 
 const FEEDBACK_NONE = 0;
@@ -58,7 +60,7 @@ class Editor extends React.Component<any, State> {
                         return {initialCode: content, fileName: state.fileName};
                     });
                 });
-                this.props.history.replace('/', {});
+                this.props.history.replace('/editor', {});
                 return;
             } else if (state.shareHash) {
                 API.loadSharedCode(state.shareHash).then((content: string) => {
@@ -66,7 +68,7 @@ class Editor extends React.Component<any, State> {
                         return {initialCode: content};
                     });
                 });
-                this.props.history.replace('/', {});
+                this.props.history.replace('/editor', {});
                 return;
             }
         }
@@ -85,27 +87,29 @@ class Editor extends React.Component<any, State> {
         let topBar: any;
         let fileForm: any;
         if (this.state.shareReadMode) {
+            let style: any = {};
+            style.margin = '0 3px 3px';
             topBar = (
-                <Alert bsStyle="info">
-                    This is a read-only file. To create your own editable copy,
+                <Alert bsStyle="info" style={style}>
+                    <b>Warning: </b>
+                    You are viewing a read-only file. To create your own editable copy,
                     <div className="miniSpacer" />
-                    <Button bsStyle="success" onClick={this.handleRedirectToEdit}>click here.</Button>
+                    <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}>click here.</Button>
                 </Alert>
             );
         } else {
             let style: any = {};
             if (this.state.savedFeedback === FEEDBACK_SUCCESS) {
-                style['background-color'] = '#AAFFAA';
+                style.backgroundColor = getColor(getInterfaceSettings().theme, 'success');
             } else if (this.state.savedFeedback === FEEDBACK_FAIL) {
-                style['background-color'] = '#FFAAAA';
+                style.backgroundColor = getColor(getInterfaceSettings().theme, 'error');
             }
             fileForm = (
                 <Form inline={true} className="inlineBlock" onSubmit={this.handleFormSubmit}>
                     <input className="form-control" type="text" onBlur={this.onFileNameBlur}
                         value={this.state.fileName} onChange={this.handleFileNameChange}
                         style={style} placeholder="File name"/>
-                    <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="primary" onClick={this.handleSave}>
+                    <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleSave}>
                         <Glyphicon glyph={'floppy-disk'} /> Save
                     </Button>
                 </Form>
@@ -126,7 +130,7 @@ class Editor extends React.Component<any, State> {
     }
 
     handleRedirectToEdit() {
-        this.props.history.push('/', {shareHash: this.state.shareHash});
+        this.props.history.push('/editor', {shareHash: this.state.shareHash});
     }
 
     handleFileNameChange(evt: any) {
