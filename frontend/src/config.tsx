@@ -10,7 +10,7 @@ export interface Configuration {
 
 let config: Configuration = {
     // Enable or disable sharing
-    sharingEnabled: true,
+    sharingEnabled: false,
     /*
     It is possible to add custom links to the navigation menu.
     The objects should have the format of the CustomLink interface above.
