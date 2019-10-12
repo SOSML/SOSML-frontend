@@ -35,6 +35,38 @@ export type Theme = {
 export type ThemeCollection = { [name: string]: Theme };
 
 let THEMES: ThemeCollection = {
+    'kyoko': {
+        'error': 'black',
+        'success': 'black',
+        'success_alt': 'black',
+        'background': 'black',
+        'foreground': '#ccc',
+        'border': 'crimson',
+        'navbar_hover': 'lightcoral',
+        'navbar_bg': 'black',
+        'navbar_fg': 'crimson',
+        'navbar_focus_bg': 'crimson',
+        'navbar_focus_fg': 'black',
+        'link': 'lightcoral',
+        'link_hover': 'crimson',
+        'minihead_bg': 'black',
+        'minihead_fg': 'crimson',
+        'editor_bg': 'black',
+        'editor_fg': 'crimson',
+        'alert_fg': 'deeppink',
+        'alert_bg': 'black',
+        'alert_border': 'crimson',
+        'btn_pri_fg': '#ccc',
+        'btn_pri_bg': 'black',
+        'btn_pri_border': 'deeppink',
+        'btn_dng_fg': 'crimson',
+        'btn_dng_bg': 'black',
+        'btn_dng_border': '#d43f3a',
+        'btn_suc_fg': '#266726',
+        'btn_suc_bg': 'black',
+        'btn_suc_border': '#4cae4c',
+        'btn_hover': 'lightcoral',
+    },
     'madoka': {
         'error': '#ffdcdc',
         'success': '#d2ffd2',
@@ -51,8 +83,8 @@ let THEMES: ThemeCollection = {
         'link_hover': 'crimson',
         'minihead_bg': '#fefdfd',
         'minihead_fg': 'crimson',
-        'editor_bg': '#4f4f4f',
-        'editor_fg': '#ddd',
+        'editor_bg': '#fefdfd',
+        'editor_fg': 'deeppink',
         'alert_fg': 'crimson',
         'alert_bg': '#ffe4e8',
         'alert_border': 'deeppink',
@@ -83,8 +115,8 @@ let THEMES: ThemeCollection = {
         'link_hover': '#23527c',
         'minihead_bg': '#fff',
         'minihead_fg': '#333',
-        'editor_bg': '#4f4f4f',
-        'editor_fg': '#ddd',
+        'editor_bg': '#fff',
+        'editor_fg': '#31708f',
         'alert_fg': '#31708f',
         'alert_bg': '#bce8f1',
         'alert_border': '#2e6da4',
@@ -236,13 +268,14 @@ export function renderTheme (theme: Theme): string {
         background-color: ${theme.minihead_bg};
     }
     .mini-window { border-color: ${theme.border}; }
-    body { color: ${theme.foreground}; background-color: ${theme.background}; }
+    .CodeMirror-lines, .CodeMirror-scroll, body {
+        color: ${theme.foreground}; background-color: ${theme.background}; }
     .splitter-layout>.layout-splitter { background-color: ${theme.background}; }
-    .CodeMirror { color: ${theme.editor_fg}; background-color: ${theme.editor_bg}; }
-    .CodeMirror-scroll, .CodeMirror-sizer, .CodeMirror-gutter, .CodeMirror-gutters,
-    .CodeMirror-linenumber {
-        color: ${theme.foreground};
-        background-color: ${theme.background};
+    .CodeMirror-sizer, .CodeMirror-gutter,
+    .CodeMirror-gutters, .CodeMirror-linenumber {
+        color: ${theme.editor_fg};
+        border-color: ${theme.editor_fg};
+        background-color: ${theme.editor_bg};
     }
     .form-control, input {
         color: ${theme.foreground};
