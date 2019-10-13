@@ -430,39 +430,10 @@ class IncrementalInterpretation {
             };
         }
     }
-    getPrototypeName(object) {
-        let proto = Object.getPrototypeOf(object);
-        if (proto.constructor && proto.constructor.name) {
-            return proto.constructor.name;
-        }
-        else {
-            return '';
-        }
-    }
     getErrorMessage(error, partial, startPos) {
-        // if (error.position !== undefined) {
-        //    let position = this.calculateErrorPos(partial, startPos, error.position);
-        //    return 'Line ' + position[0] + /* ' Spalte ' + position[1] + */ ': \\*' +
-        //        this.getPrototypeName(error) + '\\*: ' + this.outputEscape(error.message);
-        // } else {
         return '\\*' + this.outputEscape(error.name) + '\\*: ' +
             this.outputEscape(error.message);
-        // }
     }
-    /*
-private calculateErrorPos(partial: string, startPos: any, offset: number): [number, number] {
-    let pos = {line: startPos.line, ch: startPos.ch};
-    for (let i = 0; i < offset; i++) {
-        let char = partial.charAt(i);
-        if (char === '\n') {
-            pos.line ++;
-            pos.ch = 0;
-        } else {
-            pos.ch++;
-        }
-    }
-    return [pos.line + 1, pos.ch + 1];
-} */
     addSemicolon(pos, newState, marker, warnings, newCounter) {
         this.semicoli.push(pos);
         let baseIndex = this.findBaseIndex(this.data.length - 1);
@@ -552,26 +523,22 @@ private calculateErrorPos(partial: string, startPos: any, offset: number): [numb
             }
             for (let i in staticBasis.typeEnvironment) {
                 if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                    if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                        if (this.getPrototypeName(staticBasis.getType(i).type) === "CustomType") {
-                            out += stsym + ' ' + istr + 'datatype \\*' + staticBasis.getType(i).type
-                                + '\\* : {\n';
-                            for (let j of staticBasis.getType(i).constructors) {
-                                out += emptyst + '   ' + istr + this.printBinding(state, [j, undefined, staticBasis.getValue(j)]) + '\n';
-                            }
-                            out += emptyst + ' ' + istr + '};\n';
+                    if (staticBasis.getType(i).type.typeName() === "CustomType") {
+                        out += stsym + ' ' + istr + 'datatype \\*' + staticBasis.getType(i).type
+                            + '\\* : {\n';
+                        for (let j of staticBasis.getType(i).constructors) {
+                            out += emptyst + '   ' + istr + this.printBinding(state, [j, undefined, staticBasis.getValue(j)]) + '\n';
                         }
+                        out += emptyst + ' ' + istr + '};\n';
                     }
                 }
             }
             for (let i in staticBasis.typeEnvironment) {
                 if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                    if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                        if (this.getPrototypeName(staticBasis.getType(i).type) === "FunctionType") {
-                            out += stsym + ' ' + istr + 'type \\*'
-                                + staticBasis.getType(i).type.parameterType + ' = '
-                                + staticBasis.getType(i).type.returnType + '\\*;\n';
-                        }
+                    if (staticBasis.getType(i).type.typeName() === "FunctionType") {
+                        out += stsym + ' ' + istr + 'type \\*'
+                            + staticBasis.getType(i).type.parameterType + ' = '
+                            + staticBasis.getType(i).type.returnType + '\\*;\n';
                     }
                 }
             }
@@ -603,7 +570,7 @@ private calculateErrorPos(partial: string, startPos: any, offset: number): [numb
             for (let i in dynamicBasis.typeEnvironment) {
                 if (dynamicBasis.typeEnvironment.hasOwnProperty(i)) {
                     if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                        if (this.getPrototypeName(staticBasis.getType(i).type) === "CustomType") {
+                        if (staticBasis.getType(i).type.typeName() === "CustomType") {
                             out += stsym + ' ' + istr + 'datatype \\*' + staticBasis.getType(i).type
                                 + '\\* = {\n';
                             for (let j of staticBasis.getType(i).constructors) {
@@ -618,7 +585,7 @@ private calculateErrorPos(partial: string, startPos: any, offset: number): [numb
             for (let i in dynamicBasis.typeEnvironment) {
                 if (dynamicBasis.typeEnvironment.hasOwnProperty(i)) {
                     if (staticBasis.typeEnvironment.hasOwnProperty(i)) {
-                        if (this.getPrototypeName(staticBasis.getType(i).type) === "FunctionType") {
+                        if (staticBasis.getType(i).type.typeName() === "FunctionType") {
                             out += stsym + ' ' + istr + 'type \\*'
                                 + staticBasis.getType(i).type.parameterType + ' = '
                                 + staticBasis.getType(i).type.returnType + '\\*;\n';
@@ -644,24 +611,40 @@ private calculateErrorPos(partial: string, startPos: any, offset: number): [numb
     computeNewStateOutput(state, id, warnings, stateCounter) {
         let startWith = (stateCounter % 2 === 0) ? '\\1' : '\\2';
         let res = '';
-        let curst = state;
-        for (let i = state.id; i >= id; --i) {
-            if (curst.id === i) {
-                if (interpreterSettings.disableEvaluation) {
-                    res = this.printBasis(curst, undefined, curst.getStaticChanges(i - 1), 0) + res;
+        try {
+            let curst = state;
+            for (let i = state.id; i >= id; --i) {
+                if (curst.id === i) {
+                    if (interpreterSettings.disableEvaluation) {
+                        res = this.printBasis(curst, undefined, curst.getStaticChanges(i - 1), 0) + res;
+                    }
+                    else {
+                        res = this.printBasis(curst, curst.getDynamicChanges(i - 1), curst.getStaticChanges(i - 1), 0) + res;
+                    }
                 }
-                else {
-                    res = this.printBasis(curst, curst.getDynamicChanges(i - 1), curst.getStaticChanges(i - 1), 0) + res;
+                while (curst.id >= i) {
+                    curst = curst.parent;
                 }
             }
-            while (curst.id >= i) {
-                curst = curst.parent;
+        }
+        catch (e) {
+            // This is a dirty hack. I am not sorry.
+            if (interpreterSettings.disableEvaluation) {
+                res = this.printBasis(state, undefined, state.getStaticChanges(id - 1), 0);
+            }
+            else {
+                res = this.printBasis(state, state.getDynamicChanges(id - 1), state.getStaticChanges(id - 1), 0);
             }
         }
         let needNewline = false;
-        for (let val of warnings) {
-            res += this.outputEscape(val.message);
-            needNewline = !val.message.endsWith('\n');
+        for (let i = 0; i < warnings.length; ++i) {
+            if (warnings[i].position >= -1) {
+                res += this.outputEscape(warnings[i].message);
+            }
+            else {
+                res += this.outputEscape('Printed: ' + warnings[i].message);
+            }
+            needNewline = !warnings[i].message.endsWith('\n');
         }
         if (res.trim() === '') {
             res = '>\n';
@@ -674,15 +657,17 @@ private calculateErrorPos(partial: string, startPos: any, offset: number): [numb
     }
     printBinding(state, bnd, acon = true) {
         let res = '';
-        let value = bnd[1];
-        if (value) {
-            value = value[0];
+        let value;
+        let bnd1 = bnd[1];
+        if (bnd1 !== undefined) {
+            value = bnd1[0];
         }
-        let type = bnd[2];
-        if (type) {
-            type = type[0];
+        let type;
+        let bnd2 = bnd[2];
+        if (bnd2 !== undefined) {
+            type = bnd2[0];
         }
-        let protoName = value ? this.getPrototypeName(value) : this.getPrototypeName(type);
+        let protoName = value ? value.typeName() : type.typeName();
         if (protoName === 'ValueConstructor' && acon) {
             res += 'con';
         }
