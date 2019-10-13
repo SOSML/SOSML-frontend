@@ -143,7 +143,7 @@ export class API {
                 }
             );
         }
-        return fetch('/code/' + name.replace('/', '%2F'),
+        return fetch('/code/' + name.replace(/\//g, '%2F'),
             {
                 headers: {
                   'Accept': 'text/plain',
