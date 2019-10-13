@@ -82,8 +82,8 @@ export function getInterfaceSettings(): InterfaceSettings {
 }
 
 class Settings extends React.Component<any, State> {
-    constructor() {
-        super({});
+    constructor(props: any) {
+        super(props);
         this.state = {
             inter: getInterpreterSettings(),
             front: getInterfaceSettings()
@@ -102,7 +102,7 @@ class Settings extends React.Component<any, State> {
 
         return (
             <div className="container flexy">
-            <h2>Interpreter settings</h2>
+            <h2>Settings</h2>
                 <hr/>
                 <p>
                 My name is "{REF_NAME}-{COMMIT_SHA} run {PIPELINE_ID}/{BUILD_DATE}" aka. FRONTEND.
@@ -111,7 +111,7 @@ class Settings extends React.Component<any, State> {
                 Things may break so be warned, though.
                 </p>
                 <br/>
-                <h4>Interpreter settings</h4>
+                <h4>Interpreter Settings</h4>
                 <Checkbox defaultChecked={this.state.inter.allowUnicodeInStrings}
                     onChange={this.changeHandler('inter', 'allowUnicodeInStrings')}>
                     Allow Unicode symbols in strings
@@ -154,7 +154,7 @@ class Settings extends React.Component<any, State> {
                     value={this.state.front.timeout} style={style}
                     onChange={this.timeoutChangeHandler} placeholder="9029"/> ms.
                 <br/><br/>
-                <h4>Editor settings</h4>
+                <h4>Editor Settings</h4>
                 Using general theme <input placeholder={this.state.front.theme}
                 style={style} onChange={this.themeChangeHandler} />.<br/>
                 Background color for erroneous code: <input type="color" value={this.state.front.errorColor}

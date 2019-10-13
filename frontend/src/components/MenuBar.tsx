@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Nav, Navbar, NavItem, Glyphicon } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
-import { CONFIG } from '../config';
 const LinkContainer = require('react-router-bootstrap').LinkContainer;
 // ^ this circumvents type checking as the @types/react-router-bootstrap package is buggy
 // it does not know the exact property, although it is clearly specified
@@ -14,8 +13,8 @@ interface State {
 }
 
 class MenuBar extends React.Component<any, State> {
-    constructor() {
-        super({});
+    constructor(props: any) {
+        super(props);
 
         this.state = {
             forcedDisplay: false
@@ -25,18 +24,6 @@ class MenuBar extends React.Component<any, State> {
     }
 
     render() {
-        let extraLinks: JSX.Element[] = [];
-        for (let buttonDef of CONFIG.customLinks) {
-            extraLinks.push((
-                <Nav>
-                    <NavItem onClick={this.overrideLinkHandler()}
-                        href={buttonDef.href}>
-                        {buttonDef.text}
-                    </NavItem>
-                </Nav>
-            ));
-        }
-
         return (
             <Navbar inverse={true} collapseOnSelect={true} fixedTop={true}
                 fluid={true} className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
@@ -59,7 +46,6 @@ class MenuBar extends React.Component<any, State> {
                             <NavItem><Glyphicon glyph={'file'} /> Files</NavItem>
                         </LinkContainer>
                     </Nav>
-                    {extraLinks}
                     <Nav pullRight={true}>
                         <LinkContainer to="/settings">
                             <NavItem><Glyphicon glyph={'cog'} /> Settings</NavItem>
@@ -110,10 +96,6 @@ class MenuBar extends React.Component<any, State> {
                 forcedDisplay: false
             });
         }
-    }
-
-    private overrideLinkHandler() {
-        return (e: any) => {e.preventDefault = () => {/*FFS*/}; };
     }
 
     private isFullscreen() {

@@ -12,6 +12,7 @@ export enum FileType {
 
 export interface File {
     name: string;
+    info: any;
     type: FileType;
 }
 
@@ -201,6 +202,7 @@ export class Database {
                 if (cursor) {
                     files.push({
                         name: cursor.key,
+                        info: cursor.value,
                         type: FileType.LOCAL
                     });
                     cursor.continue();
@@ -214,7 +216,7 @@ export class Database {
     saveFile(name: string, content: string): Promise<boolean> {
         return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
             let request = this.database.transaction(['files'], 'readwrite').objectStore('files').put({
-                name, value: content
+                name, value: content, date: new Date()
             });
             request.onerror = (event) => {
                 reject(false);

@@ -1,3 +1,6 @@
+import { bootstrapUtils } from 'react-bootstrap/lib/utils';
+import { Button } from 'react-bootstrap';
+
 export type Theme = {
     'error': string;
     'success': string;
@@ -174,6 +177,8 @@ export function getColor (theme: string, color: string): string {
 }
 
 function generateButton (name: string, fg: string, bg: string, bd: string, bda: string): string {
+    bootstrapUtils.addStyle(Button, name);
+
     return `
     .btn-${name} {
         color: ${fg};
@@ -188,6 +193,7 @@ function generateButton (name: string, fg: string, bg: string, bd: string, bda: 
         background-color: ${bg}aa;
         border-color: ${bda};
     }
+    .btn-${name}.disabled,
     .btn-${name}.disabled:hover,
     .btn-${name}.disabled:focus,
     .btn-${name}.disabled:active,
@@ -196,12 +202,13 @@ function generateButton (name: string, fg: string, bg: string, bd: string, bda: 
     .btn-${name}[disabled]:focus,
     .btn-${name}[disabled]:active,
     .btn-${name}[disabled].active,
+    fieldset[disabled] .btn-${name},
     fieldset[disabled] .btn-${name}:hover,
     fieldset[disabled] .btn-${name}:focus,
     fieldset[disabled] .btn-${name}:active,
     fieldset[disabled] .btn-${name}.active {
         color: ${bg};
-        background-color: ${fg};
+        background-color: unset;
         border-color: ${bd};
     }
     `;
@@ -238,7 +245,7 @@ export function renderTheme (theme: Theme): string {
         color: ${theme.navbar_hover};
         background-color: transparent;
     }
-    .navbar-inverse .navbar-toggle {
+    .navbar-inverse .navbar-toggle, hr {
         border-color: ${theme.border};
     }
     .navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus,
@@ -253,6 +260,12 @@ export function renderTheme (theme: Theme): string {
     .navbar-inverse .navbar-toggle:focus, .navbar-inverse .navbar-toggle:hover {
         color: ${theme.navbar_focus_fg};
         background-color: ${theme.navbar_focus_bg};
+    }
+
+    .tooltip-inner {
+        border-color: ${theme.border};
+        color: ${theme.foreground};
+        background-color: ${theme.background};
     }
 
     .footer { color: ${theme.foreground}; background-color: ${theme.background}; }
@@ -297,6 +310,19 @@ export function renderTheme (theme: Theme): string {
     }
     pre {
         color: ${theme.foreground};
+    }
+
+    table, td, tr {
+        border-color: ${theme.border};
+    }
+
+    .table-hover>tbody>tr:hover {
+        color: ${theme.btn_suc_fg};
+        background-color: ${theme.btn_suc_bg}77;
+    }
+
+    td:hover, tr:hover {
+        border-color: ${theme.link_hover};
     }
 
     .modal-content {

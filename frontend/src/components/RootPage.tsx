@@ -17,8 +17,8 @@ import {
 import './RootPage.css';
 
 class RootPage extends React.Component<any, any> {
-    constructor() {
-        super({});
+    constructor(props: any) {
+        super(props);
     }
 
     render() {

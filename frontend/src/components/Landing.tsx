@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Grid, Alert } from 'react-bootstrap';
 
-import { CONFIG } from '../config';
+import { SHARING_ENABLED } from '../config';
 
 class Landing extends React.Component<any, any> {
     constructor(props: any) {
@@ -22,7 +22,7 @@ class Landing extends React.Component<any, any> {
         let sharingH: JSX.Element | undefined;
         let sharing: JSX.Element | undefined;
 
-        if (CONFIG.sharingEnabled) {
+        if (SHARING_ENABLED) {
             sharingH = (
                 <h3>Code Sharing</h3>
             );
