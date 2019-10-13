@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 import { getColor, getTheme } from '../themes';
+import { DEFAULT_THEME } from '../config';
 
 export interface InterpreterSettings {
     allowUnicodeInStrings: boolean;
@@ -32,8 +33,6 @@ interface State {
     inter: InterpreterSettings;
     front: InterfaceSettings;
 }
-
-const DEFAULT_THEME = 'sayaka';
 
 function fillObjectWithString(obj: any, str: string | null) {
     if (typeof str === 'string') {
