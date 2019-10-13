@@ -200,7 +200,7 @@ class Files extends React.Component<any, State> {
             return this.renderFolder(name + '/' + newPrefix, files, key, prefix);
         }
 
-        let folderState: boolean = this.state.folder[prefix + name];
+        let folderState: boolean = this.state.folder[prefix + name + files[0].type];
 
         let style4: any = {};
         style4.borderRight = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
@@ -250,16 +250,16 @@ class Files extends React.Component<any, State> {
         let result: any[] = [];
         result.push(
             <tr key={key}>
-                <td style={style} onClick={this.toggleFolder(prefix + name)}>
+                <td style={style} onClick={this.toggleFolder(prefix + name + files[0].type)}>
                     <OverlayTrigger overlay={tooltip}>
                     <Glyphicon glyph={folderState ? 'folder-open' : 'folder-close'} />
                     </OverlayTrigger>
                     {space}
                     {name}
                 </td>
-                <td style={style2} onClick={this.toggleFolder(prefix + name)}>
+                <td style={style2} onClick={this.toggleFolder(prefix + name + files[0].type)}>
                     <button className="btn btn-suc-alt" type="button"
-                    onClick={this.toggleFolder(prefix + name)} style={style3}>
+                    onClick={this.toggleFolder(prefix + name + files[0].type)} style={style3}>
                         <Glyphicon glyph={folderState ? 'folder-close' : 'folder-open'} />
                         {space}
                         {(folderState ? 'Hide ' : 'Show ') + files.length + ' Files'}
@@ -270,7 +270,7 @@ class Files extends React.Component<any, State> {
             </tr>
         );
         result.push(
-            <Fade in={this.state.folder[prefix + name]} unmountOnExit={true} timeout={10}>
+            <Fade in={folderState} unmountOnExit={true} timeout={10}>
             <tr key={key + 't1'} className="no-hover">
                 <td colSpan={2} style={style4}>
                     <div>
