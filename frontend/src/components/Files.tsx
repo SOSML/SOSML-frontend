@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Collapse, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'react-bootstrap';
+import { Fade, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'react-bootstrap';
 import { File, FileType, Database, API } from '../API';
 import './Files.css';
 import { SAMPLE_FILES_ENABLED } from '../config';
@@ -55,6 +55,12 @@ class Files extends React.Component<any, State> {
             );
         }
 
+        let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+        let files = this.deepCopy(this.state.files);
+        files.sort((f1: File, f2: File) => {
+            return collator.compare(f1.name, f2.name);
+        });
+
         return (
             <Grid className="flexy">
                     <h2>Files</h2>
@@ -64,7 +70,7 @@ class Files extends React.Component<any, State> {
                     You can find your saved files here.
                         Clicking on a file will load it into the editor.
                     </p>
-                    {this.renderFileList(this.state.files)}
+                    {this.renderFileList(files)}
                     {this.renderExamples()}
             </Grid>
         );
@@ -264,13 +270,15 @@ class Files extends React.Component<any, State> {
             </tr>
         );
         result.push(
-            <Collapse in={this.state.folder[prefix + name]}>
+            <Fade in={this.state.folder[prefix + name]} unmountOnExit={true} timeout={10}>
             <tr key={key + 't1'} className="no-hover">
                 <td colSpan={2} style={style4}>
-                    <div>{renderedFiles}</div>
+                    <div>
+                    {renderedFiles}
+                    </div>
                 </td>
             </tr>
-            </Collapse>
+            </Fade>
         );
         return result;
     }
@@ -361,30 +369,9 @@ class Files extends React.Component<any, State> {
                 this.setState({files: data});
                 return API.getCodeExamplesList();
             }).then((list: string[]) => {
-                list.sort((s1: string, s2: string) => {
-                    if (s1 === s2) {
-                        return 0; // don't need to handle this later
-                    }
-                    let rex = /^(\d+.)+\d+$/;
-                    let t1 = rex.test(s1);
-                    let t2 = rex.test(s2);
-                    if (t1 && t2) {
-                        let split1 = s1.split('.');
-                        let split2 = s2.split('.');
-                        for (let i = 0; i < Math.min(split1.length, split2.length); i++) {
-                            let p1 = parseInt(split1[i], 10);
-                            let p2 = parseInt(split2[i], 10);
-                            if (p1 !== p2) {
-                                return Math.sign(p1 - p2);
-                            }
-                        }
-                        return 0;
-                    } else if (t1 !== t2) {
-                        return (t1) ? -1 : 1;
-                    } else {
-                        return s1.localeCompare(s2);
-                    }
-                });
+                let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+                list.sort(collator.compare);
+
                 this.setState({examples: list.map((file) => {
                     return {
                         'name': file,
