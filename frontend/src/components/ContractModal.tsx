@@ -26,7 +26,7 @@ class ContractModal extends React.Component<Props, any> {
                     If you want others to have an easy way to access your code,
                     you may form an <em>Agreement</em> with me and become a <em>Magical User</em>.
                     <br/><br/>
-                    Once you are a <em>Magical User</em> you may upload you code to the servers
+                    Once you are a <em>Magical User</em> you may upload your code to the servers
                     of Saarland University.
                     By uploading a file to the servers of Saarland University, you grant Saarland
                     University and the <a href="https://github.com/SOSML"> SOSML Developers </a>
