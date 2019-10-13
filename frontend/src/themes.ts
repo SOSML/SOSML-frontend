@@ -38,6 +38,38 @@ export type Theme = {
 export type ThemeCollection = { [name: string]: Theme };
 
 let THEMES: ThemeCollection = {
+    'yachiyo': {
+        'error': 'rgba(34,3,3,0.85)',
+        'success': 'rgba(14,34,3,0.85)',
+        'success_alt': 'rgba(6,43,45,0.85)',
+        'background': '#021114',
+        'foreground': '#20bedd',
+        'border': '#029dbb',
+        'navbar_hover': 'white',
+        'navbar_bg': 'black',
+        'navbar_fg': '#a1ecfb',
+        'navbar_focus_bg': 'rgba(11, 124, 147, 0.65)',
+        'navbar_focus_fg': 'white',
+        'link': '#acf9fb',
+        'link_hover': 'white',
+        'minihead_bg': '#021114',
+        'minihead_fg': '#a1ecfb',
+        'editor_bg': '#021114',
+        'editor_fg': 'rgba(11, 124, 147, 0.65)',
+        'alert_fg': '#8bebfe',
+        'alert_bg': '#021114',
+        'alert_border': '#8bebfe',
+        'btn_pri_fg': '#acf9fb',
+        'btn_pri_bg': 'rgba(6,43,45,0.65)',
+        'btn_pri_border': '#26dafd',
+        'btn_dng_fg': '#df0000',
+        'btn_dng_bg': 'rgba(34,3,3,0.65)',
+        'btn_dng_border': '#e43f3a',
+        'btn_suc_fg': '#00df00',
+        'btn_suc_bg': 'rgba(14,34,3,0.65)',
+        'btn_suc_border': '#00df00',
+        'btn_hover': 'white',
+    },
     'kyoko': {
         'error': 'black',
         'success': 'black',
@@ -318,6 +350,7 @@ export function renderTheme (theme: Theme): string {
 
     .table-hover>tbody>tr:hover {
         color: ${theme.btn_suc_fg};
+        background-color: ${theme.btn_suc_bg};
         background-color: ${theme.btn_suc_bg}77;
     }
 

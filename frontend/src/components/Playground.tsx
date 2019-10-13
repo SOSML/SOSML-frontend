@@ -127,30 +127,28 @@ class Playground extends React.Component<Props, State> {
         + this.state.interfaceSettings.successColor2 + ' !important; }';
         return (
             <div className="playground">
-            <style>{extraCSS}</style>
-            <SplitterLayout onUpdate={this.handleSplitterUpdate}>
-            <div className="flexcomponent flexy">
-            <MiniWindow content={(
-                <CodeMirrorWrapper flex={true} onChange={this.handleCodeChange} code={code}
-                readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                useInterpreter={!this.state.useServer}
-                timeout={this.state.interfaceSettings.timeout} />
-            )}
-            header={(
-                <div className="headerButtons">
-                {inputHeadBar}
-                </div>
-            )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
-            </div>
-            <div className="flexcomponent flexy">
-            <MiniWindow content={
-                <div>{lineItems}</div>}
-                title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}
-                />
-                </div>
+                <style>{extraCSS}</style>
+                <SplitterLayout onUpdate={this.handleSplitterUpdate}>
+                    <div className="flexcomponent flexy">
+                        <MiniWindow content={(
+                            <CodeMirrorWrapper flex={true}
+                            onChange={this.handleCodeChange} code={code}
+                            readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
+                            useInterpreter={!this.state.useServer}
+                            timeout={this.state.interfaceSettings.timeout} />
+                        )} header={(
+                            <div className="headerButtons">
+                                {inputHeadBar}
+                            </div>
+                        )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
+                    </div>
+                    <div className="flexcomponent flexy">
+                        <MiniWindow content={<div>{lineItems}</div>}
+                            title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
+                    </div>
                 </SplitterLayout>
                 {modal}
-                </div>
+            </div>
         );
     }
 

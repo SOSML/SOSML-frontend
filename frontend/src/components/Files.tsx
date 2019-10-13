@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Fade, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'react-bootstrap';
+import { Fade, Button, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'react-bootstrap';
 import { File, FileType, Database, API } from '../API';
 import './Files.css';
 import { SAMPLE_FILES_ENABLED } from '../config';
@@ -229,16 +229,16 @@ class Files extends React.Component<any, State> {
         style.whiteSpace = 'nowrap';
         style.overflow = 'hidden';
         style.textOverflow = 'ellipsis';
-        style.maxWidth = '7em';
+        style.maxWidth = '8em';
 
         let space = (
             <div className="miniSpacer" />
         );
         let deleteBtn = (
-            <button className="btn btn-dng-alt" type="button"
+            <Button bsSize="small" bsStyle="dng-alt"
                 onClick={this.deleteHandlerForAll(files)} style={style3}>
                 <Glyphicon glyph={'trash'} /> Delete All
-            </button>
+            </Button>
         );
 
         let tooltip = (
@@ -258,12 +258,12 @@ class Files extends React.Component<any, State> {
                     {name}
                 </td>
                 <td style={style2} onClick={this.toggleFolder(prefix + name + files[0].type)}>
-                    <button className="btn btn-suc-alt" type="button"
+                    <Button bsSize="small" bsStyle="suc-alt"
                     onClick={this.toggleFolder(prefix + name + files[0].type)} style={style3}>
                         <Glyphicon glyph={folderState ? 'folder-close' : 'folder-open'} />
                         {space}
                         {(folderState ? 'Hide ' : 'Show ') + files.length + ' Files'}
-                    </button>
+                    </Button>
                     {files.length >= 1 && files[0].type === FileType.LOCAL ? space : ''}
                     {files.length >= 1 && files[0].type === FileType.LOCAL ? deleteBtn : ''}
                 </td>
@@ -304,7 +304,7 @@ class Files extends React.Component<any, State> {
         style.whiteSpace = 'nowrap';
         style.overflow = 'hidden';
         style.textOverflow = 'ellipsis';
-        style.maxWidth = '7em';
+        style.maxWidth = '8em';
         style.verticalAlign = 'bottom';
 
         if (file === undefined) {
@@ -322,10 +322,10 @@ class Files extends React.Component<any, State> {
             <div className="miniSpacer" />
         );
         let deleteBtn = (
-            <button className="btn btn-dng-alt" type="button"
+            <Button bsSize="small" bsStyle="dng-alt"
                 onClick={this.deleteHandlerFor(file.name)} style={style3}>
                 <Glyphicon glyph={'trash'} /> Delete
-            </button>
+            </Button>
         );
 
         let tooltip = (
@@ -344,15 +344,15 @@ class Files extends React.Component<any, State> {
                     {printName}
                 </td>
                 <td style={style2} onClick={this.openHandlerFor(file)}>
-                    <button className="btn btn-suc-alt" type="button"
+                    <Button bsSize="small" bsStyle="suc-alt"
                     onClick={this.openHandlerFor(file)} style={style3}>
                         <Glyphicon glyph={'new-window'} /> Open
-                    </button>
+                    </Button>
                     <div className="miniSpacer" />
-                    <button className="btn btn-pri-alt" type="button"
+                    <Button bsSize="small" bsStyle="pri-alt"
                     onClick={this.downloadHandlerFor(file)} style={style3}>
                         <Glyphicon glyph={'download-alt'} /> Save
-                    </button>
+                    </Button>
                     {file.type === FileType.LOCAL ? space : ''}
                     {file.type === FileType.LOCAL ? deleteBtn : ''}
                 </td>
