@@ -139,11 +139,11 @@ export class API {
         if (API.EMULATE) {
             return new Promise(
                 (resolve: (val: any) => void, reject: (err: any) => void) => {
-                    resolve('(* This function adds 1 to the supplied parameter *)\nfun f x = x + 1;');
+                    resolve('fun f x = x + 1;');
                 }
             );
         }
-        return fetch('/code/' + name,
+        return fetch('/code/' + name.replace('/', '%2F'),
             {
                 headers: {
                   'Accept': 'text/plain',
