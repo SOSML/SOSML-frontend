@@ -350,8 +350,7 @@ class Files extends React.Component<any, State> {
                     </button>
                     <div className="miniSpacer" />
                     <button className="btn btn-pri-alt" type="button"
-                    onClick={this.downloadHandlerFor(file.name)} style={style3}
-                    disabled={file.type === FileType.SERVER}>
+                    onClick={this.downloadHandlerFor(file)} style={style3}>
                         <Glyphicon glyph={'download-alt'} /> Save
                     </button>
                     {file.type === FileType.LOCAL ? space : ''}
@@ -415,14 +414,21 @@ class Files extends React.Component<any, State> {
         };
     }
 
-    private downloadHandlerFor(fileName: string): (evt: any) => void {
+    private downloadHandlerFor(file: File): (evt: any) => void {
         return (evt: any) => {
-            Database.getInstance().then((db: Database) => {
-                return db.getFile(fileName);
-            }).then((content: string) => {
+            let promis: any;
+            if (file.type === FileType.LOCAL) {
+                promis = Database.getInstance().then((db: Database) => {
+                    return db.getFile(file.name);
+                });
+            } else {
+                promis = API.getCodeExample(file.name);
+            }
+
+            promis.then((content: string) => {
                 let blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
-                fileName += '.sml';
-                FileSaver.saveAs(blob, fileName);
+                file.name += '.sml';
+                FileSaver.saveAs(blob, file.name);
             });
             evt.stopPropagation();
         };
