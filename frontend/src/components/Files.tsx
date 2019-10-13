@@ -253,7 +253,7 @@ class Files extends React.Component<any, State> {
                 </td>
                 <td style={style2} onClick={this.toggleFolder(prefix + name)}>
                     <button className="btn btn-suc-alt" type="button"
-                    onClick={() => { return; }} style={style3}>
+                    onClick={this.toggleFolder(prefix + name)} style={style3}>
                         <Glyphicon glyph={folderState ? 'folder-close' : 'folder-open'} />
                         {space}
                         {(folderState ? 'Hide ' : 'Show ') + files.length + ' Files'}
@@ -416,6 +416,7 @@ class Files extends React.Component<any, State> {
                 deepCopy.folder[folderName] = !deepCopy.folder[folderName];
                 return deepCopy;
             });
+            evt.stopPropagation();
         };
     }
 
@@ -423,6 +424,7 @@ class Files extends React.Component<any, State> {
         return (evt: any) => {
             this.props.history.push('/editor', {fileName: file.name,
                                     example: file.type === FileType.SERVER });
+            evt.stopPropagation();
         };
     }
 
@@ -435,6 +437,7 @@ class Files extends React.Component<any, State> {
                 fileName += '.sml';
                 FileSaver.saveAs(blob, fileName);
             });
+            evt.stopPropagation();
         };
     }
 
@@ -447,6 +450,7 @@ class Files extends React.Component<any, State> {
                     this.refreshFiles();
                 }
             });
+            evt.stopPropagation();
         };
     }
 
@@ -458,6 +462,7 @@ class Files extends React.Component<any, State> {
                 });
             });
             this.refreshFiles();
+            evt.stopPropagation();
         };
     }
 }
