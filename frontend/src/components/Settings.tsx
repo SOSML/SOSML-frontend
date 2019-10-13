@@ -74,7 +74,7 @@ export function getInterfaceSettings(): InterfaceSettings {
         outputHighlight: true,
         autoIndent: true,
         userContributesEnergy: false,
-        theme: 'sayaka'
+        theme: DEFAULT_THEME
     };
     fillObjectWithString(ret, str);
     return ret;
