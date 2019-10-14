@@ -72,6 +72,7 @@ class Files extends React.Component<any, State> {
                     </p>
                     {this.renderFileList(files)}
                     {this.renderExamples()}
+                    <br/> <br/>
             </Grid>
         );
     }
@@ -346,7 +347,7 @@ class Files extends React.Component<any, State> {
                 <td style={style2} onClick={this.openHandlerFor(file)}>
                     <Button bsSize="small" bsStyle="suc-alt"
                     onClick={this.openHandlerFor(file)} style={style3}>
-                        <Glyphicon glyph={'new-window'} /> Open
+                        <Glyphicon glyph={'open'} /> Load
                     </Button>
                     <div className="miniSpacer" />
                     <Button bsSize="small" bsStyle="pri-alt"

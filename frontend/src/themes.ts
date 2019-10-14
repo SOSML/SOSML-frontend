@@ -126,7 +126,7 @@ let THEMES: ThemeCollection = {
         'btn_pri_fg': 'crimson',
         'btn_pri_bg': '#ffe4e8',
         'btn_pri_border': 'deeppink',
-        'btn_dng_fg': '#fff',
+        'btn_dng_fg': '#ff9fb5',
         'btn_dng_bg': '#333',
         'btn_dng_border': '#d43f3a',
         'btn_suc_fg': '#266726',
@@ -208,7 +208,8 @@ export function getColor (theme: string, color: string): string {
     return THEMES[theme][color];
 }
 
-function generateButton (name: string, fg: string, bg: string, bd: string, bda: string): string {
+function generateButton (name: string, fg: string, bg: string, bd: string, bda: string,
+                         textbg: string): string {
     bootstrapUtils.addStyle(Button, name);
 
     return `
@@ -222,6 +223,7 @@ function generateButton (name: string, fg: string, bg: string, bd: string, bda: 
     .btn-${name}:active,
     .btn-${name}.active {
         color: ${fg};
+        background-color: ${bg};
         background-color: ${bg}aa;
         border-color: ${bda};
     }
@@ -242,6 +244,15 @@ function generateButton (name: string, fg: string, bg: string, bd: string, bda: 
         color: ${bg};
         background-color: unset;
         border-color: ${bd};
+    }
+
+    .btn-${name} .glyphicon{
+        color: ${textbg};
+        color: ${textbg}dd;
+        text-shadow: -1px 0 ${bd}, 0 1px ${bd},
+        1px 0 ${bd}, 0 -1px ${bd};
+        text-shadow: -1px 0 ${bd}dd, 0 1px ${bd}dd,
+        1px 0 ${bd}dd, 0 -1px ${bd}dd;
     }
     `;
 }
@@ -277,18 +288,48 @@ export function renderTheme (theme: Theme): string {
         color: ${theme.navbar_hover};
         background-color: transparent;
     }
+
+    .navbar-inverse .navbar-nav > li > a:hover .glyphicon,
+    .navbar-inverse .navbar-nav > li > a:focus .glyphicon,
+    .navbar-inverse .navbar-brand:hover .glyphicon,
+    .navbar-inverse .navbar-brand:focus .glyphicon,
+    .navbar-inverse .navbar-nav > .open > a .glyphicon,
+    .navbar-inverse .navbar-nav > .open > a:hover .glyphicon,
+    .navbar-inverse .navbar-nav > .open > a:focus .glyphicon,
+    .navbar-inverse .navbar-link:hover .glyphicon,
+    .navbar-inverse .btn-link:hover .glyphicon,
+    .navbar-inverse .btn-link:focus .glyphicon {
+        text-shadow: -1px 0 ${theme.navbar_hover}, 0 1px ${theme.navbar_hover},
+        1px 0 ${theme.navbar_hover}, 0 -1px ${theme.navbar_hover};
+    }
+
     .navbar-inverse .navbar-toggle, hr {
         border-color: ${theme.border};
     }
+
     .navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus,
     .navbar-inverse .navbar-nav>.active>a:hover {
         color: ${theme.navbar_focus_fg};
         background-color: ${theme.navbar_focus_bg};
     }
+    .navbar-inverse .navbar-nav>.active>a .glyphicon,
+    .navbar-inverse .navbar-nav>.active>a:focus .glyphicon,
+    .navbar-inverse .navbar-nav>.active>a:hover .glyphicon {
+        color: ${theme.navbar_focus_bg};
+        text-shadow: -1px 0 ${theme.navbar_focus_fg}, 0 1px ${theme.navbar_focus_fg},
+        1px 0 ${theme.navbar_focus_fg}, 0 -1px ${theme.navbar_focus_fg};
+    }
+
     .navbar-inverse .navbar-nav>li>a {
         color: ${theme.navbar_fg};
         background-color: ${theme.navbar_bg};
     }
+    .navbar-inverse .navbar-nav>li>a .glyphicon {
+        color: ${theme.navbar_bg};
+        text-shadow: -1px 0 ${theme.navbar_fg}, 0 1px ${theme.navbar_fg},
+        1px 0 ${theme.navbar_fg}, 0 -1px ${theme.navbar_fg};
+    }
+
     .navbar-inverse .navbar-toggle:focus, .navbar-inverse .navbar-toggle:hover {
         color: ${theme.navbar_focus_fg};
         background-color: ${theme.navbar_focus_bg};
@@ -300,14 +341,46 @@ export function renderTheme (theme: Theme): string {
         background-color: ${theme.background};
     }
 
+    .glyphicon {
+        color: ${theme.background};
+        text-shadow: -1px 0 ${theme.foreground}, 0 1px ${theme.foreground},
+        1px 0 ${theme.foreground}, 0 -1px ${theme.foreground};
+    }
+
     .footer { color: ${theme.foreground}; background-color: ${theme.background}; }
     a { color: ${theme.link}; }
+    a .glyphicon{
+        text-shadow: -1px 0 ${theme.link}, 0 1px ${theme.link},
+        1px 0 ${theme.link}, 0 -1px ${theme.link};
+    }
+
     a:focus, a:hover { color: ${theme.link_hover}; text-decoration: none; }
+    a:focus .glyphicon, a:hover .glyphicon {
+        text-shadow: -1px 0 ${theme.link_hover}, 0 1px ${theme.link_hover},
+        1px 0 ${theme.link_hover}, 0 -1px ${theme.link_hover};
+    }
+
     .alert-info {
         color: ${theme.alert_fg};
         background-color: ${theme.alert_bg};
         border-color: ${theme.alert_border};
     }
+
+    .alert-info .glyphicon {
+        color: ${theme.alert_bg};
+        text-shadow: -1px 0 ${theme.alert_fg}, 0 1px ${theme.alert_fg},
+        1px 0 ${theme.alert_fg}, 0 -1px ${theme.alert_fg};
+    }
+
+    .alert-info a .glyphicon {
+        text-shadow: -1px 0 ${theme.link}, 0 1px ${theme.link},
+        1px 0 ${theme.link}, 0 -1px ${theme.link};
+    }
+    .alert-info a:focus .glyphicon, .alert-info a:hover .glyphicon {
+        text-shadow: -1px 0 ${theme.link_hover}, 0 1px ${theme.link_hover},
+        1px 0 ${theme.link_hover}, 0 -1px ${theme.link_hover};
+    }
+
     .window-header {
         color: ${theme.minihead_fg};
         background-color: ${theme.minihead_bg};
@@ -351,7 +424,7 @@ export function renderTheme (theme: Theme): string {
     .table-hover>tbody>tr:hover {
         color: ${theme.btn_suc_fg};
         background-color: ${theme.btn_suc_bg};
-        background-color: ${theme.btn_suc_bg}77;
+        background-color: ${theme.btn_suc_bg}99;
     }
 
     td:hover, tr:hover {
@@ -365,13 +438,13 @@ export function renderTheme (theme: Theme): string {
     }
 
     ${generateButton('def-alt', theme.foreground, theme.background,
-                     theme.border, theme.link_hover)}
+                     theme.border, theme.link_hover, theme.background)}
     ${generateButton('pri-alt', theme.btn_pri_fg, theme.btn_pri_bg,
-                     theme.btn_pri_border, theme.btn_hover)}
+                     theme.btn_pri_border, theme.btn_hover, theme.background)}
     ${generateButton('suc-alt', theme.btn_suc_fg, theme.btn_suc_bg,
-                     theme.btn_suc_border, theme.btn_hover)}
+                     theme.btn_suc_border, theme.btn_hover, theme.background)}
     ${generateButton('dng-alt', theme.btn_dng_fg, theme.btn_dng_bg,
-                     theme.btn_dng_border, theme.btn_hover)}
+                     theme.btn_dng_border, theme.btn_hover, theme.background)}
 
     `;
 }

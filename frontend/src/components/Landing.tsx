@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Grid, Alert } from 'react-bootstrap';
+import { Glyphicon, Grid, Alert } from 'react-bootstrap';
 
 import { SHARING_ENABLED } from '../config';
 
@@ -68,30 +68,38 @@ class Landing extends React.Component<any, any> {
                     files are being uploaded for evaluation. On successful evaluation your code is
                     highlighted in green. If there is some mistake or an unhandled exception it
                     will become red. (You may also configure the interpreter to use different
-                    colors on the <a href="/settings">settings page</a>.)
+                    colors on the <a href="/settings">
+                    <Glyphicon glyph="cog" />&nbsp;Settings</a> page.)
 
                     <br/><br/>
 
                     <Alert bsStyle="info"><strong>Warning: </strong>
                     Long computations might be terminated by your web browser
                     due to limitations for how long a script is allowed to run.
-                    This time limit may be changed on the <a href="/settings">settings page</a>.
+                    This time limit may be changed on the <a href="/settings">
+                        <Glyphicon glyph="cog" />&nbsp;Settings</a> page.
                     </Alert>
                 </div>
 
                 <h3>Save your work!</h3>
                 <div>
-                    If you want to keep SML programs in the interpreter you have to save them.
+                    If you want to keep SML programs in the interpreter, you have to store them.
                     You can find a text field in which you can enter a file name next to
-                    a &ldquo;Save&rdquo; button. When you change your code, you have to save the
-                    file again. You can find all of your files on the <a href="/files">files
-                    page</a>.
+                    a <p className="buttonSimul"><Glyphicon glyph="file" />&nbsp;Store
+                    </p> button.
+                    When you change your code, you have to store the file again.
+                    You can find all of your files on the <a href="/files">
+                    <Glyphicon glyph="file" />&nbsp;Files</a> page.
 
                     <br/><br/>
 
                     <Alert bsStyle="info"><strong>Warning: </strong>
-                    The files are saved locally inside your browser. If you delete website data of
-                    sosml.org, all your files are deleted.
+                    The files are stored locally inside your browser. If you delete website data of
+                    SOSML, all your files are deleted. To save your work outside of your
+                    browser, head to the <a href="/files"><Glyphicon glyph="file" />&nbsp;Files</a> page
+                    and hit
+                    the <p className="buttonSimul"><Glyphicon glyph="download-alt" />&nbsp;Save
+                    </p> button.
                     </Alert>
                 </div>
 
@@ -100,7 +108,7 @@ class Landing extends React.Component<any, any> {
 
                 <button className="btn btn-suc-alt" onClick={this.handleRedirectToEdit}
                     style={style} type="button">
-                    Take me to the editor.
+                    <Glyphicon glyph="pencil" />&nbsp;Take me to the editor.
                 </button>
 
                 <br/>

@@ -110,7 +110,7 @@ class Editor extends React.Component<any, State> {
                         value={this.state.fileName} onChange={this.handleFileNameChange}
                         style={style} placeholder="File name"/>
                     <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleSave}>
-                        <Glyphicon glyph={'floppy-disk'} /> Save
+                        <Glyphicon glyph="file" /> Store
                     </Button>
                 </Form>
             );

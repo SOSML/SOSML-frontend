@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Checkbox } from 'react-bootstrap';
+import { Glyphicon, Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 import { getColor, getTheme } from '../themes';
 import { DEFAULT_THEME } from '../config';
@@ -164,7 +164,7 @@ class Settings extends React.Component<any, State> {
                 value={this.state.front.successColor2}
                     onChange={this.colorChangeHandler('successColor2')}/><br /><br />
                 <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
-                    Reset colors to theme default
+                    <Glyphicon glyph="repeat" /> Reset colors to theme default
                 </button> <br /><br />
                 <Checkbox checked={this.state.front.outputHighlight}
                     onChange={this.changeHandler('front', 'outputHighlight')}>
@@ -178,6 +178,7 @@ class Settings extends React.Component<any, State> {
                     onChange={this.changeHandler('front', 'fullscreen')}>
                     Switch editor into fullscreen mode (Use ESC to return to the normal mode.)
                 </Checkbox>
+                <br/> <br/>
             </div>
         );
     }

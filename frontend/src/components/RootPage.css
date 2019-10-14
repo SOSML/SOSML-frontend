@@ -125,3 +125,29 @@ a {
     border-style: solid;
     font-size: 13px;
 }
+
+.buttonSimul {
+    border-radius: 0px;
+    border-width: 1px;
+    border-style: solid;
+    margin: -1px 0 0 0;
+    padding: 1px 3px 0px 4px;
+    display: inline-block;
+}
+
+.glyphicon {
+    top: 2px;
+}
+
+.btn-sm .glyphicon {
+    top: 1px;
+}
+
+.table>tbody>tr>td .glyphicon,
+.table>tbody>tr>th .glyphicon,
+.table>tfoot>tr>td .glyphicon,
+.table>tfoot>tr>th .glyphicon,
+.table>thead>tr>td .glyphicon,
+.table>thead>tr>th .glyphicon {
+    top: 1px;
+}

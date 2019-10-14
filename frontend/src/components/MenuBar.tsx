@@ -38,12 +38,12 @@ class MenuBar extends React.Component<any, State> {
                 <Navbar.Collapse>
                     <Nav>
                         <LinkContainer exact={true} to="/editor">
-                            <NavItem><Glyphicon glyph={'edit'} /> Editor</NavItem>
+                            <NavItem><Glyphicon glyph={'pencil'} /> Editor</NavItem>
                         </LinkContainer>
                     </Nav>
                     <Nav>
                         <LinkContainer to="/files">
-                            <NavItem><Glyphicon glyph={'file'} /> Files</NavItem>
+                            <NavItem><Glyphicon glyph="duplicate" /> Files</NavItem>
                         </LinkContainer>
                     </Nav>
                     <Nav pullRight={true}>
