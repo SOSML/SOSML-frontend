@@ -347,7 +347,7 @@ class Files extends React.Component<any, State> {
                 <td style={style2} onClick={this.openHandlerFor(file)}>
                     <Button bsSize="small" bsStyle="suc-alt"
                     onClick={this.openHandlerFor(file)} style={style3}>
-                        <Glyphicon glyph={'open'} /> Load
+                        <Glyphicon glyph={'pencil'} /> Edit
                     </Button>
                     <div className="miniSpacer" />
                     <Button bsSize="small" bsStyle="pri-alt"
