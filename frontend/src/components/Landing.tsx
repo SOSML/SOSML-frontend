@@ -28,8 +28,9 @@ class Landing extends React.Component<any, any> {
             );
             sharing = (
                 <div>
-                    You can share the code that is currently shown in the interpreter by using
-                    the &ldquo;Share&rdquo; button. Your code will be uploaded to the servers
+                    You can share the code that is currently shown in SOSML by using
+                    the <p className="buttonSimul"><Glyphicon glyph="link" />&nbsp;Share
+                    </p> button. Your code will be uploaded to the servers
                     of Saarland University and you are provided with a link to download your file.
                     Files are always snapshots, neither you nor anyone with the link is able to
                     modify the file. If you want to share an updated version, you have to share the
@@ -63,11 +64,12 @@ class Landing extends React.Component<any, any> {
                 <h3>How to use SOSML</h3>
                 <div>
                     The editor shows two columns. The left column allows to write Standard ML code
-                    and the interpreter output is shown in the right column. Code is evaluated after
-                    typing a semicolon (;). The interpreter runs locally in your browser, so no
-                    files are being uploaded for evaluation. On successful evaluation your code is
-                    highlighted in green. If there is some mistake or an unhandled exception it
-                    will become red. (You may also configure the interpreter to use different
+                    whereas the right column shows the output of SOSML. Code is evaluated after
+                    typing a semicolon (;). SOSML runs locally in your web browser, so no
+                    files are being uploaded for evaluation. On successful evaluation, your code
+                    and the corresponding output will be become green or blue.
+                    If there is some mistake or an unhandled exception, your code and the output
+                    will become red instead. (You may configure SOSML to use different
                     colors on the <a href="/settings">
                     <Glyphicon glyph="cog" />&nbsp;Settings</a> page.)
 
@@ -83,23 +85,22 @@ class Landing extends React.Component<any, any> {
 
                 <h3>Save your work!</h3>
                 <div>
-                    If you want to keep SML programs in the interpreter, you have to store them.
-                    You can find a text field in which you can enter a file name next to
-                    a <p className="buttonSimul"><Glyphicon glyph="file" />&nbsp;Store
-                    </p> button.
+                    If you want to keep SML programs in SOSML, you have to store them
+                    using the <p className="buttonSimul"><Glyphicon glyph="file" />&nbsp;Store
+                    </p> button above your code.
                     When you change your code, you have to store the file again.
                     You can find all of your files on the <a href="/files">
-                    <Glyphicon glyph="file" />&nbsp;Files</a> page.
+                    <Glyphicon glyph="duplicate" />&nbsp;Files</a> page.
 
                     <br/><br/>
 
                     <Alert bsStyle="info"><strong>Warning: </strong>
-                    The files are stored locally inside your browser. If you delete website data of
-                    SOSML, all your files are deleted. To save your work outside of your
-                    browser, head to the <a href="/files"><Glyphicon glyph="file" />&nbsp;Files</a> page
-                    and hit
+                    The files are stored locally inside your web browser. If you delete the
+                    website data of SOSML, all your files will be deleted.
+                    To export yor work from your web browser, head to
+                    the <a href="/files"><Glyphicon glyph="duplicate" />&nbsp;Files</a> page and hit
                     the <p className="buttonSimul"><Glyphicon glyph="download-alt" />&nbsp;Save
-                    </p> button.
+                    </p> button next to the file you want to save.
                     </Alert>
                 </div>
 
