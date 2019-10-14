@@ -1,6 +1,8 @@
 import { bootstrapUtils } from 'react-bootstrap/lib/utils';
 import { Button } from 'react-bootstrap';
 
+import { THEMES } from './themes';
+
 export type Theme = {
     'error': string;
     'success': string;
@@ -34,171 +36,23 @@ export type Theme = {
     'btn_suc_bg': string;
     'btn_suc_border': string;
     'btn_hover': string;
+
+    'cm_builtin': string;
+    'cm_comment': string;
+    'cm_atom': string;
+    'cm_number': string;
+    'cm_prop': string;
+    'cm_keyword': string;
+    'cm_string': string;
+    'cm_variable': string;
+    'cm_variable_alt': string;
+    'cm_def': string;
+    'cm_bracket': string;
+    'cm_tag': string;
+    'cm_link': string;
+    'cm_error': string;
 };
 export type ThemeCollection = { [name: string]: Theme };
-
-let THEMES: ThemeCollection = {
-    'yachiyo': {
-        'error': 'rgba(34,3,3,0.85)',
-        'success': 'rgba(14,34,3,0.85)',
-        'success_alt': 'rgba(6,43,45,0.85)',
-        'background': '#021114',
-        'foreground': '#20bedd',
-        'border': '#029dbb',
-        'navbar_hover': 'white',
-        'navbar_bg': 'black',
-        'navbar_fg': '#a1ecfb',
-        'navbar_focus_bg': 'rgba(11, 124, 147, 0.65)',
-        'navbar_focus_fg': 'white',
-        'link': '#acf9fb',
-        'link_hover': 'white',
-        'minihead_bg': '#021114',
-        'minihead_fg': '#a1ecfb',
-        'editor_bg': '#021114',
-        'editor_fg': 'rgba(11, 124, 147, 0.65)',
-        'alert_fg': '#8bebfe',
-        'alert_bg': '#021114',
-        'alert_border': '#8bebfe',
-        'btn_pri_fg': '#acf9fb',
-        'btn_pri_bg': 'rgba(6,43,45,0.65)',
-        'btn_pri_border': '#26dafd',
-        'btn_dng_fg': '#df0000',
-        'btn_dng_bg': 'rgba(34,3,3,0.65)',
-        'btn_dng_border': '#e43f3a',
-        'btn_suc_fg': '#00df00',
-        'btn_suc_bg': 'rgba(14,34,3,0.65)',
-        'btn_suc_border': '#00df00',
-        'btn_hover': 'white',
-    },
-    'kyoko': {
-        'error': 'black',
-        'success': 'black',
-        'success_alt': 'black',
-        'background': 'black',
-        'foreground': '#ccc',
-        'border': 'crimson',
-        'navbar_hover': 'lightcoral',
-        'navbar_bg': 'black',
-        'navbar_fg': 'crimson',
-        'navbar_focus_bg': 'crimson',
-        'navbar_focus_fg': 'black',
-        'link': 'lightcoral',
-        'link_hover': 'crimson',
-        'minihead_bg': 'black',
-        'minihead_fg': 'crimson',
-        'editor_bg': 'black',
-        'editor_fg': 'crimson',
-        'alert_fg': 'deeppink',
-        'alert_bg': 'black',
-        'alert_border': 'crimson',
-        'btn_pri_fg': '#ccc',
-        'btn_pri_bg': 'black',
-        'btn_pri_border': 'deeppink',
-        'btn_dng_fg': 'crimson',
-        'btn_dng_bg': 'black',
-        'btn_dng_border': '#d43f3a',
-        'btn_suc_fg': '#266726',
-        'btn_suc_bg': 'black',
-        'btn_suc_border': '#4cae4c',
-        'btn_hover': 'lightcoral',
-    },
-    'madoka': {
-        'error': '#ffdcdc',
-        'success': '#d2ffd2',
-        'success_alt': '#dcffff',
-        'background': '#fefdfd',
-        'foreground': '#883747',
-        'border': 'deeppink',
-        'navbar_hover': 'darkred',
-        'navbar_bg': '#ffe4e8',
-        'navbar_fg': 'crimson',
-        'navbar_focus_bg': '#fd8da2',
-        'navbar_focus_fg': '#fff',
-        'link': 'lightcoral',
-        'link_hover': 'crimson',
-        'minihead_bg': '#fefdfd',
-        'minihead_fg': 'crimson',
-        'editor_bg': '#fefdfd',
-        'editor_fg': 'deeppink',
-        'alert_fg': 'crimson',
-        'alert_bg': '#ffe4e8',
-        'alert_border': 'deeppink',
-        'btn_pri_fg': 'crimson',
-        'btn_pri_bg': '#ffe4e8',
-        'btn_pri_border': 'deeppink',
-        'btn_dng_fg': '#ff9fb5',
-        'btn_dng_bg': '#333',
-        'btn_dng_border': '#d43f3a',
-        'btn_suc_fg': '#266726',
-        'btn_suc_bg': '#a9e7a9',
-        'btn_suc_border': '#4cae4c',
-        'btn_hover': '#23527c',
-    },
-    'sayaka': {
-        'error': '#ffdcdc',
-        'success_alt': '#d2ffd2',
-        'success': '#dcffff',
-        'background': '#fff',
-        'foreground': '#333',
-        'border': '#2f2f2f',
-        'navbar_hover': '#fff',
-        'navbar_bg': '#2f2f2f',
-        'navbar_fg': '#bbb',
-        'navbar_focus_bg': '#4f4f4f',
-        'navbar_focus_fg': '#fff',
-        'link': '#337ab7',
-        'link_hover': '#23527c',
-        'minihead_bg': '#fff',
-        'minihead_fg': '#333',
-        'editor_bg': '#fff',
-        'editor_fg': '#31708f',
-        'alert_fg': '#31708f',
-        'alert_bg': '#bce8f1',
-        'alert_border': '#2e6da4',
-        'btn_pri_fg': '#fff',
-        'btn_pri_bg': '#337ab7',
-        'btn_pri_border': '#2f2f2f',
-        'btn_dng_fg': '#fff',
-        'btn_dng_bg': '#d9534f',
-        'btn_dng_border': '#2f2f2f',
-        'btn_suc_fg': '#fff',
-        'btn_suc_bg': '#5cb85c',
-        'btn_suc_border': '#2f2f2f',
-        'btn_hover': '#23527c',
-    },
-    'homura': {
-        'error': '#744040',
-        'success': '#437440',
-        'success_alt': '#4a8079',
-        'background': '#4f4f4f',
-        'foreground': '#ddd',
-        'border': '#ddd',
-        'navbar_hover': '#fff',
-        'navbar_bg': '#2f2f2f',
-        'navbar_fg': '#bbb',
-        'navbar_focus_bg': '#4f4f4f',
-        'navbar_focus_fg': '#fff',
-        'link': '#c67fc6',
-        'link_hover': 'mediumpurple',
-        'minihead_bg': '#4f4f4f',
-        'minihead_fg': '#ddd',
-        'editor_bg': '#4f4f4f',
-        'editor_fg': '#ddd',
-        'alert_fg': '#d9edf7',
-        'alert_bg': '#406b74',
-        'alert_border': '#bce8f1',
-        'btn_pri_fg': '#d9edf7',
-        'btn_pri_bg': '#406b74',
-        'btn_pri_border': '#bce8f1',
-        'btn_dng_fg': '#f7d9d9',
-        'btn_dng_bg': '#744040',
-        'btn_dng_border': '#f1bcbc',
-        'btn_suc_fg': '#d9f7dd',
-        'btn_suc_bg': '#437440',
-        'btn_suc_border': '#bcf1be',
-        'btn_hover': 'mediumpurple',
-    }
-};
 
 export function getTheme (name: string): Theme {
     return THEMES[name];
@@ -386,6 +240,7 @@ export function renderTheme (theme: Theme): string {
         background-color: ${theme.minihead_bg};
     }
     .mini-window { border-color: ${theme.border}; }
+
     .CodeMirror-lines, .CodeMirror-scroll, body {
         color: ${theme.foreground}; background-color: ${theme.background}; }
     .splitter-layout>.layout-splitter { background-color: ${theme.background}; }
@@ -395,6 +250,30 @@ export function renderTheme (theme: Theme): string {
         border-color: ${theme.editor_fg};
         background-color: ${theme.editor_bg};
     }
+    .CodeMirror-cursor {
+        border-color: ${theme.border};
+    }
+    span.CodeMirror-matchingbracket {
+        color: ${theme.link_hover} !important;
+    }
+    .cm-s-default span.cm-comment { color: ${theme.cm_comment}; }
+    .cm-s-default span.cm-atom { color: ${theme.cm_atom}; }
+    .cm-s-default span.cm-number { color: ${theme.cm_number}; }
+
+    .cm-s-default span.cm-property, .cm-s-default span.cm-attribute { color: ${theme.cm_prop}; }
+    .cm-s-default span.cm-keyword { color: ${theme.cm_keyword}; font-weight: bold }
+    .cm-s-default span.cm-string { color: ${theme.cm_string}; }
+
+    .cm-s-default span.cm-builtin { color: ${theme.cm_builtin}; }
+    .cm-s-default span.cm-variable { color: ${theme.cm_variable}; }
+    .cm-s-default span.cm-variable-2 { color: ${theme.cm_variable_alt}; }
+    .cm-s-default span.cm-def { color: ${theme.cm_def}; }
+    .cm-s-default span.cm-bracket { color: ${theme.cm_bracket}; }
+    .cm-s-default span.cm-tag { color: ${theme.cm_tag}; }
+    .cm-s-default span.cm-link { color: ${theme.cm_link}; }
+    .cm-s-default span.cm-error { color: ${theme.cm_error}; }
+
+
     .form-control, input {
         color: ${theme.foreground};
         background-color: ${theme.background};

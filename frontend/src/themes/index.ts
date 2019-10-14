@@ -1,0 +1,15 @@
+import { ThemeCollection } from '../theme';
+
+import { THEME as THEME_YACHIYO } from './yachiyo';
+import { THEME as THEME_KYOKO } from './kyoko';
+import { THEME as THEME_MADOKA } from './madoka';
+import { THEME as THEME_SAYAKA } from './sayaka';
+import { THEME as THEME_HOMURA } from './homura';
+
+export let THEMES: ThemeCollection = {
+    'yachiyo':  THEME_YACHIYO,
+    'kyoko':    THEME_KYOKO,
+    'madoka':   THEME_MADOKA,
+    'sayaka':   THEME_SAYAKA,
+    'homura':   THEME_HOMURA,
+};

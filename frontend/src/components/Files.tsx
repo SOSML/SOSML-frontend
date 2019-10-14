@@ -4,7 +4,7 @@ import { Fade, Button, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'r
 import { File, FileType, Database, API } from '../API';
 import './Files.css';
 import { SAMPLE_FILES_ENABLED } from '../config';
-import { getColor } from '../themes';
+import { getColor } from '../theme';
 import { getInterfaceSettings } from './Settings';
 
 const FileSaver = require('file-saver');

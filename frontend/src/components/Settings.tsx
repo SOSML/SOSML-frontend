@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Glyphicon, Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
-import { getColor, getTheme } from '../themes';
+import { getColor, getTheme } from '../theme';
 import { DEFAULT_THEME } from '../config';
 
 export interface InterpreterSettings {

@@ -3,7 +3,7 @@ import * as React from 'react';
 import Playground from './Playground';
 import { Form , Alert, Button, Glyphicon } from 'react-bootstrap';
 import { Database, API } from '../API';
-import { getColor } from '../themes';
+import { getColor } from '../theme';
 import { getInterfaceSettings } from './Settings';
 import './Editor.css';
 

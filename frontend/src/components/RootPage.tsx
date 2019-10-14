@@ -8,7 +8,7 @@ import Landing from './Landing';
 import Settings from './Settings';
 import FileIntermediate from './FileIntermediate';
 import { getInterfaceSettings } from './Settings';
-import { renderTheme, getTheme } from '../themes';
+import { renderTheme, getTheme } from '../theme';
 // import ShareIntermediate from './ShareIntermediate';
 import {
     BrowserRouter as Router,
