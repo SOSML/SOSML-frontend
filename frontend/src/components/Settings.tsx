@@ -3,7 +3,6 @@ import { Alert, Tooltip, OverlayTrigger, Button, Glyphicon, Checkbox } from 'rea
 import { REF_NAME, PIPELINE_ID } from './Version';
 import { getColor, getTheme } from '../theme';
 import { DEFAULT_THEME } from '../config';
-import { API } from '../API';
 
 declare global {
     interface Window {
@@ -46,6 +45,7 @@ interface State {
     front: InterfaceSettings;
     updateStatus: number;
     updateAvailable: boolean;
+    lastUpdateCheck: string;
 }
 
 function fillObjectWithString(obj: any, str: string | null) {
@@ -101,7 +101,8 @@ class Settings extends React.Component<any, State> {
             inter: getInterpreterSettings(),
             front: getInterfaceSettings(),
             updateStatus: UPDATE_UNKNOWN,
-            updateAvailable: false
+            updateAvailable: false,
+            lastUpdateCheck: ''
         };
 
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
@@ -121,7 +122,7 @@ class Settings extends React.Component<any, State> {
         let style2: any = {};
         style2.display = 'inline';
 
-        let updateString: any = '; I am offline.';
+        let updateString: any = '...who is update?';
         if (this.state.updateStatus === UPDATE_UPDATE) {
             if (this.state.updateAvailable) {
                 updateString = (
@@ -247,7 +248,9 @@ class Settings extends React.Component<any, State> {
                 Checking for updates{updateString} <OverlayTrigger
                 overlay={
                     <Tooltip id="0">
-                    Check Again</Tooltip>}><a onClick={(evt: any) => {
+                    { this.state.lastUpdateCheck !== '' ?
+                        'Last checked on ' + this.state.lastUpdateCheck + '.' : ''} Check again.
+                    </Tooltip>}><a onClick={(evt: any) => {
                     this.checkForUpdates();
                 }} style={{cursor: 'pointer'}}>&nbsp;<Glyphicon glyph="refresh"/>
                 </a></OverlayTrigger>
@@ -270,25 +273,15 @@ class Settings extends React.Component<any, State> {
     }
 
     private checkForUpdates() {
-        API.getVersion().then((content: any) => {
-            this.setState({
-                updateStatus: content.pipelineId === PIPELINE_ID ? UPDATE_NONE : UPDATE_UPDATE
-            });
-            if (content.pipelineId !== PIPELINE_ID) {
-                if (window.serviceWorker !== undefined) {
-                    window.serviceWorker.update();
-                }
-            }
-        }).catch((e) => {
-            this.setState({
-                updateStatus: UPDATE_UNKNOWN
-            });
-        });
-
         window.isUpdateAvailable.then((updateAvailable: boolean) => {
             this.setState({
-                updateAvailable: updateAvailable
+                updateAvailable: updateAvailable,
+                updateStatus: !updateAvailable ? UPDATE_NONE : UPDATE_UPDATE,
+                lastUpdateCheck: Date()
             });
+        });
+        this.setState({
+            lastUpdateCheck: Date()
         });
     }
 
