@@ -17,9 +17,19 @@ export interface File {
 }
 
 export class API {
+    static EMULATE: boolean = false;
     static LAST_SHARE: Date | undefined;
 
     static fallbackInterpreter(code: string): Promise<string> {
+        if (API.EMULATE) {
+            return new Promise(
+                (resolve: (val: any) => void, reject: (err: any) => void) => {
+                    resolve(
+                        code
+                    );
+                }
+            );
+        }
         return fetch('/api/fallback/',
             {
                 headers: {
@@ -44,6 +54,14 @@ export class API {
                 return Promise.reject('Please wait a little until you try to share again.');
             }
         }
+        if (API.EMULATE) {
+            API.LAST_SHARE = new Date();
+            return new Promise(
+                (resolve: (val: any) => void, reject: (err: any) => void) => {
+                    resolve('0123456');
+                }
+            );
+        }
         API.LAST_SHARE = new Date();
         return fetch('/api/share/',
             {
@@ -63,26 +81,14 @@ export class API {
         });
     }
 
-    static getVersion(): Promise<string> {
-        API.LAST_SHARE = new Date();
-        return fetch('/api/version/',
-            {
-                headers: {
-                  'Accept': 'text/json',
-                  'Content-Type': 'application/json'
-                },
-                method: 'GET',
-            }
-        ).then(function(response: any) {
-            if (!response.ok) {
-                return Promise.reject(response.status);
-            } else {
-                return response.json();
-            }
-        });
-    }
-
     static loadSharedCode(hash: string): Promise<string> {
+        if (API.EMULATE) {
+            return new Promise(
+                (resolve: (val: any) => void, reject: (err: any) => void) => {
+                    resolve('fun f x = x + 1;');
+                }
+            );
+        }
         return fetch('/api/share/' + hash,
             {
                 headers: {
@@ -101,6 +107,13 @@ export class API {
     }
 
     static getCodeExamplesList(): Promise<string[]> {
+        if (API.EMULATE) {
+            return new Promise(
+                (resolve: (val: any) => void, reject: (err: any) => void) => {
+                    resolve(['1.1.1', '11.1.2', '11.1.1', '9.8.1']);
+                }
+            );
+        }
         return fetch('/api/list/',
             {
                 headers: {
@@ -123,6 +136,13 @@ export class API {
     }
 
     static getCodeExample(name: string): Promise<String> {
+        if (API.EMULATE) {
+            return new Promise(
+                (resolve: (val: any) => void, reject: (err: any) => void) => {
+                    resolve('fun f x = x + 1;');
+                }
+            );
+        }
         return fetch('/code/' + name.replace(/\//g, '%2F'),
             {
                 headers: {
