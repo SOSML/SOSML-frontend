@@ -1,8 +1,16 @@
 import * as React from 'react';
-import { Glyphicon, Checkbox } from 'react-bootstrap';
-import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
+import { Alert, Tooltip, OverlayTrigger, Button, Glyphicon, Checkbox } from 'react-bootstrap';
+import { REF_NAME, PIPELINE_ID } from './Version';
 import { getColor, getTheme } from '../theme';
 import { DEFAULT_THEME } from '../config';
+import { API } from '../API';
+
+declare global {
+    interface Window {
+        isUpdateAvailable: Promise<boolean>;
+        serviceWorker: any;
+    }
+}
 
 export interface InterpreterSettings {
     allowUnicodeInStrings: boolean;
@@ -29,9 +37,15 @@ export interface InterfaceSettings {
     theme: string;
 }
 
+const UPDATE_UNKNOWN = 0;
+const UPDATE_UPDATE = 1;
+const UPDATE_NONE = 2;
+
 interface State {
     inter: InterpreterSettings;
     front: InterfaceSettings;
+    updateStatus: number;
+    updateAvailable: boolean;
 }
 
 function fillObjectWithString(obj: any, str: string | null) {
@@ -85,7 +99,9 @@ class Settings extends React.Component<any, State> {
         super(props);
         this.state = {
             inter: getInterpreterSettings(),
-            front: getInterfaceSettings()
+            front: getInterfaceSettings(),
+            updateStatus: UPDATE_UNKNOWN,
+            updateAvailable: false
         };
 
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
@@ -93,19 +109,67 @@ class Settings extends React.Component<any, State> {
         this.themeChangeHandler = this.themeChangeHandler.bind(this);
     }
 
+    componentDidMount() {
+        this.checkForUpdates();
+    }
+
     render() {
         let style: any = {};
         style.textAlign = 'right';
         style.width = '4.5em';
         style.border = 'none';
+        let style2: any = {};
+        style2.display = 'inline';
+
+        let updateString: any = '; I am offline.';
+        if (this.state.updateStatus === UPDATE_UPDATE) {
+            if (this.state.updateAvailable) {
+                updateString = (
+                    <p style={style2}>
+                        ; there is a newer <em>SOSML</em> available!
+                    </p>
+                );
+            } else {
+                if (window.serviceWorker !== undefined) {
+                    updateString = '; I am updating.';
+                } else {
+                    updateString = '; I am not updating. You should be worried.';
+                }
+            }
+        } else if (this.state.updateStatus === UPDATE_NONE) {
+            updateString = (
+                <p style={style2}>
+                    ; I am the newest <em>SOSML</em> available.
+                </p>
+            );
+        }
+
+        let updateAlert: any = (
+            <hr/>
+        );
+        if (this.state.updateStatus === UPDATE_UPDATE) {
+            if (this.state.updateAvailable) {
+                updateAlert = (
+                    <Alert bsStyle="info" style={{marginTop: '20px'}}><strong>Warning: </strong>
+                        There is a newer version of SOSML available. Before you proceed,
+                        store any currently opened files that you want to keep.
+                        If you are ready, you may <Button onClick={(evt: any) => {
+                            window.serviceWorker.postMessage({ type: 'SKIP_WAITING' });
+                            this.checkForUpdates();
+                        }}>
+                        <Glyphicon glyph="refresh"/>&nbsp;start using the new version.</Button>
+                    </Alert>
+                );
+            }
+        }
 
         return (
             <div className="container flexy">
             <h2>Settings</h2>
-                <hr/>
+                {updateAlert}
                 <p>
-                My name is "{REF_NAME}-{COMMIT_SHA} run {PIPELINE_ID}/{BUILD_DATE}" aka. FRONTEND.
-                    <br/>
+                My name is <q>Q{PIPELINE_ID}B{REF_NAME}</q>.
+               <br/>
                 You can enable some additional features and extensions here.
                 Things may break so be warned, though.
                 </p>
@@ -163,9 +227,9 @@ class Settings extends React.Component<any, State> {
                 Alternative background color for evaluated code: <input type="color"
                 value={this.state.front.successColor2}
                     onChange={this.colorChangeHandler('successColor2')}/><br /><br />
-                <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
+                <Button bsStyle="dng-alt" onClick={this.resetColorsToDefault}>
                     <Glyphicon glyph="repeat" /> Reset colors to theme default
-                </button> <br /><br />
+                </Button> <br /><br />
                 <Checkbox checked={this.state.front.outputHighlight}
                     onChange={this.changeHandler('front', 'outputHighlight')}>
                     Enable colored output
@@ -178,6 +242,16 @@ class Settings extends React.Component<any, State> {
                     onChange={this.changeHandler('front', 'fullscreen')}>
                     Switch editor into fullscreen mode (Use ESC to return to the normal mode.)
                 </Checkbox>
+
+                <br/>
+                Checking for updates{updateString} <OverlayTrigger
+                overlay={
+                    <Tooltip id="0">
+                    Check Again</Tooltip>}><a onClick={(evt: any) => {
+                    this.checkForUpdates();
+                }} style={{cursor: 'pointer'}}>&nbsp;<Glyphicon glyph="refresh"/>
+                </a></OverlayTrigger>
+
                 <br/> <br/>
             </div>
         );
@@ -192,6 +266,29 @@ class Settings extends React.Component<any, State> {
             return deepCopy;
         }, () => {
             this.saveState();
+        });
+    }
+
+    private checkForUpdates() {
+        API.getVersion().then((content: any) => {
+            this.setState({
+                updateStatus: content.pipelineId === PIPELINE_ID ? UPDATE_NONE : UPDATE_UPDATE
+            });
+            if (content.pipelineId !== PIPELINE_ID) {
+                if (window.serviceWorker !== undefined) {
+                    window.serviceWorker.update();
+                }
+            }
+        }).catch((e) => {
+            this.setState({
+                updateStatus: UPDATE_UNKNOWN
+            });
+        });
+
+        window.isUpdateAvailable.then((updateAvailable: boolean) => {
+            this.setState({
+                updateAvailable: updateAvailable
+            });
         });
     }
 

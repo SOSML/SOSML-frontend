@@ -1,26 +1,45 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="theme-color" content="#000000">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.png">
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-    <title>SOSML</title>
-  </head>
-  <body>
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <div id="root"></div>
-
-    <script>
-        if('serviceWorker' in navigator) {
-              navigator.serviceWorker
-                       .register('/service-worker.js')
-                       .then(function() { console.log("Service Worker Registered"); });
-        }
-    </script>
-
-  </body>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+        <meta name="theme-color" content="#000000">
+        <link rel="shortcut icon" href="/favicon.png">
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+        <title>SOSML</title>
+        <link href="/static/css/main.64a5ddc4.css" rel="stylesheet">
+    </head>
+    <body>
+        <noscript>
+            You need to enable JavaScript to run SOSML.
+        </noscript>
+        <div id="root"></div>
+        <script>
+            window.isUpdateAvailable = new Promise(function(resolve, reject) {
+                if('serviceWorker' in navigator) {
+                    navigator.serviceWorker
+                        .register('/service-worker.js')
+                        .then(reg => {
+                            reg.onupdatefound = () => {
+                                const installingWorker = reg.installing;
+                                installingWorker.onstatechange = () => {
+                                    switch (installingWorker.state) {
+                                        case 'installed':
+                                            if (navigator.serviceWorker.controller) {
+                                                // new update available
+                                                resolve(true);
+                                            } else {
+                                                // no update available
+                                                resolve(false);
+                                            }
+                                            break;
+                                    }
+                                };
+                            };
+                        })
+                        .catch(err => console.error('[SW ERROR]', err.name, ':', err.message));
+                }
+            });
+        </script>
+    </body>
 </html>
