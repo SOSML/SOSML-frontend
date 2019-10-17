@@ -202,30 +202,32 @@ class Files extends React.Component<any, State> {
         }
 
         let folderState: boolean = this.state.folder[prefix + name + files[0].type];
+        let settings = getInterfaceSettings();
+        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
 
         let style4: any = {};
-        style4.borderRight = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style4.borderLeft = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style4.borderBottom = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
+        style4.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style4.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style4.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         style4.borderTop = 'none';
         let style3: any = {};
         style3.marginTop = '-8.8px';
         style3.marginRight = '-9px';
         style3.marginLeft = '8px';
         let style2: any = {};
-        style2.borderTop = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style2.borderRight = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
+        style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
         if (!folderState) {
-            style2.borderBottom = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
+            style2.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         }
         style2.whiteSpace = 'nowrap';
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
         let style: any = {};
-        style.borderTop = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style.borderLeft = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
+        style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
         if (!folderState) {
-            style.borderBottom = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
+            style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         }
         style.whiteSpace = 'nowrap';
         style.overflow = 'hidden';
@@ -285,6 +287,9 @@ class Files extends React.Component<any, State> {
     }
 
     private renderFile(file: File | undefined, key: number, prefix: string = '') {
+        let settings = getInterfaceSettings();
+        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
+
         let style4: any = {};
         style4.padding = '2.5px';
         let style3: any = {};
@@ -292,16 +297,16 @@ class Files extends React.Component<any, State> {
         style3.marginRight = '-9px';
         style3.marginLeft = '8px';
         let style2: any = {};
-        style2.borderTop = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style2.borderRight = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style2.borderBottom = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
+        style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style2.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         style2.whiteSpace = 'nowrap';
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
         let style: any = {};
-        style.borderTop = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style.borderLeft = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
-        style.borderBottom = '1px solid ' + getColor(getInterfaceSettings().theme, 'border');
+        style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.whiteSpace = 'nowrap';
         style.overflow = 'hidden';
         style.textOverflow = 'ellipsis';

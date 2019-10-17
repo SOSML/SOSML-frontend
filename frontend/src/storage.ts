@@ -83,9 +83,9 @@ export function getInterfaceSettings(): InterfaceSettings {
     let ret: InterfaceSettings = {
         fullscreen: false,
         timeout: 5000,
-        errorColor: getColor(DEFAULT_THEME, 'error'),
-        successColor1: getColor(DEFAULT_THEME, 'success'),
-        successColor2: getColor(DEFAULT_THEME, 'success_alt'),
+        errorColor: getColor(DEFAULT_THEME, undefined, 'error'),
+        successColor1: getColor(DEFAULT_THEME, undefined, 'success'),
+        successColor2: getColor(DEFAULT_THEME, undefined, 'success_alt'),
         outputHighlight: true,
         autoIndent: true,
         userContributesEnergy: false,
@@ -95,7 +95,7 @@ export function getInterfaceSettings(): InterfaceSettings {
         globalLastCache: true,
         showHiddenFiles: false,
         advancedMode: false,
-        autoSelectTheme: false
+        autoSelectTheme: true
     };
     fillObjectWithString(ret, str);
     return ret;

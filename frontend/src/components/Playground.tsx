@@ -7,6 +7,7 @@ import CodeMirrorWrapper from './CodeMirrorWrapper';
 import { Button, Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import { API as WebserverAPI } from '../api';
+import { getColor } from '../theme';
 import { InterfaceSettings, getInterfaceSettings } from '../storage';
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
 SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
@@ -119,12 +120,24 @@ class Playground extends React.Component<Props, State> {
         );
 
         let extraCSS = '';
-        extraCSS += '.eval-fail { background-color: '
-        + this.state.interfaceSettings.errorColor + ' !important; }';
-        extraCSS += '.eval-success { background-color: '
-        + this.state.interfaceSettings.successColor1 + ' !important; }';
-        extraCSS += '.eval-success-odd { background-color: '
-        + this.state.interfaceSettings.successColor2 + ' !important; }';
+        let settings = getInterfaceSettings();
+        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
+        if (dt === undefined) {
+            extraCSS += '.eval-fail { background-color: '
+            + this.state.interfaceSettings.errorColor + ' !important; }';
+            extraCSS += '.eval-success { background-color: '
+            + this.state.interfaceSettings.successColor1 + ' !important; }';
+            extraCSS += '.eval-success-odd { background-color: '
+            + this.state.interfaceSettings.successColor2 + ' !important; }';
+        } else {
+            extraCSS += '.eval-fail { background-color: '
+            + getColor(settings.theme, dt, 'error') + ' !important; }';
+            extraCSS += '.eval-success { background-color: '
+            + getColor(settings.theme, dt, 'success') + ' !important; }';
+            extraCSS += '.eval-success-odd { background-color: '
+            + getColor(settings.theme, dt, 'success_alt') + ' !important; }';
+        }
+
         return (
             <div className="playground">
                 <style>{extraCSS}</style>

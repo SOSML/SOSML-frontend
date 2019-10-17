@@ -63,7 +63,12 @@ export function getTheme (name: string, darkTheme: string | undefined): Theme {
     return THEMES[name];
 }
 
-export function getColor (theme: string, color: string): string {
+export function getColor (theme: string, darkTheme: string | undefined, color: string): string {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+       && darkTheme !== undefined) {
+        // detected dark mode
+        return THEMES[darkTheme][color];
+    }
     return THEMES[theme][color];
 }
 

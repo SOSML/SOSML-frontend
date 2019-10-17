@@ -145,10 +145,13 @@ class Editor extends React.Component<any, State> {
             );
         } else {
             let style: any = {};
+            let settings = getInterfaceSettings();
+            let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
+
             if (this.state.savedFeedback === FEEDBACK_SUCCESS) {
-                style.backgroundColor = getColor(getInterfaceSettings().theme, 'success');
+                style.backgroundColor = getColor(settings.theme, dt, 'success');
             } else if (this.state.savedFeedback === FEEDBACK_FAIL) {
-                style.backgroundColor = getColor(getInterfaceSettings().theme, 'error');
+                style.backgroundColor = getColor(settings.theme, dt, 'error');
             }
             fileForm = (
                 <Form inline={true} className="inlineBlock" onSubmit={this.handleFormSubmit}>

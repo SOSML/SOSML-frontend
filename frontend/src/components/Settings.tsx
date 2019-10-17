@@ -44,9 +44,9 @@ class Settings extends React.Component<any, State> {
     resetColorsToDefault() {
         this.setState((oldState) => {
             let deepCopy: any = this.deepCopy(oldState);
-            deepCopy.front.errorColor = getColor(deepCopy.front.theme, 'error');
-            deepCopy.front.successColor1 = getColor(deepCopy.front.theme, 'success');
-            deepCopy.front.successColor2 = getColor(deepCopy.front.theme, 'success_alt');
+            deepCopy.front.errorColor = getColor(deepCopy.front.theme, undefined, 'error');
+            deepCopy.front.successColor1 = getColor(deepCopy.front.theme, undefined, 'success');
+            deepCopy.front.successColor2 = getColor(deepCopy.front.theme, undefined, 'success_alt');
             return deepCopy;
         }, () => {
             this.saveState();
@@ -128,33 +128,33 @@ class Settings extends React.Component<any, State> {
         );
         result.push(
             <div key={12}>
-                Using general theme <input placeholder={this.state.front.theme}
+                Using general {this.state.front.autoSelectTheme ? '(light)' : ''} theme <input
+                placeholder={this.state.front.theme}
                 style={style} onChange={this.themeChangeHandler} />.<br/>
             </div>
         );
-        if (advanced) {
+        result.push(
+            <Checkbox key={17} checked={this.state.front.autoSelectTheme}
+                onChange={this.changeHandler('front', 'autoSelectTheme')}>
+                Try to detect a system-wide dark mode and correspondingly adjust the theme used.
+            </Checkbox>
+        );
+        if (!this.state.front.autoSelectTheme) {
             result.push(
-                <Checkbox key={17} checked={this.state.front.autoSelectTheme}
-                    onChange={this.changeHandler('front', 'autoSelectTheme')}>
-                    Try to detect a system-wide dark mode and adjust the used theme
-                    correspondingly. (experimental)
-                </Checkbox>
+                <div key={121}>
+                    Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
+                        onChange={this.colorChangeHandler('errorColor')}/><br/>
+                    Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
+                        onChange={this.colorChangeHandler('successColor1')}/><br/>
+                    Alternative background color for evaluated code: <input type="color"
+                    value={this.state.front.successColor2}
+                        onChange={this.colorChangeHandler('successColor2')}/><br /><br />
+                    <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
+                        <Glyphicon glyph="repeat" /> Reset colors to theme default
+                    </button> <br /><br />
+                </div>
             );
         }
-        result.push(
-            <div key={121}>
-                Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
-                    onChange={this.colorChangeHandler('errorColor')}/><br/>
-                Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
-                    onChange={this.colorChangeHandler('successColor1')}/><br/>
-                Alternative background color for evaluated code: <input type="color"
-                value={this.state.front.successColor2}
-                    onChange={this.colorChangeHandler('successColor2')}/><br /><br />
-                <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
-                    <Glyphicon glyph="repeat" /> Reset colors to theme default
-                </button> <br /><br />
-            </div>
-        );
 
         result.push(
             <Checkbox key={13} checked={this.state.front.outputHighlight}
