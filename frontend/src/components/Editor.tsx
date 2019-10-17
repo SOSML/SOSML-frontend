@@ -49,6 +49,7 @@ class Editor extends React.Component<any, State> {
     componentDidMount() {
         if (this.props.history.location && this.props.history.location.search) {
             let parts = this.props.history.location.search.split('?');
+            let dfn = decodeURI(this.props.history.location.search.substr(2 + parts[1]));
 
             if (parts.length !== 3 || isNaN(+parts[1])) {
                 // Not a valid GRFSD, don't do anything
@@ -57,13 +58,13 @@ class Editor extends React.Component<any, State> {
 
             let tabId = +parts[1];
             setTabId(tabId);
-            let fileName = tabId + '/' + parts[2];
+            let fileName = tabId + '/' + dfn;
 
             Database.getInstance().then((db: Database) => {
                 return db.getFile(fileName, true);
             }).then((content: string) => {
                 this.setState((oldState) => {
-                    return {initialCode: content, fileName: parts[2]};
+                    return {initialCode: content, fileName: dfn};
                 });
             });
             return;

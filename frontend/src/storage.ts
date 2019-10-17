@@ -229,7 +229,7 @@ export class Database {
                 try {
                     resolve(event.target.result.value);
                 } catch (e) {
-                    reject(e.name + ': ' + e.message);
+                    reject('Reading ' + name + ' failed with error ' +  e.name + ': ' + e.message);
                 }
             };
         });
