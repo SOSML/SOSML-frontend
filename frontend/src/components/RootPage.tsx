@@ -34,7 +34,6 @@ class RootPage extends React.Component<any, any> {
                     <Route path="/help" component={Help} />
                     <Route path="/settings" component={Settings} />
 
-                    <Route path="/editor?:tabid?:name" component={FileIntermediate} />
                     <Route path="/file/:name" component={FileIntermediate} />
                     <Route path="/examplefile/:name" component={FileIntermediate} />
                     <Route path="/share/:hash" component={Editor} />
