@@ -135,7 +135,7 @@ class Settings extends React.Component<any, State> {
         );
         result.push(
             <Checkbox key={17} checked={this.state.front.autoSelectTheme}
-                onChange={this.changeHandler('front', 'autoSelectTheme')}>
+                onChange={this.changeHandler('front', 'autoSelectTheme', true)}>
                 Try to detect a system-wide dark mode and correspondingly adjust the theme used.
             </Checkbox>
         );
@@ -197,7 +197,7 @@ class Settings extends React.Component<any, State> {
         return result;
     }
 
-    private changeHandler(scope: string, property: string) {
+    private changeHandler(scope: string, property: string, needsReload: boolean = false) {
         return () => {
             this.setState((oldState) => {
                 let deepCopy: any = this.deepCopy(oldState);
@@ -206,6 +206,9 @@ class Settings extends React.Component<any, State> {
             }, () => {
                 this.saveState();
             });
+            if (needsReload) {
+                window.location.reload();
+            }
         };
     }
 
