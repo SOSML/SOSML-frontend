@@ -47,11 +47,11 @@ class Editor extends React.Component<any, State> {
     }
 
     componentDidMount() {
-        if (this.props.history.location && this.props.history.location.search) {
-            let parts = this.props.history.location.search.split('?');
-            let dfn = decodeURI(this.props.history.location.search.substr(2 + parts[1]));
+        if (this.props.location && this.props.location.search) {
+            let parts = this.props.location.search.split(/[?|&]/);
+            let dfn = decodeURI(this.props.location.search.substr(2 + parts[1].length));
 
-            if (parts.length !== 3 || isNaN(+parts[1])) {
+            if (parts.length < 2 || isNaN(+parts[1])) {
                 // Not a valid GRFSD, don't do anything
                 return;
             }
@@ -219,7 +219,7 @@ class Editor extends React.Component<any, State> {
             return {code: newCode};
         });
 
-        this.props.history.replace('/editor?' + getTabId() + '?' + this.state.fileName);
+        this.props.history.replace('/editor?' + getTabId() + '&' + this.state.fileName);
 
         Database.getInstance().then((db: Database) => {
             return db.saveFile(getTabId() + '/' + this.state.fileName,
