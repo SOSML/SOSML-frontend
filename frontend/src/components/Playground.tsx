@@ -6,8 +6,8 @@ import ContractModal from './ContractModal';
 import CodeMirrorWrapper from './CodeMirrorWrapper';
 import { Button, Glyphicon } from 'react-bootstrap';
 import './Playground.css';
-import { API as WebserverAPI } from '../API';
-import { InterfaceSettings, getInterfaceSettings } from './Settings';
+import { API as WebserverAPI } from '../api';
+import { InterfaceSettings, getInterfaceSettings } from '../storage';
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
 SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
     if (this.props.onUpdate && this.state.secondaryPaneSize !== prevState.secondaryPaneSize) {

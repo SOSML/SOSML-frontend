@@ -1,11 +1,11 @@
 import * as React from 'react';
 
 import { Fade, Button, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'react-bootstrap';
-import { File, FileType, Database, API } from '../API';
+import { API } from '../api';
 import './Files.css';
 import { SAMPLE_FILES_ENABLED } from '../config';
 import { getColor } from '../theme';
-import { getInterfaceSettings } from './Settings';
+import { getInterfaceSettings, File, FileType, Database } from '../storage';
 
 const FileSaver = require('file-saver');
 
@@ -364,7 +364,7 @@ class Files extends React.Component<any, State> {
     private refreshFiles() {
         if (SAMPLE_FILES_ENABLED) {
             Database.getInstance().then((db: Database) => {
-                return db.getFiles();
+                return db.getFiles(getInterfaceSettings().showHiddenFiles);
             }).then((data: File[]) => {
                 this.setState({files: data});
                 return API.getCodeExamplesList();
@@ -384,7 +384,7 @@ class Files extends React.Component<any, State> {
             });
         } else {
             Database.getInstance().then((db: Database) => {
-                return db.getFiles();
+                return db.getFiles(getInterfaceSettings().showHiddenFiles);
             }).then((data: File[]) => {
                 this.setState({files: data});
                 return 0;

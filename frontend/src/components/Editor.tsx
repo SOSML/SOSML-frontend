@@ -2,14 +2,17 @@ import * as React from 'react';
 
 import Playground from './Playground';
 import { Form , Alert, Button, Glyphicon } from 'react-bootstrap';
-import { Database, API } from '../API';
+import { API } from '../api';
 import { getColor } from '../theme';
-import { getInterfaceSettings } from './Settings';
+import { getInterfaceSettings, Database, getTabId, setTabId,
+         getLastCachedFile, setLastCachedFile } from '../storage';
 import './Editor.css';
 
 const FEEDBACK_NONE = 0;
 const FEEDBACK_SUCCESS = 1;
 const FEEDBACK_FAIL = 2;
+
+let fileInCache: string | undefined = undefined;
 
 interface State {
     shareReadMode: boolean;
@@ -32,7 +35,7 @@ class Editor extends React.Component<any, State> {
             initialCode: '',
             shareHash: '',
             savedFeedback: FEEDBACK_NONE,
-            savedFeedbackTimer: null
+            savedFeedbackTimer: null,
         };
 
         this.onFileNameBlur = this.onFileNameBlur.bind(this);
@@ -44,8 +47,31 @@ class Editor extends React.Component<any, State> {
     }
 
     componentDidMount() {
+        if (this.props.history.location && this.props.history.location.search) {
+            let parts = this.props.history.location.search.split('?');
+
+            if (parts.length !== 3 || isNaN(+parts[1])) {
+                // Not a valid GRFSD, don't do anything
+                return;
+            }
+
+            let tabId = +parts[1];
+            setTabId(tabId);
+            let fileName = tabId + '/' + parts[2];
+
+            Database.getInstance().then((db: Database) => {
+                return db.getFile(fileName, true);
+            }).then((content: string) => {
+                this.setState((oldState) => {
+                    return {initialCode: content, fileName: parts[2]};
+                });
+            });
+            return;
+        }
+
         if (this.props.history && this.props.history.location.state) {
             let state: any = this.props.history.location.state;
+
             if (state.fileName) {
                 let promis: Promise<String>;
                 if (state.example) {
@@ -60,7 +86,6 @@ class Editor extends React.Component<any, State> {
                         return {initialCode: content, fileName: state.fileName};
                     });
                 });
-                this.props.history.replace('/editor', {});
                 return;
             } else if (state.shareHash) {
                 API.loadSharedCode(state.shareHash).then((content: string) => {
@@ -68,7 +93,6 @@ class Editor extends React.Component<any, State> {
                         return {initialCode: content};
                     });
                 });
-                this.props.history.replace('/editor', {});
                 return;
             }
         }
@@ -80,7 +104,28 @@ class Editor extends React.Component<any, State> {
             });
             return;
         }
-        this.setState({initialCode: this.unNullify(localStorage.getItem('tmpCode'))});
+
+        let lfic = getLastCachedFile();
+        if (fileInCache !== undefined || lfic !== undefined) {
+            let fileName: string = '';
+            let pfileName: string = '';
+            if (fileInCache !== undefined) {
+                fileName = fileInCache;
+                pfileName = getTabId() + '/' + fileInCache;
+            } else if (lfic !== undefined) {
+                fileName = lfic.substr(lfic.indexOf('/') + 1);
+                pfileName = lfic;
+            }
+
+            Database.getInstance().then((db: Database) => {
+                return db.getFile(pfileName, true);
+            }).then((content: string) => {
+                this.setState((oldState) => {
+                    return {initialCode: content, fileName: fileName};
+                });
+            });
+            return;
+        }
     }
 
     render() {
@@ -172,7 +217,16 @@ class Editor extends React.Component<any, State> {
         this.setState(prevState => {
             return {code: newCode};
         });
-        localStorage.setItem('tmpCode', newCode);
+
+        this.props.history.replace('/editor?' + getTabId() + '?' + this.state.fileName);
+
+        Database.getInstance().then((db: Database) => {
+            return db.saveFile(getTabId() + '/' + this.state.fileName,
+                               this.state.code, true);
+        });
+
+        fileInCache = this.state.fileName;
+        setLastCachedFile(getTabId() + '/' + fileInCache);
     }
 
     onFileNameBlur(evt: any) {
@@ -187,15 +241,6 @@ class Editor extends React.Component<any, State> {
         }
         */
     }
-
-    private unNullify(str: string | null): string {
-        if (typeof str === 'string') {
-            return str;
-        } else {
-            return '';
-        }
-    }
-
 }
 
 export default Editor;

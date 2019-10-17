@@ -7,7 +7,7 @@ import Help from './Help';
 import Landing from './Landing';
 import Settings from './Settings';
 import FileIntermediate from './FileIntermediate';
-import { getInterfaceSettings } from './Settings';
+import { getInterfaceSettings } from '../storage';
 import { renderTheme, getTheme } from '../theme';
 // import ShareIntermediate from './ShareIntermediate';
 import {
@@ -34,6 +34,7 @@ class RootPage extends React.Component<any, any> {
                     <Route path="/help" component={Help} />
                     <Route path="/settings" component={Settings} />
 
+                    <Route path="/editor?:tabid?:name" component={FileIntermediate} />
                     <Route path="/file/:name" component={FileIntermediate} />
                     <Route path="/examplefile/:name" component={FileIntermediate} />
                     <Route path="/share/:hash" component={Editor} />

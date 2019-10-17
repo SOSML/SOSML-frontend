@@ -32,7 +32,6 @@
         "no-bitwise": true,
         "no-console": [
             true,
-            "log",
             "error",
             "debug",
             "info",
@@ -93,8 +92,8 @@
             "check-type",
             "check-typecast"
         ],
-        
-        
+
+
         "jsx-alignment": false
     }
 }
