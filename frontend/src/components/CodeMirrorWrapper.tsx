@@ -220,7 +220,8 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             },
             gutters: [
                 'CodeMirror-linenumbers', 'CodeMirror-foldgutter'
-            ]
+            ],
+            inputStyle: 'textarea'
         };
         this.evalHelper.setTimeout(this.props.timeout);
         let classAdd = '';
