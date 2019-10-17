@@ -24,10 +24,12 @@ export interface InterfaceSettings {
     autoIndent: boolean;
     userContributesEnergy: boolean;
     theme: string;
+    darkTheme: string;
     maxTabCount: number;
     globalLastCache: boolean;
     showHiddenFiles: boolean;
     advancedMode: boolean;
+    autoSelectTheme: boolean;
 }
 
 export enum FileType {
@@ -88,10 +90,12 @@ export function getInterfaceSettings(): InterfaceSettings {
         autoIndent: true,
         userContributesEnergy: false,
         theme: DEFAULT_THEME,
+        darkTheme: 'homura',
         maxTabCount: 75,
         globalLastCache: true,
         showHiddenFiles: false,
-        advancedMode: false
+        advancedMode: false,
+        autoSelectTheme: false
     };
     fillObjectWithString(ret, str);
     return ret;

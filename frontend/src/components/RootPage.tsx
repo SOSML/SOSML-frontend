@@ -22,7 +22,9 @@ class RootPage extends React.Component<any, any> {
     }
 
     render() {
-        let theme = renderTheme(getTheme(getInterfaceSettings().theme));
+        let settings = getInterfaceSettings();
+        let theme = renderTheme(getTheme(settings.theme, settings.autoSelectTheme ?
+                                         settings.darkTheme : undefined));
         return (
             <Router>
                 <div className="rootPage">

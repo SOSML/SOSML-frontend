@@ -130,6 +130,19 @@ class Settings extends React.Component<any, State> {
             <div key={12}>
                 Using general theme <input placeholder={this.state.front.theme}
                 style={style} onChange={this.themeChangeHandler} />.<br/>
+            </div>
+        );
+        if (advanced) {
+            result.push(
+                <Checkbox key={17} checked={this.state.front.autoSelectTheme}
+                    onChange={this.changeHandler('front', 'autoSelectTheme')}>
+                    Try to detect a system-wide dark mode and adjust the used theme
+                    correspondingly. (experimental)
+                </Checkbox>
+            );
+        }
+        result.push(
+            <div key={121}>
                 Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
                     onChange={this.colorChangeHandler('errorColor')}/><br/>
                 Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
@@ -142,6 +155,7 @@ class Settings extends React.Component<any, State> {
                 </button> <br /><br />
             </div>
         );
+
         result.push(
             <Checkbox key={13} checked={this.state.front.outputHighlight}
                 onChange={this.changeHandler('front', 'outputHighlight')}>
@@ -180,7 +194,6 @@ class Settings extends React.Component<any, State> {
                 Show <em>more</em> things to break.
             </Checkbox>
         );
-
         return result;
     }
 
@@ -226,7 +239,7 @@ class Settings extends React.Component<any, State> {
     private themeChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
         let value = evt.target.value;
 
-        if (!getTheme(value) || this.state.front.theme === value) {
+        if (!getTheme(value, undefined) || this.state.front.theme === value) {
             return;
         }
 

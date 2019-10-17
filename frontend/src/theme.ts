@@ -54,7 +54,12 @@ export type Theme = {
 };
 export type ThemeCollection = { [name: string]: Theme };
 
-export function getTheme (name: string): Theme {
+export function getTheme (name: string, darkTheme: string | undefined): Theme {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+       && darkTheme !== undefined) {
+        // detected dark mode
+        return THEMES[darkTheme];
+    }
     return THEMES[name];
 }
 
