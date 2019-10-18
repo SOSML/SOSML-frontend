@@ -110,9 +110,7 @@ class Settings extends React.Component<any, State> {
         result.push(
             <Checkbox key={9} checked={this.state.inter.disableEvaluation}
                 onChange={this.changeHandler('inter', 'disableEvaluation')}>
-                <b>Disable</b> evaluation. (Use this if your childhood friend SOSML takes too
-                    long to compute its feelings for you but you really care about
-                    of what type an answer would be.)
+                <b>Disable</b> evaluation.
             </Checkbox>
         );
         result.push(
