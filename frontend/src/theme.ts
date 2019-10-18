@@ -283,6 +283,11 @@ export function renderTheme (theme: Theme): string {
     .cm-s-default span.cm-link { color: ${theme.cm_link}; }
     .cm-s-default span.cm-error { color: ${theme.cm_error}; }
 
+    .cm-label {
+        color: ${theme.btn_dng_fg};
+        background-color: ${theme.btn_dng_bg};
+        border-color: ${theme.btn_dng_border};
+    }
 
     .form-control, input {
         color: ${theme.foreground};

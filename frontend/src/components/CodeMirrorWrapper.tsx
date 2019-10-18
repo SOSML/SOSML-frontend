@@ -185,6 +185,21 @@ export interface Props {
     timeout: number;
 }
 
+function elt(tag: any, content: any, className: any): any {
+    let e = document.createElement(tag);
+    if (className) {
+        e.className = className;
+    }
+    if (typeof content === 'string') {
+        e.appendChild(document.createTextNode(content));
+    } else if (content) {
+        for (let i = 0; i < content.length; ++i) {
+            e.appendChild(content[i]);
+        }
+    }
+    return e;
+}
+
 class CodeMirrorWrapper extends React.Component<Props, any> {
     editor: any;
     evalHelper: IncrementalInterpretationHelper;
@@ -224,7 +239,12 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             inputStyle: 'textarea',
             specialChars: new RegExp('[\u0000-\u001f\u007f-\u009f\u00a0\u00ad'
                                      + '\u061c\u1680\u2000-\u200f\u2028\u2029\u202f'
-                                     + '\u205f\u3000\ufeff\ufff9-\ufffc]')
+                                     + '\u205f\u3000\ufeff\ufff9-\ufffc]'),
+            specialCharPlaceholder: ((ch: any) => {
+                let token = elt('span', ch.charCodeAt(0).toString(16).toUpperCase(),
+                                'cm-label');
+                return token;
+            })
         };
         this.evalHelper.setTimeout(this.props.timeout);
         let classAdd = '';
