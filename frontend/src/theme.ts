@@ -54,11 +54,21 @@ export type Theme = {
 };
 export type ThemeCollection = { [name: string]: Theme };
 
-export function getTheme (name: string): Theme {
+export function getTheme (name: string, darkTheme: string | undefined): Theme {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+       && darkTheme !== undefined) {
+        // detected dark mode
+        return THEMES[darkTheme];
+    }
     return THEMES[name];
 }
 
-export function getColor (theme: string, color: string): string {
+export function getColor (theme: string, darkTheme: string | undefined, color: string): string {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+       && darkTheme !== undefined) {
+        // detected dark mode
+        return THEMES[darkTheme][color];
+    }
     return THEMES[theme][color];
 }
 
@@ -273,6 +283,11 @@ export function renderTheme (theme: Theme): string {
     .cm-s-default span.cm-link { color: ${theme.cm_link}; }
     .cm-s-default span.cm-error { color: ${theme.cm_error}; }
 
+    .cm-label {
+        color: ${theme.btn_dng_fg};
+        background-color: ${theme.btn_dng_bg};
+        border-color: ${theme.btn_dng_border};
+    }
 
     .form-control, input {
         color: ${theme.foreground};

@@ -93,8 +93,8 @@
             "check-type",
             "check-typecast"
         ],
-        
-        
+
+
         "jsx-alignment": false
     }
 }

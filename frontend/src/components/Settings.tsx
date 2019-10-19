@@ -2,82 +2,12 @@ import * as React from 'react';
 import { Glyphicon, Checkbox } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 import { getColor, getTheme } from '../theme';
-import { DEFAULT_THEME } from '../config';
-
-export interface InterpreterSettings {
-    allowUnicodeInStrings: boolean;
-    allowVector: boolean;
-    allowSuccessorML: boolean;
-    disableElaboration: boolean;
-    disableEvaluation: boolean;
-    allowLongFunctionNames: boolean;
-    allowStructuresAnywhere: boolean;
-    allowSignaturesAnywhere: boolean;
-    allowFunctorsAnywhere: boolean;
-    strictMode: boolean;
-}
-
-export interface InterfaceSettings {
-    fullscreen: boolean;
-    timeout: number;
-    errorColor: string;
-    successColor1: string;
-    successColor2: string;
-    outputHighlight: boolean;
-    autoIndent: boolean;
-    userContributesEnergy: boolean;
-    theme: string;
-}
+import { InterpreterSettings, InterfaceSettings, getInterpreterSettings,
+    getInterfaceSettings } from '../storage';
 
 interface State {
     inter: InterpreterSettings;
     front: InterfaceSettings;
-}
-
-function fillObjectWithString(obj: any, str: string | null) {
-    if (typeof str === 'string') {
-        let data: any = JSON.parse(str);
-        for (let name in data) {
-            if (data.hasOwnProperty(name)) {
-                obj[name] = data[name];
-            }
-        }
-    }
-}
-
-export function getInterpreterSettings(): InterpreterSettings {
-    let str: string | null = localStorage.getItem('interpreterSettings');
-    let ret: InterpreterSettings = {
-        allowUnicodeInStrings: false,
-        allowSuccessorML : false,
-        disableElaboration: false,
-        disableEvaluation: false,
-        allowVector: false,
-        allowLongFunctionNames: false,
-        allowStructuresAnywhere: false,
-        allowSignaturesAnywhere: false,
-        allowFunctorsAnywhere: false,
-        strictMode: true
-    };
-    fillObjectWithString(ret, str);
-    return ret;
-}
-
-export function getInterfaceSettings(): InterfaceSettings {
-    let str: string | null = localStorage.getItem('interfaceSettings');
-    let ret: InterfaceSettings = {
-        fullscreen: false,
-        timeout: 5000,
-        errorColor: getColor(DEFAULT_THEME, 'error'),
-        successColor1: getColor(DEFAULT_THEME, 'success'),
-        successColor2: getColor(DEFAULT_THEME, 'success_alt'),
-        outputHighlight: true,
-        autoIndent: true,
-        userContributesEnergy: false,
-        theme: DEFAULT_THEME
-    };
-    fillObjectWithString(ret, str);
-    return ret;
 }
 
 class Settings extends React.Component<any, State> {
@@ -94,11 +24,6 @@ class Settings extends React.Component<any, State> {
     }
 
     render() {
-        let style: any = {};
-        style.textAlign = 'right';
-        style.width = '4.5em';
-        style.border = 'none';
-
         return (
             <div className="container flexy">
             <h2>Settings</h2>
@@ -110,74 +35,7 @@ class Settings extends React.Component<any, State> {
                 Things may break so be warned, though.
                 </p>
                 <br/>
-                <h4>Interpreter Settings</h4>
-                <Checkbox defaultChecked={this.state.inter.allowUnicodeInStrings}
-                    onChange={this.changeHandler('inter', 'allowUnicodeInStrings')}>
-                    Allow Unicode symbols in strings
-                </Checkbox>
-                <Checkbox checked={this.state.inter.allowStructuresAnywhere}
-                    onChange={this.changeHandler('inter', 'allowStructuresAnywhere')}>
-                    Allow structures to be defined in local declaration expressions.
-                </Checkbox>
-                <Checkbox checked={this.state.inter.allowSignaturesAnywhere}
-                    onChange={this.changeHandler('inter', 'allowSignaturesAnywhere')}>
-                    Allow signatures to be defined in all non top-level declarations.
-                </Checkbox>
-                <Checkbox checked={this.state.inter.allowFunctorsAnywhere}
-                    onChange={this.changeHandler('inter', 'allowFunctorsAnywhere')}>
-                    Allow functors to be defined in all non top-level declarations.
-                </Checkbox>
-                <Checkbox checked={this.state.inter.allowVector}
-                    onChange={this.changeHandler('inter', 'allowVector')}>
-                    Allow vector patterns and expressions.
-                </Checkbox>
-                <Checkbox checked={this.state.inter.allowSuccessorML}
-                    onChange={this.changeHandler('inter', 'allowSuccessorML')}>
-                    Enable support for 'SuccessorML' (experimental)
-                </Checkbox>
-                <Checkbox checked={this.state.inter.strictMode}
-                    onChange={this.changeHandler('inter', 'strictMode')}>
-                    Enforce single-typed results
-                </Checkbox>
-                <Checkbox checked={this.state.inter.disableElaboration}
-                    onChange={this.changeHandler('inter', 'disableElaboration')}>
-                    <b>Disable</b> elaboration.
-                </Checkbox>
-                <Checkbox checked={this.state.inter.disableEvaluation}
-                    onChange={this.changeHandler('inter', 'disableEvaluation')}>
-                    <b>Disable</b> evaluation. (Use this if your childhood friend SOSML takes too
-                        long to compute its feelings for you but you really care about
-                        of what type an answer would be.)
-                </Checkbox>
-                Abort evaluation after <input type="number" min="0" step="100"
-                    value={this.state.front.timeout} style={style}
-                    onChange={this.timeoutChangeHandler} placeholder="9029"/> ms.
-                <br/><br/>
-                <h4>Editor Settings</h4>
-                Using general theme <input placeholder={this.state.front.theme}
-                style={style} onChange={this.themeChangeHandler} />.<br/>
-                Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
-                    onChange={this.colorChangeHandler('errorColor')}/><br/>
-                Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
-                    onChange={this.colorChangeHandler('successColor1')}/><br/>
-                Alternative background color for evaluated code: <input type="color"
-                value={this.state.front.successColor2}
-                    onChange={this.colorChangeHandler('successColor2')}/><br /><br />
-                <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
-                    <Glyphicon glyph="repeat" /> Reset colors to theme default
-                </button> <br /><br />
-                <Checkbox checked={this.state.front.outputHighlight}
-                    onChange={this.changeHandler('front', 'outputHighlight')}>
-                    Enable colored output
-                </Checkbox>
-                <Checkbox checked={this.state.front.autoIndent}
-                    onChange={this.changeHandler('front', 'autoIndent')}>
-                    Enable auto-indent
-                </Checkbox>
-                <Checkbox checked={this.state.front.fullscreen}
-                    onChange={this.changeHandler('front', 'fullscreen')}>
-                    Switch editor into fullscreen mode (Use ESC to return to the normal mode.)
-                </Checkbox>
+                {this.renderSettings(this.state.front.advancedMode)}
                 <br/> <br/>
             </div>
         );
@@ -186,16 +44,158 @@ class Settings extends React.Component<any, State> {
     resetColorsToDefault() {
         this.setState((oldState) => {
             let deepCopy: any = this.deepCopy(oldState);
-            deepCopy.front.errorColor = getColor(deepCopy.front.theme, 'error');
-            deepCopy.front.successColor1 = getColor(deepCopy.front.theme, 'success');
-            deepCopy.front.successColor2 = getColor(deepCopy.front.theme, 'success_alt');
+            deepCopy.front.errorColor = getColor(deepCopy.front.theme, undefined, 'error');
+            deepCopy.front.successColor1 = getColor(deepCopy.front.theme, undefined, 'success');
+            deepCopy.front.successColor2 = getColor(deepCopy.front.theme, undefined, 'success_alt');
             return deepCopy;
         }, () => {
             this.saveState();
         });
     }
 
-    private changeHandler(scope: string, property: string) {
+    private renderSettings(advanced: boolean): any[] {
+        let style: any = {};
+        style.textAlign = 'right';
+        style.width = '4.5em';
+        style.border = 'none';
+
+        let result: any[] = [];
+        result.push(
+            <h4 key={0}>Interpreter Settings</h4>
+        );
+        if (advanced) {
+            result.push(
+                <Checkbox key={2} checked={this.state.inter.allowStructuresAnywhere}
+                    onChange={this.changeHandler('inter', 'allowStructuresAnywhere')}>
+                    Allow structures to be defined in local declaration expressions.
+                </Checkbox>
+            );
+            result.push(
+                <Checkbox key={3} checked={this.state.inter.allowSignaturesAnywhere}
+                    onChange={this.changeHandler('inter', 'allowSignaturesAnywhere')}>
+                    Allow signatures to be defined in all non top-level declarations.
+                </Checkbox>
+            );
+            result.push(
+                <Checkbox key={4} checked={this.state.inter.allowFunctorsAnywhere}
+                    onChange={this.changeHandler('inter', 'allowFunctorsAnywhere')}>
+                    Allow functors to be defined in all non top-level declarations.
+                </Checkbox>
+            );
+            result.push(
+                <Checkbox key={5} checked={this.state.inter.allowVector}
+                    onChange={this.changeHandler('inter', 'allowVector')}>
+                    Allow vector patterns and expressions.
+                </Checkbox>
+            );
+            result.push(
+                <Checkbox key={6} checked={this.state.inter.allowSuccessorML}
+                    onChange={this.changeHandler('inter', 'allowSuccessorML')}>
+                    Enable support for 'SuccessorML' (experimental)
+                </Checkbox>
+            );
+            result.push(
+                <Checkbox key={7} checked={this.state.inter.strictMode}
+                    onChange={this.changeHandler('inter', 'strictMode')}>
+                    Enforce single-typed results
+                </Checkbox>
+            );
+        }
+        result.push(
+            <Checkbox key={8} checked={this.state.inter.disableElaboration}
+                onChange={this.changeHandler('inter', 'disableElaboration')}>
+                <b>Disable</b> elaboration.
+            </Checkbox>
+        );
+        result.push(
+            <Checkbox key={9} checked={this.state.inter.disableEvaluation}
+                onChange={this.changeHandler('inter', 'disableEvaluation')}>
+                <b>Disable</b> evaluation.
+            </Checkbox>
+        );
+        result.push(
+            <p key={10}>
+                Abort evaluation after <input type="number" min="0" step="100"
+                value={this.state.front.timeout} style={style}
+                onChange={this.timeoutChangeHandler} placeholder="9029"/> ms.
+                <br/><br/>
+            </p>
+        );
+        result.push(
+            <h4 key={11}>Editor Settings</h4>
+        );
+        result.push(
+            <div key={12}>
+                Using general {this.state.front.autoSelectTheme ? '(light)' : ''} theme <input
+                placeholder={this.state.front.theme}
+                style={style} onChange={this.themeChangeHandler} />.<br/>
+            </div>
+        );
+        result.push(
+            <Checkbox key={17} checked={this.state.front.autoSelectTheme}
+                onChange={this.changeHandler('front', 'autoSelectTheme', true)}>
+                Try to detect a system-wide dark mode and correspondingly adjust the theme used.
+            </Checkbox>
+        );
+        if (!this.state.front.autoSelectTheme) {
+            result.push(
+                <div key={121}>
+                    Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
+                        onChange={this.colorChangeHandler('errorColor')}/><br/>
+                    Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
+                        onChange={this.colorChangeHandler('successColor1')}/><br/>
+                    Alternative background color for evaluated code: <input type="color"
+                    value={this.state.front.successColor2}
+                        onChange={this.colorChangeHandler('successColor2')}/><br /><br />
+                    <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
+                        <Glyphicon glyph="repeat" /> Reset colors to theme default
+                    </button> <br /><br />
+                </div>
+            );
+        }
+
+        result.push(
+            <Checkbox key={13} checked={this.state.front.outputHighlight}
+                onChange={this.changeHandler('front', 'outputHighlight')}>
+                Enable colored output
+            </Checkbox>
+        );
+        result.push(
+            <Checkbox key={14} checked={this.state.front.autoIndent}
+                onChange={this.changeHandler('front', 'autoIndent')}>
+                Enable auto-indent
+            </Checkbox>
+        );
+        if (advanced) {
+            result.push(
+                <Checkbox key={140} checked={this.state.front.showHiddenFiles}
+                    onChange={this.changeHandler('front', 'showHiddenFiles')}>
+                    Display hidden files.
+                </Checkbox>
+            );
+            result.push(
+                <Checkbox key={141} checked={this.state.front.globalLastCache}
+                    onChange={this.changeHandler('front', 'globalLastCache')}>
+                    Show last edited code when opening the editor.
+                </Checkbox>
+            );
+        }
+        result.push(
+            <Checkbox key={15} checked={this.state.front.fullscreen}
+                onChange={this.changeHandler('front', 'fullscreen')}>
+                Switch editor into fullscreen mode (Use ESC to return to the normal mode.)
+            </Checkbox>
+        );
+        result.push(
+            <Checkbox key={16} checked={this.state.front.advancedMode}
+                onChange={this.changeHandler('front', 'advancedMode')}>
+                Show <em>more</em> things to break.
+            </Checkbox>
+        );
+        return result;
+    }
+
+    private changeHandler(scope: string, property: string, needsReload: boolean = false) {
         return () => {
             this.setState((oldState) => {
                 let deepCopy: any = this.deepCopy(oldState);
@@ -204,6 +204,9 @@ class Settings extends React.Component<any, State> {
             }, () => {
                 this.saveState();
             });
+            if (needsReload) {
+                window.location.reload();
+            }
         };
     }
 
@@ -237,7 +240,7 @@ class Settings extends React.Component<any, State> {
     private themeChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
         let value = evt.target.value;
 
-        if (!getTheme(value) || this.state.front.theme === value) {
+        if (!getTheme(value, undefined) || this.state.front.theme === value) {
             return;
         }
 

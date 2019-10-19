@@ -7,7 +7,7 @@ import Help from './Help';
 import Landing from './Landing';
 import Settings from './Settings';
 import FileIntermediate from './FileIntermediate';
-import { getInterfaceSettings } from './Settings';
+import { getInterfaceSettings } from '../storage';
 import { renderTheme, getTheme } from '../theme';
 // import ShareIntermediate from './ShareIntermediate';
 import {
@@ -22,7 +22,9 @@ class RootPage extends React.Component<any, any> {
     }
 
     render() {
-        let theme = renderTheme(getTheme(getInterfaceSettings().theme));
+        let settings = getInterfaceSettings();
+        let theme = renderTheme(getTheme(settings.theme, settings.autoSelectTheme ?
+                                         settings.darkTheme : undefined));
         return (
             <Router>
                 <div className="rootPage">
