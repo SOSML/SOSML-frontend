@@ -18,6 +18,9 @@ export const THEME: Theme = {
     'minihead_fg': 'crimson',
     'editor_bg': '#fefdfd',
     'editor_fg': 'deeppink',
+
+    'selection_bg': '#fd8da2',
+
     'alert_fg': 'crimson',
     'alert_bg': '#ffe4e8',
     'alert_border': 'deeppink',

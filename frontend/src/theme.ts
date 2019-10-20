@@ -22,6 +22,7 @@ export type Theme = {
     'minihead_bg': string;
     'editor_fg': string;
     'editor_bg': string;
+    'selection_bg': string;
 
     'alert_fg': string;
     'alert_bg': string;
@@ -263,6 +264,10 @@ export function renderTheme (theme: Theme): string {
     .CodeMirror-cursor {
         border-color: ${theme.border};
     }
+    .CodeMirror-selected {
+        background-color: ${theme.selection_bg} !important;
+        background-color: ${theme.selection_bg}77 !important;
+    }
     span.CodeMirror-matchingbracket {
         color: ${theme.link_hover} !important;
     }
@@ -340,5 +345,10 @@ export function renderTheme (theme: Theme): string {
     ${generateButton('dng-alt', theme.btn_dng_fg, theme.btn_dng_bg,
                      theme.btn_dng_border, theme.btn_hover, theme.background)}
 
+    ::selection {
+        color: ${theme.foreground};
+        background-color: ${theme.selection_bg} !important;
+        background-color: ${theme.selection_bg}77 !important;
+    }
     `;
 }

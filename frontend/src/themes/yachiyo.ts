@@ -18,6 +18,9 @@ export const THEME: Theme = {
     'minihead_fg': '#a1ecfb',
     'editor_bg': '#021114',
     'editor_fg': 'rgba(11, 124, 147, 0.65)',
+
+    'selection_bg': 'rgba(11, 124, 147, 0.65)',
+
     'alert_fg': '#8bebfe',
     'alert_bg': '#021114',
     'alert_border': '#8bebfe',
