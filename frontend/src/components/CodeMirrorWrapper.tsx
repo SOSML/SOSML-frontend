@@ -13,6 +13,8 @@ require('codemirror/addon/fold/foldgutter.css');
 require('codemirror/addon/edit/matchbrackets.js');
 import './CodeMirrorWrapper.css';
 
+import { getInterfaceSettings } from '../storage';
+
 class CodeMirrorSubset {
     cm: any;
 
@@ -214,12 +216,7 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
     }
 
     render() {
-        /* Get the autoIndent setting from the local storage */
-        const interfaceSettings = localStorage.getItem('interfaceSettings');
-        let autoIndent = true;
-        if (typeof interfaceSettings === 'string') {
-            autoIndent = !!JSON.parse(interfaceSettings).autoIndent;
-        }
+        let autoIndent = getInterfaceSettings().autoIndent;
 
         const options = {
             lineNumbers: true,
@@ -244,7 +241,16 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
                 let token = elt('span', ch.charCodeAt(0).toString(16).toUpperCase(),
                                 'cm-label');
                 return token;
-            })
+            }),
+            extraKeys: {
+                Enter: ((cm: any) => {
+                    if (!autoIndent) {
+                        cm.replaceSelection('\n');
+                    } else {
+                        cm.execCommand('newlineAndIndent');
+                    }
+                })
+            }
         };
         this.evalHelper.setTimeout(this.props.timeout);
         let classAdd = '';
@@ -257,8 +263,8 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
         }
         return (
             <CodeMirror className={classAdd} ref={(editor: any) => {this.editor = editor; }}
-                onChange={this.handleChange}
-                value={value} options={options}/>
+            onChange={this.handleChange}
+            value={value} options={options}/>
         );
     }
 
