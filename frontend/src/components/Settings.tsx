@@ -166,6 +166,18 @@ class Settings extends React.Component<any, State> {
                 Enable auto-indent
             </Checkbox>
         );
+
+        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+        let height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+
+        if (width < height) {
+            result.push(
+                <Checkbox key={142} checked={this.state.front.useMobile}
+                    onChange={this.changeHandler('front', 'useMobile')}>
+                    Use mobile-friendly editor.
+                </Checkbox>
+            );
+        }
         if (advanced) {
             result.push(
                 <Checkbox key={140} checked={this.state.front.showHiddenFiles}

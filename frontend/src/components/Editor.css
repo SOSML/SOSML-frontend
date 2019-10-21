@@ -4,5 +4,5 @@ form {
 }
 
 .inlineBlock {
-    display: inline-block;
+    display: flex;
 }

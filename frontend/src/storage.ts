@@ -30,6 +30,7 @@ export interface InterfaceSettings {
     showHiddenFiles: boolean;
     advancedMode: boolean;
     autoSelectTheme: boolean;
+    useMobile: boolean;
 }
 
 export enum FileType {
@@ -95,7 +96,8 @@ export function getInterfaceSettings(): InterfaceSettings {
         globalLastCache: true,
         showHiddenFiles: false,
         advancedMode: false,
-        autoSelectTheme: true
+        autoSelectTheme: true,
+        useMobile: true
     };
     fillObjectWithString(ret, str);
     return ret;

@@ -25,6 +25,27 @@ class RootPage extends React.Component<any, any> {
         let settings = getInterfaceSettings();
         let theme = renderTheme(getTheme(settings.theme, settings.autoSelectTheme ?
                                          settings.darkTheme : undefined));
+        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+
+        let footer: any;
+        if (width < 600) {
+            footer = (
+                <div className="footer">
+                    © 2019 <a href="https://github.com/SOSML">The SOSML developers</a> | <a
+                    href="https://www.uni-saarland.de/footer/dialog/impressum.html">Imprint</a>
+                </div>
+            );
+        } else {
+            footer = (
+                <div className="footer">
+                    © 2019 <a href="https://github.com/SOSML">The SOSML developers</a> | <a
+                    href="https://github.com/SOSML/SOSML">Sources on GitHub</a> | <a
+                    href="https://github.com/SOSML/SOSML/issues">Report a bug</a> | <a
+                    href="https://www.uni-saarland.de/footer/dialog/impressum.html">Imprint</a>
+                </div>
+            );
+        }
+
         return (
             <Router>
                 <div className="rootPage">
@@ -39,12 +60,7 @@ class RootPage extends React.Component<any, any> {
                     <Route path="/file/:name" component={FileIntermediate} />
                     <Route path="/examplefile/:name" component={FileIntermediate} />
                     <Route path="/share/:hash" component={Editor} />
-                    <div className="footer">
-                        © 2019 <a href="https://github.com/SOSML">The SOSML developers</a> | <a
-                        href="https://github.com/SOSML/SOSML">Sources on GitHub</a> | <a
-                        href="https://github.com/SOSML/SOSML/issues">Report a bug</a> | <a
-                        href="https://www.uni-saarland.de/footer/dialog/impressum.html">Imprint</a>
-                    </div>
+                {footer}
                 </div>
             </Router>
         );

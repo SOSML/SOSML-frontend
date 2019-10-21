@@ -26,7 +26,7 @@
 }
 
 .headerButtons {
-    display: inline-block;
+    display: flex;
     float: right;
 }
 

@@ -138,31 +138,66 @@ class Playground extends React.Component<Props, State> {
             + getColor(settings.theme, dt, 'success_alt') + ' !important; }';
         }
 
-        return (
-            <div className="playground">
-                <style>{extraCSS}</style>
-                <SplitterLayout onUpdate={this.handleSplitterUpdate}>
-                    <div className="flexcomponent flexy">
-                        <MiniWindow content={(
-                            <CodeMirrorWrapper flex={true}
-                            onChange={this.handleCodeChange} code={code}
-                            readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                            useInterpreter={!this.state.useServer}
-                            timeout={this.state.interfaceSettings.timeout} />
-                        )} header={(
-                            <div className="headerButtons">
-                                {inputHeadBar}
-                            </div>
-                        )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
-                    </div>
-                    <div className="flexcomponent flexy">
-                        <MiniWindow content={<div>{lineItems}</div>}
-                            title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
-                    </div>
-                </SplitterLayout>
-                {modal}
-            </div>
-        );
+        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+        let height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+
+        if (width < height && getInterfaceSettings().useMobile) {
+            return (
+                <div className="playground">
+                    <style>{extraCSS}</style>
+                    <SplitterLayout vertical={true}
+                        onUpdate={this.handleSplitterUpdate} primaryIndex={1}
+                        percentage={true}>
+                        <div className="flexcomponent flexy">
+                            <MiniWindow content={<div>{lineItems}</div>}
+                                title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
+                        </div>
+                        <div className="flexcomponent flexy">
+                            <MiniWindow content={(
+                                <CodeMirrorWrapper flex={true}
+                                onChange={this.handleCodeChange} code={code}
+                                readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
+                                useInterpreter={!this.state.useServer}
+                                timeout={this.state.interfaceSettings.timeout} />
+                            )} header={(
+                                <div className="headerButtons">
+                                    {inputHeadBar}
+                                </div>
+                            )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
+                        </div>
+                    </SplitterLayout>
+                    {modal}
+                </div>
+            );
+        } else {
+            return (
+                <div className="playground">
+                    <style>{extraCSS}</style>
+                    <SplitterLayout
+                        onUpdate={this.handleSplitterUpdate} primaryIndex={0}
+                        percentage={true}>
+                        <div className="flexcomponent flexy">
+                            <MiniWindow content={(
+                                <CodeMirrorWrapper flex={true}
+                                onChange={this.handleCodeChange} code={code}
+                                readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
+                                useInterpreter={!this.state.useServer}
+                                timeout={this.state.interfaceSettings.timeout} />
+                            )} header={(
+                                <div className="headerButtons">
+                                    {inputHeadBar}
+                                </div>
+                            )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
+                        </div>
+                        <div className="flexcomponent flexy">
+                            <MiniWindow content={<div>{lineItems}</div>}
+                                title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
+                        </div>
+                    </SplitterLayout>
+                    {modal}
+                </div>
+            );
+        }
     }
 
     modalCloseCallback() {
