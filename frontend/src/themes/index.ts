@@ -6,7 +6,7 @@ import { THEME as THEME_MADOKA } from './madoka';
 import { THEME as THEME_SAYAKA } from './sayaka';
 import { THEME as THEME_HOMURA } from './homura';
 import { THEME as THEME_MAMI } from './mami';
-import { THEME as THEME_OTAKU } from './otaku';
+import { THEME as THEME_SANA } from './sana';
 
 export let THEMES: ThemeCollection = {
     'yachiyo':  THEME_YACHIYO,
@@ -15,5 +15,5 @@ export let THEMES: ThemeCollection = {
     'sayaka':   THEME_SAYAKA,
     'homura':   THEME_HOMURA,
     'mami':     THEME_MAMI,
-    'otaku':    THEME_OTAKU,
+    'sana':     THEME_SANA,
 };

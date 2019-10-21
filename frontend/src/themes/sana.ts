@@ -18,6 +18,9 @@ export const THEME: Theme = {
     'minihead_fg': 'lime',
     'editor_bg': 'black',
     'editor_fg': 'lime',
+
+    'selection_bg': 'green',
+
     'alert_fg': 'lime',
     'alert_bg': 'black',
     'alert_border': 'lime',
