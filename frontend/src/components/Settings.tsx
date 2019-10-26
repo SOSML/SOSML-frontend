@@ -242,7 +242,7 @@ class Settings extends React.Component<any, State> {
         }
         this.setState((oldState) => {
             let deepCopy: any = this.deepCopy(oldState);
-            deepCopy.front.timeout = value;
+            deepCopy.front.timeout = Math.min(value, 10000000000);
             return deepCopy;
         }, () => {
             this.saveState();
