@@ -2,7 +2,7 @@
     "name": "SOSML",
     "short_name": "SOSML",
     "description": "SOSML - Online Interpreter for Standard ML",
-    "start_url": "/",
+    "start_url": "/editor",
     "background_color": "#000000",
     "theme_color": "#000000",
     "display": "fullscreen",
