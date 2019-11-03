@@ -350,5 +350,15 @@ export function renderTheme (theme: Theme): string {
         background-color: ${theme.selection_bg} !important;
         background-color: ${theme.selection_bg}77 !important;
     }
+
+    ::-webkit-scrollbar {
+        height: 10px;
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border: 1px solid ${theme.border};
+        cursor: pointer;
+    }
     `;
 }

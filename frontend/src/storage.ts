@@ -93,7 +93,7 @@ export function getInterfaceSettings(): InterfaceSettings {
         theme: DEFAULT_THEME,
         darkTheme: 'homura',
         maxTabCount: 75,
-        globalLastCache: true,
+        globalLastCache: false,
         showHiddenFiles: false,
         advancedMode: false,
         autoSelectTheme: true,
