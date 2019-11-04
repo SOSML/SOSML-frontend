@@ -49,4 +49,7 @@ export const THEME: Theme = {
     'cm_tag': 'white',
     'cm_link': 'white',
     'cm_error': 'white',
+
+    'qr_fg': '#021114',
+    'qr_bg': '#20bedd',
 };

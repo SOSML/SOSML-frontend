@@ -49,4 +49,7 @@ export const THEME: Theme = {
     'cm_tag': 'inherit',
     'cm_link': 'inherit',
     'cm_error': 'inherit',
+
+    'qr_fg': 'black',
+    'qr_bg': '#ccc',
 };

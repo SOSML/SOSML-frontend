@@ -52,6 +52,9 @@ export type Theme = {
     'cm_tag': string;
     'cm_link': string;
     'cm_error': string;
+
+    'qr_bg': string;
+    'qr_fg': string;
 };
 export type ThemeCollection = { [name: string]: Theme };
 

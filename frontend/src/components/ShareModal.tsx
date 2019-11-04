@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Modal , Glyphicon } from 'react-bootstrap';
+import QRCode from './QRCode';
 
 interface Props {
     error: boolean;
@@ -28,6 +29,7 @@ class ShareModal extends React.Component<Props, any> {
                         <Modal.Title>Share link creation successful</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
+                        <QRCode link={this.props.link}/>
                         <div className="input-group">
                             <input type="text" className="form-control js-copytextarea" value={this.props.link} />
                             <span className="input-group-btn">

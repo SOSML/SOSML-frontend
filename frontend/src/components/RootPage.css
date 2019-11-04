@@ -171,3 +171,8 @@ a {
     border-radius: 0;
     border: 1px solid;
 }
+
+.qr {
+    width: 60%;
+    margin: 0 auto;
+}
