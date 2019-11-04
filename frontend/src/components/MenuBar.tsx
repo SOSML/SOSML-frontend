@@ -58,7 +58,7 @@ class MenuBar extends React.Component<any, State> {
 
     // Hover control
     componentDidMount() {
-        window.addEventListener('mousemove', this.handleBrowserMouseMove);
+        window.addEventListener('mousemove', this.handleBrowserMouseMove, {passive: true});
     }
 
     componentWillUnmount() {

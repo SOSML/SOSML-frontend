@@ -25,13 +25,13 @@ interface State {
     shareLink: string;
 
     formContract: boolean;
-    isVertical: boolean;
     interfaceSettings: InterfaceSettings;
 }
 
 interface Props {
     readOnly: boolean;
     onCodeChange?: (x: string) => void;
+    onResize?: () => void;
     initialCode: string;
     fileControls: any;
 }
@@ -44,12 +44,9 @@ class Playground extends React.Component<Props, State> {
     constructor(props: any) {
         super(props);
 
-        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-        let height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
-
         this.state = {
             output: '', code: '', sizeAnchor: 0, useServer: false,
-            shareLink: '', formContract: false, isVertical: (width < height),
+            shareLink: '', formContract: false,
             interfaceSettings: getInterfaceSettings()
         };
 
@@ -169,9 +166,6 @@ class Playground extends React.Component<Props, State> {
         );
 
         if (width < height && getInterfaceSettings().useMobile) {
-            if (!this.state.isVertical) {
-                window.location.reload();
-            }
             return (
                 <div className="playground">
                     <style>{extraCSS}</style>
@@ -185,9 +179,6 @@ class Playground extends React.Component<Props, State> {
                 </div>
             );
         } else {
-            if (this.state.isVertical) {
-                window.location.reload();
-            }
             return (
                 <div className="playground">
                     <style>{extraCSS}</style>
@@ -231,8 +222,8 @@ class Playground extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        window.addEventListener('resize', this.handleBrowserResize);
-        window.addEventListener('keyup', this.handleBrowserKeyup);
+        window.addEventListener('resize', this.handleBrowserResize, {passive: true});
+        window.addEventListener('keyup', this.handleBrowserKeyup, {passive: true});
 
         let settings: InterfaceSettings = getInterfaceSettings();
         this.setState({'interfaceSettings': settings});
@@ -265,6 +256,9 @@ class Playground extends React.Component<Props, State> {
             this.setState({sizeAnchor: -1});
         } else {
             this.setState({sizeAnchor: -2});
+        }
+        if (this.props.onResize) {
+            this.props.onResize();
         }
     }
 

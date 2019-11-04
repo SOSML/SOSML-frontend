@@ -309,6 +309,8 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
         cm.on('change', this.handleChangeEvent);
 
         this.evalHelper.clear();
+        this.evalHelper.handleChangeAt({line: 0, ch: 0, sticky: null}, [''], [''],
+                                       new CodeMirrorSubset(cm));
     }
 
     componentWillUnmount() {
@@ -329,8 +331,6 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
     This is the codemirror change handler
     */
     handleChangeEvent(codemirror: any, change: any) {
-        // console.log(change);
-        // console.log(codemirror.getValue());
         this.evalHelper.handleChangeAt(change.from, change.text, change.removed, new CodeMirrorSubset(codemirror));
     }
 }

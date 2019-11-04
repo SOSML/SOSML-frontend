@@ -39,6 +39,7 @@ class Editor extends React.Component<any, State> {
         };
 
         this.onFileNameBlur = this.onFileNameBlur.bind(this);
+        this.onResize = this.onResize.bind(this);
         this.handleCodeChange = this.handleCodeChange.bind(this);
         this.handleFileNameChange = this.handleFileNameChange.bind(this);
         this.handleRedirectToEdit = this.handleRedirectToEdit.bind(this);
@@ -168,7 +169,8 @@ class Editor extends React.Component<any, State> {
             <div className="flexy flexcomponent">
                 {topBar}
                 <Playground readOnly={this.state.shareReadMode} onCodeChange={this.handleCodeChange}
-                    initialCode={this.state.initialCode} fileControls={fileForm}  />
+                    onResize={this.onResize} initialCode={this.state.initialCode}
+                    fileControls={fileForm}  />
             </div>
         );
     }
@@ -231,6 +233,12 @@ class Editor extends React.Component<any, State> {
 
         fileInCache = this.state.fileName;
         setLastCachedFile(getTabId() + '/' + fileInCache);
+    }
+
+    onResize() {
+        this.setState(prevState => {
+            return {initialCode: prevState.code};
+        });
     }
 
     onFileNameBlur(evt: any) {
