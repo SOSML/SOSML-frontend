@@ -25,6 +25,7 @@ interface State {
     shareLink: string;
 
     formContract: boolean;
+    isVertical: boolean;
     interfaceSettings: InterfaceSettings;
 }
 
@@ -43,9 +44,13 @@ class Playground extends React.Component<Props, State> {
     constructor(props: any) {
         super(props);
 
+        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+        let height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+
         this.state = {
             output: '', code: '', sizeAnchor: 0, useServer: false,
-            shareLink: '', formContract: false, interfaceSettings: getInterfaceSettings()
+            shareLink: '', formContract: false, isVertical: (width < height),
+            interfaceSettings: getInterfaceSettings()
         };
 
         this.handleLeftResize = this.handleLeftResize.bind(this);
@@ -141,58 +146,62 @@ class Playground extends React.Component<Props, State> {
         let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
         let height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
 
+        let codemirror = (
+            <div className="flexcomponent flexy">
+                <MiniWindow content={(
+                    <CodeMirrorWrapper flex={true}
+                    onChange={this.handleCodeChange} code={code}
+                    readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
+                    useInterpreter={!this.state.useServer}
+                    timeout={this.state.interfaceSettings.timeout} />
+                )} header={(
+                    <div className="headerButtons">
+                        {inputHeadBar}
+                    </div>
+                )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
+            </div>
+        );
+        let output = (
+            <div className="flexcomponent flexy">
+                <MiniWindow content={<div>{lineItems}</div>}
+                    title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
+            </div>
+        );
+
         if (width < height && getInterfaceSettings().useMobile) {
+            if (!this.state.isVertical) {
+                this.setState({
+                    isVertical: true
+                });
+                window.location.reload();
+            }
             return (
                 <div className="playground">
                     <style>{extraCSS}</style>
                     <SplitterLayout vertical={true}
                         onUpdate={this.handleSplitterUpdate} primaryIndex={1}
                         percentage={true}>
-                        <div className="flexcomponent flexy">
-                            <MiniWindow content={<div>{lineItems}</div>}
-                                title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
-                        </div>
-                        <div className="flexcomponent flexy">
-                            <MiniWindow content={(
-                                <CodeMirrorWrapper flex={true}
-                                onChange={this.handleCodeChange} code={code}
-                                readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                                useInterpreter={!this.state.useServer}
-                                timeout={this.state.interfaceSettings.timeout} />
-                            )} header={(
-                                <div className="headerButtons">
-                                    {inputHeadBar}
-                                </div>
-                            )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
-                        </div>
+                        {output}
+                        {codemirror}
                     </SplitterLayout>
                     {modal}
                 </div>
             );
         } else {
+            if (this.state.isVertical) {
+                this.setState({
+                    isVertical: false
+                });
+                window.location.reload();
+            }
             return (
                 <div className="playground">
                     <style>{extraCSS}</style>
                     <SplitterLayout
                         onUpdate={this.handleSplitterUpdate} primaryIndex={0}
                         percentage={true}>
-                        <div className="flexcomponent flexy">
-                            <MiniWindow content={(
-                                <CodeMirrorWrapper flex={true}
-                                onChange={this.handleCodeChange} code={code}
-                                readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                                useInterpreter={!this.state.useServer}
-                                timeout={this.state.interfaceSettings.timeout} />
-                            )} header={(
-                                <div className="headerButtons">
-                                    {inputHeadBar}
-                                </div>
-                            )} title="SML" className="flexy" updateAnchor={this.state.sizeAnchor} />
-                        </div>
-                        <div className="flexcomponent flexy">
-                            <MiniWindow content={<div>{lineItems}</div>}
-                                title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
-                        </div>
+                        {codemirror}
+                        {output}
                     </SplitterLayout>
                     {modal}
                 </div>
