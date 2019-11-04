@@ -169,9 +169,9 @@ class Playground extends React.Component<Props, State> {
         );
 
         if (width < height && getInterfaceSettings().useMobile) {
-         //   if (!this.state.isVertical) {
-         //       window.location.reload();
-         //   }
+            if (!this.state.isVertical) {
+                window.location.reload();
+            }
             return (
                 <div className="playground">
                     <style>{extraCSS}</style>
@@ -185,9 +185,9 @@ class Playground extends React.Component<Props, State> {
                 </div>
             );
         } else {
-          //  if (this.state.isVertical) {
-          //      window.location.reload();
-          //  }
+            if (this.state.isVertical) {
+                window.location.reload();
+            }
             return (
                 <div className="playground">
                     <style>{extraCSS}</style>
