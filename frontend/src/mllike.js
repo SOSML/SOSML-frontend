@@ -192,7 +192,7 @@
             }
 
             /* match digits */
-            if (/\d/.test(ch)) {
+            if (/[\d\[(?=\])]/.test(ch)) {
                 stream.eatWhile(/[\d]/);
                 /* match floating numbers */
                 if (stream.eat('.')) {
