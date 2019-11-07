@@ -167,8 +167,8 @@ class Settings extends React.Component<any, State> {
             </Checkbox>
         );
 
-        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-        let height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
+        let height = (window.innerHeight > 0) ? window.innerHeight : window.screen.height;
 
         if (width < height) {
             result.push(

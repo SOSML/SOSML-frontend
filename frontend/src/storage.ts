@@ -117,7 +117,7 @@ export function getLastCachedFile(): string | undefined {
     if (lcf === null) {
         return undefined;
     } else {
-        return <string> lcf;
+        return lcf as string;
     }
 }
 

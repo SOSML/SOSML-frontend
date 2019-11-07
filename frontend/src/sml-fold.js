@@ -3,15 +3,14 @@
 
 // taken from codemirror/addon/fold/indent-fold.js and adapted
 
+var CodeMirror = require('react-codemirror');
+
 (function(mod) {
     if (typeof exports == "object" && typeof module == "object") // CommonJS
         mod(require("codemirror/lib/codemirror"));
     else // Plain browser env
         mod(CodeMirror);
 })(function(CodeMirror) {
-    "use strict";
-
-
     function getLineIndent(cm, lineNo) {
         var text = cm.getLine(lineNo);
         var spaceTo = text.search(/\S/);

@@ -1,4 +1,6 @@
 import * as React from 'react';
+import './CodeMirrorWrapper.css';
+import { getInterfaceSettings } from '../storage';
 
 const CodeMirror: any = require('react-codemirror');
 require('codemirror/lib/codemirror.css');
@@ -11,9 +13,6 @@ require('../sml-fold.js');
 require('codemirror/addon/fold/foldgutter.css');
 
 require('codemirror/addon/edit/matchbrackets.js');
-import './CodeMirrorWrapper.css';
-
-import { getInterfaceSettings } from '../storage';
 
 class CodeMirrorSubset {
     cm: any;

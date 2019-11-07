@@ -1,12 +1,9 @@
 import * as React from 'react';
-import { Nav, Navbar, NavItem, Glyphicon } from 'react-bootstrap';
+import { Nav, NavItem, Glyphicon } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
-const LinkContainer = require('react-router-bootstrap').LinkContainer;
-// ^ this circumvents type checking as the @types/react-router-bootstrap package is buggy
-// it does not know the exact property, although it is clearly specified
-// in the documentation!
-
 import './MenuBar.css';
+const LinkContainer = require('react-router-bootstrap').LinkContainer;
+const Navbar = require('react-bootstrap').Navbar;
 
 interface State {
     forcedDisplay: boolean;

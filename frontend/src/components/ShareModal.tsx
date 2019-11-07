@@ -1,7 +1,8 @@
 import * as React from 'react';
 
-import { Modal , Glyphicon } from 'react-bootstrap';
+import { Glyphicon } from 'react-bootstrap';
 import QRCode from './QRCode';
+const Modal = require('react-bootstrap').Modal;
 
 interface Props {
     error: boolean;

@@ -1,14 +1,14 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
+var CodeMirror = require('react-codemirror');
+
 (function(mod) {
     if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("codemirror/lib/codemirror"));
     else // Plain browser env
     mod(CodeMirror);
 })(function(CodeMirror) {
-    "use strict";
-
     CodeMirror.defineMode('mllike', function(config, parserConfig) {
         var expressions = {
             // match a line beginning with 0 or more whitespaces
@@ -192,6 +192,7 @@
             }
 
             /* match digits */
+            // eslint-disable-next-line
             if (/[\d\[(?=\])]/.test(ch)) {
                 stream.eatWhile(/[\d]/);
                 /* match floating numbers */

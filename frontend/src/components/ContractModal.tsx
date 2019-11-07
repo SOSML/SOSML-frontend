@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Modal } from 'react-bootstrap';
+const Modal = require('react-bootstrap').Modal;
 
 interface Props {
     closeCallback: () => void;

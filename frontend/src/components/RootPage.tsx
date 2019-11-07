@@ -17,15 +17,11 @@ import {
 import './RootPage.css';
 
 class RootPage extends React.Component<any, any> {
-    constructor(props: any) {
-        super(props);
-    }
-
     render() {
         let settings = getInterfaceSettings();
         let theme = renderTheme(getTheme(settings.theme, settings.autoSelectTheme ?
                                          settings.darkTheme : undefined));
-        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
 
         let footer: any;
         if (width < 600) {

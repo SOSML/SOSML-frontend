@@ -9,13 +9,14 @@ import './Playground.css';
 import { API as WebserverAPI } from '../api';
 import { getColor } from '../theme';
 import { InterfaceSettings, getInterfaceSettings } from '../storage';
+import { SHARING_ENABLED } from '../config';
+
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
 SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
     if (this.props.onUpdate && this.state.secondaryPaneSize !== prevState.secondaryPaneSize) {
         this.props.onUpdate(this.state.secondaryPaneSize);
     }
 };
-import { SHARING_ENABLED } from '../config';
 
 interface State {
     output: string;
@@ -140,8 +141,8 @@ class Playground extends React.Component<Props, State> {
             + getColor(settings.theme, dt, 'success_alt') + ' !important; }';
         }
 
-        let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-        let height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
+        let height = (window.innerHeight > 0) ? window.innerHeight : window.screen.height;
 
         let codemirror = (
             <div className="flexcomponent flexy">
@@ -214,6 +215,7 @@ class Playground extends React.Component<Props, State> {
         });
 
         if (this.state.interfaceSettings.userContributesEnergy !== undefined) {
+            // eslint-disable-next-line
             this.state.interfaceSettings.userContributesEnergy = true;
             localStorage.setItem('interfaceSettings',
                                  JSON.stringify(this.state.interfaceSettings));
@@ -279,6 +281,7 @@ class Playground extends React.Component<Props, State> {
         }
 
         if (this.state.interfaceSettings.fullscreen !== undefined) {
+            // eslint-disable-next-line
             this.state.interfaceSettings.fullscreen = newval;
             localStorage.setItem('interfaceSettings',
                                  JSON.stringify(this.state.interfaceSettings));
@@ -368,6 +371,7 @@ class Playground extends React.Component<Props, State> {
             }
         }
         while (true) {
+            // eslint-disable-next-line
             let indexList = OUTPUT_MARKUP_SPECIALS.map((x: string) => {
                 return line.indexOf(x, start);
             });

@@ -9,10 +9,6 @@ interface Props {
 }
 
 class QRCode extends React.Component<Props, any> {
-    constructor(props: Props) {
-        super(props);
-    }
-
     render() {
         if (this.props.link) {
             return (
