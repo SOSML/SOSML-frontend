@@ -171,8 +171,18 @@ export function renderTheme (theme: Theme): string {
         1px 0 ${theme.navbar_hover}, 0 -1px ${theme.navbar_hover};
     }
 
-    .navbar-inverse .navbar-toggle, hr {
+    .navbar-inverse .navbar-toggle, hr,
+    .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
         border-color: ${theme.border};
+    }
+
+    .navbar-inverse .navbar-toggle .icon-bar {
+        background-color: ${theme.navbar_focus_bg};
+    }
+
+    .navbar-inverse .navbar-toggle:hover .icon-bar,
+    .navbar-inverse .navbar-toggle:focus .icon-bar {
+        background-color: ${theme.navbar_bg};
     }
 
     .navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus,
@@ -362,6 +372,7 @@ export function renderTheme (theme: Theme): string {
     ::-webkit-scrollbar-thumb {
         border: 1px solid ${theme.border};
         cursor: pointer;
+        border-right: 0px;
     }
     `;
 }

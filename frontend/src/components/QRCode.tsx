@@ -23,7 +23,7 @@ class QRCode extends React.Component<Props, any> {
     }
 
     private renderCode(text: string): any {
-        let qr = QrCode.encodeText(text, Ecc.MEDIUM);
+        let qr = QrCode.encodeText(text, Ecc.HIGH);
         let border = 1;
         let settings = getInterfaceSettings();
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
