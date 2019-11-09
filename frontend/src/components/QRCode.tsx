@@ -25,11 +25,13 @@ class QRCode extends React.Component<Props, any> {
     private renderCode(text: string): any {
         let qr = QrCode.encodeText(text, Ecc.HIGH);
         let border = 1;
+        let width = 2 * border + qr.size;
+        let hw = width / 2;
         let settings = getInterfaceSettings();
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
         let white = getColor(settings.theme, dt, 'qr_bg');
         let black = getColor(settings.theme, dt, 'qr_fg');
-        let viewbox = `0 0 ${2 * border + qr.size} ${2 * border + qr.size}`;
+        let viewbox = `0 0 ${width} ${width}`;
 
         let parts: string[] = [];
         for (let y = 0; y < qr.size; y++) {
@@ -43,6 +45,11 @@ class QRCode extends React.Component<Props, any> {
             <svg viewBox={viewbox}>
                 <rect width="100%" height="100%" fill={white}/>
                 <path d={parts.join(' ')} fill={black}/>
+                <circle cx={hw} cy={hw} r={width / 6} stroke={white} stroke-width="1" fill={white} />
+                <circle cx={hw} cy={hw} r={width / 6 - 1} stroke={black} stroke-width="1" fill={white} />
+                <circle cx={hw} cy={hw} r={width / 17} stroke={black} stroke-width="1" fill={black} />
+                <circle cx={hw - width / 20} cy={hw - width / 20 - 1}
+                r={width / 25} stroke={black} stroke-width="1" fill={white} />
             </svg>
         );
     }

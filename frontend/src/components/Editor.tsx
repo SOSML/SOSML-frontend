@@ -38,7 +38,6 @@ class Editor extends React.Component<any, State> {
             savedFeedbackTimer: null,
         };
 
-        this.onFileNameBlur = this.onFileNameBlur.bind(this);
         this.onResize = this.onResize.bind(this);
         this.handleCodeChange = this.handleCodeChange.bind(this);
         this.handleFileNameChange = this.handleFileNameChange.bind(this);
@@ -156,7 +155,7 @@ class Editor extends React.Component<any, State> {
             }
             fileForm = (
                 <Form inline={true} className="inlineBlock" onSubmit={this.handleFormSubmit}>
-                    <input className="form-control" type="text" onBlur={this.onFileNameBlur}
+                    <input className="form-control" type="text"
                         value={this.state.fileName} onChange={this.handleFileNameChange}
                         style={style} placeholder="File name"/>
                     <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleSave}>
@@ -236,22 +235,11 @@ class Editor extends React.Component<any, State> {
     }
 
     onResize() {
-        this.setState(prevState => {
-            return {initialCode: prevState.code};
-        });
-    }
-
-    onFileNameBlur(evt: any) {
-        // save now!
-        /*
-        if (this.state.fileName !== '') {
-            Database.getInstance().then((db: Database) => {
-                return db.saveFile(this.state.fileName, this.state.code);
+        if (state.shareHash === undefined) {
+            this.setState(prevState => {
+                return {initialCode: prevState.code};
             });
-        } else {
-            localStorage.setItem('tmpCode', this.state.code);
         }
-        */
     }
 }
 
