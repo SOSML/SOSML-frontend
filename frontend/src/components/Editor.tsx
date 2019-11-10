@@ -235,7 +235,7 @@ class Editor extends React.Component<any, State> {
     }
 
     onResize() {
-        if (state.shareHash === undefined) {
+        if (this.state.shareHash === undefined) {
             this.setState(prevState => {
                 return {initialCode: prevState.code};
             });
