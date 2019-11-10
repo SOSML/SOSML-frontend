@@ -2,13 +2,38 @@
 
 # Installation instructions
 
-Node.JS version 8 or higher and NPM version 5 or higher need to be installed on the system. A Unix like OS especially Linux is recommended.
-Install dependencies by running `npm install` in the `frontend` folder of the project directory.
+## Prerequisites
 
-Further, build a version of `SOSML/SOSML` and place the resulting `interpreter.min.js` as
-`interpreter.js` in the `frontend/public` folder. Similarly, build a version of `SOSML/SOSML-webworker`
-and put the result as `webworker.js` in the `frontend/public` folder.
-(Note that per default, a fairly recent version of both files is provided already.)
+Node.JS version 8 or higher and NPM version 5 or higher need to be installed on the system. GNU+Linux is recommended. 
+Make sure you populated the correct and up-to-date submodules installed. If you don't have the SOSML-frontend repository cloned yet use this to also get the submodules:
+```
+git clone --recursive https://github.com/SOSML/SOSML-frontend.git
+```
+If you have the the SOSML-frontend repository but not its submodules (e.g. if you cloned without `--recursive`):
+```
+git submodule update --init --recursive
+```
 
-If you want a built for deployment version just run `npm run build` and you can then find this version in the build folder.
-For developing on this repo just run `npm run start` which launches a version of the website in this repo and automatically updates if it detects changes in any project files.
+## Install/Update all NPM dependencies
+To install or(non-exclusive or) update all NPM dependencies and pull all git submodules run:
+```
+./prepare.sh
+```
+
+## Build the interpreter and frontend
+
+Now you should have beautiful typescript code. To make javascript out of this repo and the submodules run:
+```
+./build.sh
+```
+
+## Install docker
+
+Install the latest version of docker on your system and make sure the docker daemon is running.
+Run `docker pull derjesko/mosmlfallback` to dowload the docker image.
+
+## Run the server
+
+Switch to the `backend` folder. Run `npm install`.
+Ensure that the user running the backend is in the `docker` group.
+Run `node ./src/main.js`. In parallel, run `node ./src/worker.js` to start a worker.
