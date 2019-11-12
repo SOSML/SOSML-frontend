@@ -95,6 +95,12 @@ class Settings extends React.Component<any, State> {
                 </Checkbox>
             );
             result.push(
+                <Checkbox key={65} checked={this.state.inter.realEquality}
+                    onChange={this.changeHandler('inter', 'realEquality')}>
+                    Turn real into a type with equality.
+                </Checkbox>
+            );
+            result.push(
                 <Checkbox key={7} checked={this.state.inter.strictMode}
                     onChange={this.changeHandler('inter', 'strictMode')}>
                     Enforce single-typed results

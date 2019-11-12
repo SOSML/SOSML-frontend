@@ -12,6 +12,7 @@ export interface InterpreterSettings {
     allowSignaturesAnywhere: boolean;
     allowFunctorsAnywhere: boolean;
     strictMode: boolean;
+    realEquality: boolean;
 }
 
 export interface InterfaceSettings {
@@ -70,6 +71,7 @@ export function getInterpreterSettings(): InterpreterSettings {
         allowSignaturesAnywhere: false,
         allowFunctorsAnywhere: false,
         strictMode: true,
+        realEquality: false,
     };
     fillObjectWithString(ret, str);
     return ret;
