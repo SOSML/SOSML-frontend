@@ -296,6 +296,7 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
         var GCodeMirror = this.editor.getCodeMirrorInstance();
         let keyMap = GCodeMirror.keyMap;
         keyMap.default['Shift-Tab'] = 'indentLess';
+        keyMap.default['Alt-Tab'] = 'indentAuto';
         keyMap.default.Tab = function(cm2: any) {
             if (cm2.somethingSelected()) {
                 return cm2.indentSelection('add');

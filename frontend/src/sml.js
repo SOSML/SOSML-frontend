@@ -11,32 +11,42 @@ var CodeMirror = require('react-codemirror');
     mod(CodeMirror);
 })(function(CodeMirror) {
     CodeMirror.defineMode('sml', function(config, parserConfig) {
-        /*
-        function decreaseIndentIfPositive (state) {
-            if (state.indentChange >= 0) {
-                state.indentChange -= config.indentUnit;
-            }
-        }
-
-        function increaseIndent (state) {
-            state.indentChange += config.indentUnit;
-        }
-
-        function decreaseIndent (state) {
-            state.indentChange -= config.indentUnit;
-        }
-        */
-
         var initialState = Interpreter.getFirstState([], {});
+
+        function nextTokenFromString(s) {
+            var pos = 0;
+            return Interpreter.Lexer.nextToken({
+                'next': () => {
+                    if (pos < s.length) {
+                        ++pos;
+                        return s.charAt(pos - 1);
+                    }
+                    throw new Interpreter.Errors.IncompleteError('. . .');
+                },
+                'eos': () => {
+                    return pos >= s.length;
+                },
+                'peek': offset => {
+                    if (offset === undefined) {
+                        offset = 0;
+                    }
+                    if (pos + offset < s.length) {
+                        return s.charAt(pos + offset);
+                    }
+                    return undefined;
+                }
+            }, {'allowCommentToken': true});
+        }
+
+        var electricRegex = '^\\s*(\\||in|end)$';
 
         return {
             startState: function() {
                 return {
                     remainder: '',
-                    currentIndent: 0,
                     parenLevel: 0,
                     letLevel: 0,
-                    indentChange: 0
+                    funLevel: 0
                 };
             },
             token: function(stream, state) {
@@ -94,31 +104,8 @@ var CodeMirror = require('react-codemirror');
                             }
                             remText += ' ' + cur;
                         }
-
-                        var tmpText = state.remainder + remText;
-                        var pos = 0;
                         try {
-                            token = Interpreter.Lexer.nextToken({
-                                'next': () => {
-                                    if (pos < tmpText.length) {
-                                        ++pos;
-                                        return tmpText.charAt(pos - 1);
-                                    }
-                                    throw new Interpreter.Errors.IncompleteError('. . .');
-                                },
-                                'eos': () => {
-                                    return pos >= tmpText.length;
-                                },
-                                'peek': offset => {
-                                    if (offset === undefined) {
-                                        offset = 0;
-                                    }
-                                    if (pos + offset < tmpText.length) {
-                                        return tmpText.charAt(pos + offset);
-                                    }
-                                    return undefined;
-                                }
-                            }, {'allowCommentToken': true});
+                            token = nextTokenFromString(state.remainder + remText);
                         } catch (e) {
                             return 'error';
                         }
@@ -134,6 +121,9 @@ var CodeMirror = require('react-codemirror');
                 switch (token.typeName()) {
                     case 'CommentToken': return 'comment';
                     case 'KeywordToken': {
+                        if (token.text === 'fun' || token.text === 'case') {
+                            state.funLevel = 1;
+                        }
                         if (token.text === '(') {
                             state.parenLevel++;
                         }
@@ -150,6 +140,7 @@ var CodeMirror = require('react-codemirror');
                         if (token.text === ';') {
                             if (state.parenLevel === 0 && state.letLevel === 0) {
                                 // top-level ;
+                                state.funLevel = 0;
                                 return null;
                             }
                         }
@@ -180,14 +171,34 @@ var CodeMirror = require('react-codemirror');
                 }
             },
             indent: function(state, textAfter) {
-                return state.currentIndent;
+                var ft = nextTokenFromString(textAfter);
+                var dd = 0;
+                if (ft !== undefined) {
+                    if (ft.typeName() === 'KeywordToken' &&
+                        (ft.getText() === 'in' || ft.getText() === 'end')) {
+                        if (state.letLevel > 0) {
+                            dd = 1;
+                        } else {
+                            return CodeMirror.Pass;
+                        }
+                    }
+                    if (ft.typeName() === 'KeywordToken' && ft.getText() === '|') {
+                        if (state.funLevel > 0) {
+                            dd = -1;
+                        } else {
+                            return CodeMirror.Pass;
+                        }
+                    }
+                }
+                return (state.letLevel - dd) * config.indentUnit;
             },
 
             // electricInput: new RegExp(electricRegex),
             blockCommentStart: '(*',
             blockCommentEnd: '*)',
             lineComment: null,
-            fold: "sml"
+            fold: "sml",
+            electricInput: new RegExp(electricRegex)
         };
     });
 
