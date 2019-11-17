@@ -5,7 +5,6 @@ module.exports = {
         'build/static/fonts/*',
         'build/manifest.json',
         'build/**.png',
-        'build/interpreter.js',
         'build/webworker.js',
         'build/index.html'
     ],

@@ -4,7 +4,7 @@ import { getInterfaceSettings } from '../storage';
 
 const CodeMirror: any = require('react-codemirror');
 require('codemirror/lib/codemirror.css');
-require('../mllike.js');
+require('../sml.js');
 
 /* imports for code folding */
 require('codemirror/addon/fold/foldgutter.js');
