@@ -98,6 +98,9 @@ var CodeMirror = require('react-codemirror');
 
                         var remText = '';
                         for (var i = 1; i < 10; ++i) {
+                            // For performance reasons, we look only up to 10 lines into
+                            // the future. This means that for long comments or multi-line
+                            // strings, only the last ~10 lines will be highlighted
                             let cur = stream.lookAhead(i);
                             if (cur === undefined) {
                                 break;
