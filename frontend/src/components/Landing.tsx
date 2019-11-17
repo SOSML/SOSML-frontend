@@ -51,7 +51,7 @@ class Landing extends React.Component<any, any> {
 
         return (
             <Grid className="flexy">
-                <h2>SOSML - Online Interpreter for Standard ML</h2>
+                <h2>SOSML - the Online Interpreter for Standard ML</h2>
                 <hr />
                 <p>
                     Standard ML is a functional programming language with static type checking
@@ -89,8 +89,8 @@ class Landing extends React.Component<any, any> {
                     using the <p className="buttonSimul"><Glyphicon glyph="file" />&nbsp;Store
                     </p> button above your code.
                     When you change your code, you have to store the file again.
-                    You can find all of your files on the <a href="/files">
-                    <Glyphicon glyph="duplicate" />&nbsp;Files</a> page.
+                    To view or change your stored files, just
+                    head to the <a href="/files"><Glyphicon glyph="duplicate"/>&nbsp;Files</a> page.
 
                     <br/><br/>
 
