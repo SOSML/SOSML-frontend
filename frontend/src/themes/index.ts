@@ -10,10 +10,17 @@ import { THEME as THEME_SANA } from './sana';
 
 export let THEMES: ThemeCollection = {
     'yachiyo':  THEME_YACHIYO,
+    'やちよ':   THEME_YACHIYO,
     'kyoko':    THEME_KYOKO,
+    '杏子':     THEME_KYOKO,
     'madoka':   THEME_MADOKA,
+    'まどか':   THEME_MADOKA,
     'sayaka':   THEME_SAYAKA,
+    'さやか':   THEME_SAYAKA,
     'homura':   THEME_HOMURA,
+    'ほむら':   THEME_HOMURA,
     'mami':     THEME_MAMI,
+    'マミ':     THEME_MAMI,
     'sana':     THEME_SANA,
+    'さな':     THEME_SANA,
 };
