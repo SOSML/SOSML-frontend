@@ -8,7 +8,7 @@ import { Button, Glyphicon } from 'react-bootstrap';
 import './Playground.css';
 import { API as WebserverAPI } from '../api';
 import { getColor } from '../theme';
-import { InterfaceSettings, getInterfaceSettings } from '../storage';
+import { Database, InterfaceSettings, getInterfaceSettings } from '../storage';
 import { SHARING_ENABLED } from '../config';
 
 var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
@@ -114,7 +114,6 @@ class Playground extends React.Component<Props, State> {
         style.marginRight = '-3px';
         style.marginTop = '-.5px';
         let inputHeadBar: JSX.Element = (
-
             <div className="inlineBlock" style={style}>
                 {this.props.fileControls}
                 {spacer}
@@ -322,6 +321,11 @@ class Playground extends React.Component<Props, State> {
             WebserverAPI.shareCode(this.state.code).then((hash) => {
                 this.setState(prevState => {
                     return {shareLink: window.location.host + '/share/' + hash};
+                });
+
+                // Store the share file locally
+                Database.getInstance().then((db: Database) => {
+                    return db.saveShare(hash, this.state.code, true);
                 });
             }).catch(() => {
                 this.setState({shareLink: SHARE_LINK_ERROR});

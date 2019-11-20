@@ -45,11 +45,11 @@ class QRCode extends React.Component<Props, any> {
             <svg viewBox={viewbox}>
                 <rect width="100%" height="100%" fill={white}/>
                 <path d={parts.join(' ')} fill={black}/>
-                <circle cx={hw} cy={hw} r={width / 6} stroke={white} stroke-width="1" fill={white} />
-                <circle cx={hw} cy={hw} r={width / 6 - 1} stroke={black} stroke-width="1" fill={white} />
-                <circle cx={hw} cy={hw} r={width / 17} stroke={black} stroke-width="1" fill={black} />
-                <circle cx={hw - width / 20} cy={hw - width / 20 - 1}
-                r={width / 25} stroke={black} stroke-width="1" fill={white} />
+                <circle cx={hw} cy={hw} r={width / 6} stroke={white} strokeWidth={width / 51} fill={white} />
+                <circle cx={hw} cy={hw} r={width / 6 - width / 51} stroke={black} strokeWidth={width / 51} fill={white} />
+                <circle cx={hw} cy={hw} r={width / 17} stroke={black} strokeWidth={width / 51} fill={black} />
+                <circle cx={hw - width / 20} cy={hw - width / 20 - width / 51}
+                r={width / 25} stroke={black} strokeWidth={width / 51} fill={white} />
             </svg>
         );
     }

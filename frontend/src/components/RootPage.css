@@ -1077,6 +1077,18 @@ b,strong {
     content: "\e224";
 }
 
+.glyphicon-upload:before {
+    content: "\e198";
+}
+
+.glyphicon-download:before {
+    content: "\e197";
+}
+
+.glyphicon-search:before {
+    content: "\e003";
+}
+
 .cm-label {
     display: inline-block;
     max-width: 100%;

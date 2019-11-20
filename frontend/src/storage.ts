@@ -36,13 +36,28 @@ export interface InterfaceSettings {
 
 export enum FileType {
     LOCAL = 1,
-    SERVER
+    SERVER,
+    SHARE
 }
 
 export interface File {
     name: string;
     info: any;
     type: FileType;
+}
+
+export function displayName(share: File): string {
+    if (share.type !== FileType.SHARE) {
+        return share.name;
+    }
+    if (!Object.prototype.hasOwnProperty.call(share.info, 'date')
+       || share.info.date === undefined) {
+        return '????-??-??/' + share.name;
+    }
+    if (!(share.info.date instanceof Date)) {
+        return (share.info.date + '').substr(0, 10) + '/' + share.name;
+    }
+    return share.info.date.toISOString().substr(0, 10) + '/' + share.name;
 }
 
 export const HIDDEN_FILE_PREFIX = '.GRF_SD/';
@@ -185,7 +200,7 @@ export class Database {
         });
     }
 
-    getFiles(allowHidden: boolean = false): Promise<File[]> {
+    getFiles(allowHidden: boolean = false, readShares: boolean = false): Promise<File[]> {
         return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
             let cursorReq = this.database.transaction(['files']).objectStore('files').openCursor();
             cursorReq.onerror = (event: any) => {
@@ -205,7 +220,31 @@ export class Database {
                     }
                     cursor.continue();
                 } else {
-                    resolve(files);
+                    if (!readShares) {
+                        resolve(files);
+                    } else {
+                        let cursorReqS =
+                            this.database.transaction(['shares'])
+                            .objectStore('shares').openCursor();
+                        cursorReqS.onerror = (event: any) => {
+                            reject('Error during read');
+                        };
+                        cursorReqS.onsuccess = (event: any) => {
+                            let cursorS = event.target.result;
+                            if (cursorS) {
+                                if (cursorS.value !== undefined) {
+                                    files.push({
+                                        name: cursorS.key,
+                                        info: cursorS.value,
+                                        type: FileType.SHARE
+                                    });
+                                }
+                                cursorS.continue();
+                            } else {
+                                resolve(files);
+                            }
+                        };
+                    }
                 }
             };
         });
@@ -215,7 +254,7 @@ export class Database {
         let fileName = (isHidden ? HIDDEN_FILE_PREFIX : '') + name;
         return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
             let request = this.database.transaction(['files'], 'readwrite').objectStore('files').put({
-                name: fileName, value: content, date: new Date(), hidden: isHidden
+                name: fileName, value: content, date: new Date().toISOString(), hidden: isHidden
             });
             request.onerror = (event) => {
                 reject(false);
@@ -226,10 +265,27 @@ export class Database {
         });
     }
 
-    getFile(fileName: string, isHidden: boolean = false): Promise<string> {
-        let name = (isHidden ? HIDDEN_FILE_PREFIX : '') + fileName;
+    saveShare(fileName: string, content: string, local: boolean = true): Promise<boolean> {
+        let fileOrigin = local ? FileType.LOCAL : FileType.SERVER;
+
         return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
-            let request = this.database.transaction(['files']).objectStore('files').get(name);
+            let request = this.database.transaction(['shares'], 'readwrite').objectStore('shares').put({
+                name: fileName, value: content, date: new Date().toISOString(), origin: fileOrigin
+            });
+            request.onerror = (event) => {
+                reject(false);
+            };
+            request.onsuccess = (event) => {
+                resolve(true);
+            };
+        });
+    }
+
+    getFile(fileName: string, isHidden: boolean = false, isShare: boolean = false): Promise<string> {
+        let name = (isHidden ? HIDDEN_FILE_PREFIX : '') + fileName;
+        let location = isShare ? 'shares' : 'files';
+        return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
+            let request = this.database.transaction([location]).objectStore(location).get(name);
             request.onerror = (event) => {
                 reject('Error during read');
             };
@@ -243,10 +299,28 @@ export class Database {
         });
     }
 
-    deleteFile(fileName: string, isHidden: boolean = false): Promise<boolean> {
-        let name = (isHidden ? HIDDEN_FILE_PREFIX : '') + fileName;
+    getShare(name: string): Promise<[string, FileType, any]> {
         return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
-            let request = this.database.transaction(['files'], 'readwrite').objectStore('files').delete(name);
+            let request = this.database.transaction(['shares']).objectStore('shares').get(name);
+            request.onerror = (event) => {
+                reject('Error during read');
+            };
+            request.onsuccess = (event: any) => {
+                try {
+                    resolve([event.target.result.value, event.target.result.origin, event.target.result]);
+                } catch (e) {
+                    reject('Reading ' + name + ' failed with error ' +  e.name + ': ' + e.message);
+                }
+            };
+        });
+    }
+
+
+    deleteFile(fileName: string, isHidden: boolean = false, isShare: boolean = false): Promise<boolean> {
+        let name = (isHidden ? HIDDEN_FILE_PREFIX : '') + fileName;
+        let location = isShare ? 'shares' : 'files';
+        return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
+            let request = this.database.transaction([location], 'readwrite').objectStore(location).delete(name);
             request.onerror = (event) => {
                 reject(false);
             };
@@ -261,6 +335,7 @@ export class Database {
         this.dbRequest.onupgradeneeded = (event: any) => {
             let db = event.target.result;
             db.createObjectStore('files', { keyPath: 'name'});
+            db.createObjectStore('shares', { keyPath: 'name'});
         };
         this.dbRequest.onsuccess = (event: any) => {
             this.database = event.target.result;

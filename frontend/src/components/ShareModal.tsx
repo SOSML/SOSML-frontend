@@ -27,12 +27,13 @@ class ShareModal extends React.Component<Props, any> {
             return (
                 <Modal show={true} onHide={this.closeShareModal}>
                     <Modal.Header closeButton={false}>
-                        <Modal.Title>Share link creation successful</Modal.Title>
+                        <Modal.Title>Share Link Creation Successful</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <QRCode link={this.props.link}/>
                         <div className="input-group">
-                            <input type="text" className="form-control js-copytextarea" value={this.props.link} />
+                            <input type="text" className="form-control js-copytextarea"
+                                value={this.props.link} readOnly={true}/>
                             <span className="input-group-btn">
                                 <button className="btn btn-def-alt" onClick={this.copyShareLink} type="button">
                                     <Glyphicon glyph={'copy'} />
@@ -55,7 +56,7 @@ class ShareModal extends React.Component<Props, any> {
             return (
                 <Modal show={true} onHide={this.closeShareModal}>
                     <Modal.Header closeButton={false}>
-                        <Modal.Title>Share link creation failed</Modal.Title>
+                        <Modal.Title>Share Link Creation Failed</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         Creating a share link for your code failed.<br/>
@@ -75,7 +76,7 @@ class ShareModal extends React.Component<Props, any> {
             return (
                 <Modal show={true} onHide={this.closeShareModal}>
                     <Modal.Header closeButton={false}>
-                        <Modal.Title>Share link creation failed</Modal.Title>
+                        <Modal.Title>Share Link Creation Failed</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         Creating a share link for your code failed.<br/>

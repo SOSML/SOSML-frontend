@@ -22,6 +22,7 @@ interface State {
     fileName: string;
     savedFeedback: number;
     savedFeedbackTimer: any;
+    error: string;
 }
 
 class Editor extends React.Component<any, State> {
@@ -36,6 +37,7 @@ class Editor extends React.Component<any, State> {
             shareHash: '',
             savedFeedback: FEEDBACK_NONE,
             savedFeedbackTimer: null,
+            error: ''
         };
 
         this.onResize = this.onResize.bind(this);
@@ -84,23 +86,57 @@ class Editor extends React.Component<any, State> {
                 }
                 promis.then((content: string) => {
                     this.setState((oldState) => {
-                        return {initialCode: content, fileName: state.fileName};
+                        return {initialCode: content, fileName: state.fileName,
+                                shareReadMode: state.shareReadMode,
+                                shareHash: state.shareReadMode ? state.fileName : undefined};
                     });
                 });
                 return;
             } else if (state.shareHash) {
-                API.loadSharedCode(state.shareHash).then((content: string) => {
+                Database.getInstance().then((db: Database) => {
+                    return db.getFile(state.shareHash, false, true);
+                }).then((content: string) => {
                     this.setState((oldState) => {
-                        return {initialCode: content};
+                        return {initialCode: content, fileName: state.shareHash,
+                            shareReadMode: false};
+                    });
+                }).catch((error: any) => {
+                    API.loadSharedCode(state.shareHash).then((content: string) => {
+                        this.setState((oldState) => {
+                            return {initialCode: content};
+                        });
+
+                        // Cache the shared file as it does not yet exist
+                        Database.getInstance().then((db: Database) => {
+                            return db.saveShare(state.shareHash, content, false);
+                        });
+                    }).catch((error: any) => {
+                        this.setState({'error': error});
                     });
                 });
                 return;
             }
         }
         if (this.props.match && this.props.match.params && this.props.match.params.hash) {
-            API.loadSharedCode(this.props.match.params.hash).then((content: string) => {
+            let shareName = this.props.match.params.hash;
+            Database.getInstance().then((db: Database) => {
+                return db.getFile(shareName, false, true);
+            }).then((content: string) => {
                 this.setState((oldState) => {
-                    return {initialCode: content, shareReadMode: true, shareHash: this.props.match.params.hash};
+                    return {initialCode: content, shareReadMode: true, shareHash: shareName};
+                });
+            }).catch((error: any) => {
+                API.loadSharedCode(shareName).then((content: string) => {
+                    this.setState((oldState) => {
+                        return {initialCode: content, shareReadMode: true, shareHash: shareName};
+                    });
+
+                    // Cache the shared file as it does not yet exist
+                    Database.getInstance().then((db: Database) => {
+                        return db.saveShare(shareName, content, false);
+                    });
+                }).catch((error: any) => {
+                    this.setState({'error': error});
                 });
             });
             return;
@@ -131,16 +167,34 @@ class Editor extends React.Component<any, State> {
 
     render() {
         let topBar: any;
+        let errorBar: any = '';
         let fileForm: any;
+
+        if (this.state.error) {
+            let style: any = {};
+            style.margin = '0 3px 3px';
+            errorBar = (
+                <Alert bsStyle="danger" style={style}>
+                    <b>Error: </b>
+                    The specified file does not exist.
+                    <div className="miniSpacer" />
+                    <Button bsStyle="dng-alt" onClick={(evt: any) => {
+                        this.setState({error: ''});
+                    }}>Dismiss</Button>
+                </Alert>
+            );
+        }
+
         if (this.state.shareReadMode) {
             let style: any = {};
             style.margin = '0 3px 3px';
             topBar = (
                 <Alert bsStyle="info" style={style}>
                     <b>Warning: </b>
-                    You are viewing a read-only file. To create your own editable copy,
+                    You are viewing a read-only file.
                     <div className="miniSpacer" />
-                    <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}>click here.</Button>
+                    <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}>Create
+                    an editable copy</Button>
                 </Alert>
             );
         } else {
@@ -166,6 +220,7 @@ class Editor extends React.Component<any, State> {
         }
         return (
             <div className="flexy flexcomponent">
+                {errorBar}
                 {topBar}
                 <Playground readOnly={this.state.shareReadMode} onCodeChange={this.handleCodeChange}
                     onResize={this.onResize} initialCode={this.state.initialCode}

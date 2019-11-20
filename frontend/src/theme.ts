@@ -238,6 +238,12 @@ export function renderTheme (theme: Theme): string {
         1px 0 ${theme.link_hover}, 0 -1px ${theme.link_hover};
     }
 
+    .alert-danger {
+        color: ${theme.btn_dng_fg};
+        background-color: ${theme.btn_dng_bg};
+        border-color: ${theme.btn_dng_border};
+    }
+
     .alert-info {
         color: ${theme.alert_fg};
         background-color: ${theme.alert_bg};

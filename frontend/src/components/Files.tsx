@@ -3,9 +3,10 @@ import * as React from 'react';
 import { Fade, Button, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'react-bootstrap';
 import { API } from '../api';
 import './Files.css';
-import { SAMPLE_FILES_ENABLED } from '../config';
+import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
+import ShareModal from './ShareModal';
 import { getColor } from '../theme';
-import { getInterfaceSettings, File, FileType, Database } from '../storage';
+import { displayName, getInterfaceSettings, File, FileType, Database } from '../storage';
 
 const FileSaver = require('file-saver');
 
@@ -13,12 +14,16 @@ const EXAMPLES_LOADING = 0;
 const EXAMPLES_LOADED = 1;
 const EXAMPLES_FAILED = 2;
 
+const MINIMODE_LB = 450;
+
 interface State {
     files: File[];
+    shares: File[];
     examples: File[];
     examplesStatus: number;
     shareLink: string;
     folder: any;
+    miniMode: boolean;
 }
 
 class Files extends React.Component<any, State> {
@@ -27,20 +32,40 @@ class Files extends React.Component<any, State> {
 
         this.state = {
             files: [],
+            shares: [],
             examples: [],
             examplesStatus: EXAMPLES_LOADING,
             shareLink: '',
-            folder: {}
+            folder: {},
+            miniMode: false
         };
 
         this.modalCloseCallback = this.modalCloseCallback.bind(this);
+        this.handleBrowserResize = this.handleBrowserResize.bind(this);
     }
 
     componentDidMount() {
         this.refreshFiles();
+        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
+        this.setState({miniMode: (width < MINIMODE_LB)});
+        window.addEventListener('resize', this.handleBrowserResize, {passive: true});
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleBrowserResize);
     }
 
     render() {
+        let modal: JSX.Element | undefined;
+        if (this.state.shareLink !== '') {
+            modal = (
+                <ShareModal error={false}
+                    link={this.state.shareLink} closeCallback={this.modalCloseCallback}
+                    enocontract={false} formContractCallback={this.modalCloseCallback}/>
+            );
+        }
+
+
         if (this.state.files.length === 0) {
             return (
                 <Grid className="flexy">
@@ -50,7 +75,10 @@ class Files extends React.Component<any, State> {
                     <p>
                         Files saved from the editor will appear here.
                     </p>
+                    {this.renderShares()}
                     {this.renderExamples()}
+                    {modal}
+                    <br/> <br/>
                 </Grid>
             );
         }
@@ -58,7 +86,7 @@ class Files extends React.Component<any, State> {
         let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
         let files = this.deepCopy(this.state.files);
         files.sort((f1: File, f2: File) => {
-            return collator.compare(f1.name, f2.name);
+            return collator.compare(displayName(f1), displayName(f2));
         });
 
         return (
@@ -68,10 +96,12 @@ class Files extends React.Component<any, State> {
                     <h4>Local Files</h4>
                     <p>
                     You can find your saved files here.
-                        Clicking on a file will load it into the editor.
+                        Click on a file to load it into the editor.
                     </p>
                     {this.renderFileList(files)}
+                    {this.renderShares()}
                     {this.renderExamples()}
+                    {modal}
                     <br/> <br/>
             </Grid>
         );
@@ -81,6 +111,50 @@ class Files extends React.Component<any, State> {
         this.setState({
             shareLink: ''
         });
+    }
+
+    private handleBrowserResize() {
+        let nwidth = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
+        this.setState({miniMode: (nwidth < MINIMODE_LB)});
+    }
+
+    private renderShares() {
+        if (!SHARING_ENABLED) {
+            return '';
+        }
+
+        let sharesView: any[] = [];
+        sharesView.push(
+            <br key="s@1"/>
+        );
+        sharesView.push(
+            <h4 key="s@2">Shared Files</h4>
+        );
+        sharesView.push(
+            <p key="s@3">Below you can find the share links you created
+            (denoted by <Glyphicon glyph={'upload'}/>), as well
+            as external share links you opened (denoted by <Glyphicon glyph={'download'} />).
+                Click on a file to view it in the editor.
+            </p>
+        );
+
+        let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+        let shares = this.deepCopy(this.state.shares);
+
+        if (shares.length === 0) {
+            return '';
+        }
+
+        shares.sort((f1: File, f2: File) => {
+            return collator.compare(displayName(f1), displayName(f2));
+        });
+
+        sharesView.push(
+            <div key="s@4">
+                {this.renderFileList(shares)}
+            </div>
+        );
+        return sharesView;
     }
 
     private renderExamples() {
@@ -135,7 +209,7 @@ class Files extends React.Component<any, State> {
 
         for (let i = 0; i < files.length; ++i) {
             // If filename starts with '<string>/', render it as part of a folder
-            let currentName = files[i].name.substr(prefix.length).split('/');
+            let currentName = displayName(files[i]).substr(prefix.length).split('/');
             if (currentName.length > 1 && currentName[0] !== '') {
                 let newFolder = currentName[0];
                 if (currentFolderName === newFolder) {
@@ -197,7 +271,7 @@ class Files extends React.Component<any, State> {
         let renderedFiles = this.renderFileList(files, prefix + name + '/');
         if (renderedFiles === undefined) {
             // Folder contains only a single subfolder
-            let newPrefix = files[0].name.substr(prefix.length).split('/')[1];
+            let newPrefix = displayName(files[0]).substr(prefix.length).split('/')[1];
             return this.renderFolder(name + '/' + newPrefix, files, key, prefix);
         }
 
@@ -240,7 +314,9 @@ class Files extends React.Component<any, State> {
         let deleteBtn = (
             <Button bsSize="small" bsStyle="dng-alt"
                 onClick={this.deleteHandlerForAll(files)} style={style3}>
-                <Glyphicon glyph={'trash'} /> Delete All
+                <Glyphicon glyph={'trash'} /> { this.state.miniMode ? '' :
+                    (files.length >= 1 && files[0].type
+                    === FileType.SHARE ? "Forget All" : "Delete All")}
             </Button>
         );
 
@@ -267,8 +343,8 @@ class Files extends React.Component<any, State> {
                         {space}
                         {(folderState ? 'Hide ' : 'Show ') + files.length + ' Files'}
                     </Button>
-                    {files.length >= 1 && files[0].type === FileType.LOCAL ? space : ''}
-                    {files.length >= 1 && files[0].type === FileType.LOCAL ? deleteBtn : ''}
+                    {files.length >= 1 && files[0].type !== FileType.SERVER ? space : ''}
+                    {files.length >= 1 && files[0].type !== FileType.SERVER ? deleteBtn : ''}
                 </td>
             </tr>
         );
@@ -322,7 +398,7 @@ class Files extends React.Component<any, State> {
             );
         }
 
-        let printName = file.name.substr(prefix.length);
+        let printName = displayName(file).substr(prefix.length);
 
         let space = (
             <div className="miniSpacer" />
@@ -330,7 +406,19 @@ class Files extends React.Component<any, State> {
         let deleteBtn = (
             <Button bsSize="small" bsStyle="dng-alt"
                 onClick={this.deleteHandlerFor(file.name)} style={style3}>
-                <Glyphicon glyph={'trash'} /> Delete
+                <Glyphicon glyph={'trash'} /> {this.state.miniMode ? "" : "Delete"}
+            </Button>
+        );
+        let forgetBtn = (
+            <Button bsSize="small" bsStyle="dng-alt"
+                onClick={this.deleteHandlerFor(file.name, true)} style={style3}>
+                <Glyphicon glyph={'trash'} /> {this.state.miniMode ? "" : "Forget"}
+            </Button>
+        );
+        let linkBtn = (
+            <Button bsSize="small" bsStyle="pri-alt"
+                onClick={this.linkHandlerFor(file)} style={style3}>
+                <Glyphicon glyph={'link'} /> {this.state.miniMode ? "" : "Link"}
             </Button>
         );
 
@@ -340,11 +428,22 @@ class Files extends React.Component<any, State> {
             </Tooltip>
         );
 
+        let glicon = 'file';
+
+        if (file.type === FileType.SHARE) {
+            glicon = 'download';
+
+            if (file.info !== undefined && file.info.origin !== undefined
+                && file.info.origin === FileType.LOCAL) {
+                glicon = 'upload';
+            }
+        }
+
         return (
             <tr key={key}>
                 <td style={style} onClick={this.openHandlerFor(file)}>
                 <OverlayTrigger overlay={tooltip}>
-                        <Glyphicon glyph={'file'} />
+                        <Glyphicon glyph={glicon} />
                     </OverlayTrigger>
                     {space}
                     {printName}
@@ -352,15 +451,20 @@ class Files extends React.Component<any, State> {
                 <td style={style2} onClick={this.openHandlerFor(file)}>
                     <Button bsSize="small" bsStyle="suc-alt"
                     onClick={this.openHandlerFor(file)} style={style3}>
-                        <Glyphicon glyph={'pencil'} /> Edit
+                        <Glyphicon glyph={file.type === FileType.SHARE ? 'search'
+                            : 'pencil'} /> {this.state.miniMode ? "" :
+                            (file.type === FileType.SHARE ? "View" : "Edit")}
                     </Button>
+                    {file.type === FileType.SHARE ? space : ''}
+                    {file.type === FileType.SHARE ? linkBtn : ''}
                     <div className="miniSpacer" />
                     <Button bsSize="small" bsStyle="pri-alt"
                     onClick={this.downloadHandlerFor(file)} style={style3}>
-                        <Glyphicon glyph={'download-alt'} /> Save
+                        <Glyphicon glyph={'download-alt'} /> {this.state.miniMode ? "" : "Save"}
                     </Button>
-                    {file.type === FileType.LOCAL ? space : ''}
+                    {file.type !== FileType.SERVER ? space : ''}
                     {file.type === FileType.LOCAL ? deleteBtn : ''}
+                    {file.type === FileType.SHARE ? forgetBtn : ''}
                 </td>
             </tr>
         );
@@ -369,9 +473,10 @@ class Files extends React.Component<any, State> {
     private refreshFiles() {
         if (SAMPLE_FILES_ENABLED) {
             Database.getInstance().then((db: Database) => {
-                return db.getFiles(getInterfaceSettings().showHiddenFiles);
+                return db.getFiles(getInterfaceSettings().showHiddenFiles, true);
             }).then((data: File[]) => {
-                this.setState({files: data});
+                this.setState({files: data.filter((f: File) => f.type !== FileType.SHARE)});
+                this.setState({shares: data.filter((f: File) => f.type === FileType.SHARE)});
                 return API.getCodeExamplesList();
             }).then((list: string[]) => {
                 let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
@@ -389,10 +494,10 @@ class Files extends React.Component<any, State> {
             });
         } else {
             Database.getInstance().then((db: Database) => {
-                return db.getFiles(getInterfaceSettings().showHiddenFiles);
+                return db.getFiles(getInterfaceSettings().showHiddenFiles, true);
             }).then((data: File[]) => {
-                this.setState({files: data});
-                return 0;
+                this.setState({files: data.filter((f: File) => f.type !== FileType.SHARE)});
+                this.setState({shares: data.filter((f: File) => f.type === FileType.SHARE)});
             });
         }
     }
@@ -412,10 +517,25 @@ class Files extends React.Component<any, State> {
         };
     }
 
+    private linkHandlerFor(file: File): (evt: any) => void {
+        return (evt: any) => {
+            this.setState({
+                shareLink: window.location.origin + '/share/' + file.name
+            });
+            evt.stopPropagation();
+        };
+    }
+
     private openHandlerFor(file: File): (evt: any) => void {
+        if (file.type === FileType.SHARE) {
+            return (evt: any) => {
+                this.props.history.push('/share/' + file.name);
+                evt.stopPropagation();
+            };
+        }
         return (evt: any) => {
             this.props.history.push('/editor', {fileName: file.name,
-                                    example: file.type === FileType.SERVER });
+                                    example: file.type === FileType.SERVER});
             evt.stopPropagation();
         };
     }
@@ -423,9 +543,9 @@ class Files extends React.Component<any, State> {
     private downloadHandlerFor(file: File): (evt: any) => void {
         return (evt: any) => {
             let promis: any;
-            if (file.type === FileType.LOCAL) {
+            if (file.type !== FileType.SERVER) {
                 promis = Database.getInstance().then((db: Database) => {
-                    return db.getFile(file.name);
+                    return db.getFile(file.name, false, file.type === FileType.SHARE);
                 });
             } else {
                 promis = API.getCodeExample(file.name);
@@ -440,10 +560,10 @@ class Files extends React.Component<any, State> {
         };
     }
 
-    private deleteHandlerFor(fileName: string): (evt: any) => void {
+    private deleteHandlerFor(fileName: string, isShare: boolean = false): (evt: any) => void {
         return (evt: any) => {
             Database.getInstance().then((db: Database) => {
-                return db.deleteFile(fileName);
+                return db.deleteFile(fileName, false, isShare);
             }).then((ok: boolean) => {
                 if (ok) {
                     this.refreshFiles();
@@ -457,7 +577,7 @@ class Files extends React.Component<any, State> {
         return (evt: any) => {
             files.forEach((file: File) => {
                 Database.getInstance().then((db: Database) => {
-                    return db.deleteFile(file.name);
+                    return db.deleteFile(file.name, false, file.type === FileType.SHARE);
                 });
             });
             this.refreshFiles();
