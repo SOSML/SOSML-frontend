@@ -334,7 +334,9 @@ export class Database {
         this.dbRequest = window.indexedDB.open('FilesDB', 2);
         this.dbRequest.onupgradeneeded = (event: any) => {
             let db = event.target.result;
-            db.createObjectStore('files', { keyPath: 'name'});
+            try {
+                db.createObjectStore('files', { keyPath: 'name'});
+            } catch (e) { }
             db.createObjectStore('shares', { keyPath: 'name'});
         };
         this.dbRequest.onsuccess = (event: any) => {
