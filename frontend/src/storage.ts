@@ -336,8 +336,8 @@ export class Database {
             let db = event.target.result;
             try {
                 db.createObjectStore('files', { keyPath: 'name'});
+                db.createObjectStore('shares', { keyPath: 'name'});
             } catch (e) { }
-            db.createObjectStore('shares', { keyPath: 'name'});
         };
         this.dbRequest.onsuccess = (event: any) => {
             this.database = event.target.result;

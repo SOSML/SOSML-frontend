@@ -232,7 +232,6 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
             gutters: [
                 'CodeMirror-linenumbers', 'CodeMirror-foldgutter'
             ],
-            inputStyle: 'textarea',
             specialChars: new RegExp('[\u0000-\u001f\u007f-\u009f\u00a0\u00ad'
                                      + '\u061c\u1680\u2000-\u200f\u2028\u2029\u202f'
                                      + '\u205f\u3000\ufeff\ufff9-\ufffc]'),
