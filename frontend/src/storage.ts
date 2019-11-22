@@ -336,6 +336,8 @@ export class Database {
             let db = event.target.result;
             try {
                 db.createObjectStore('files', { keyPath: 'name'});
+            } catch (e) { }
+            try {
                 db.createObjectStore('shares', { keyPath: 'name'});
             } catch (e) { }
         };
