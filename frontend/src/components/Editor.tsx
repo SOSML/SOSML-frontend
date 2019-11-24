@@ -23,12 +23,15 @@ interface State {
     savedFeedback: number;
     savedFeedbackTimer: any;
     error: string;
+    width: number;
 }
 
 class Editor extends React.Component<any, State> {
     constructor(props: any) {
         super(props);
 
+        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
+        let height = (window.innerHeight > 0) ? window.innerHeight : window.screen.height;
         this.state = {
             shareReadMode: false,
             code: '',
@@ -37,7 +40,8 @@ class Editor extends React.Component<any, State> {
             shareHash: '',
             savedFeedback: FEEDBACK_NONE,
             savedFeedbackTimer: null,
-            error: ''
+            error: '',
+            width: (height > width ? width : width / 2)
         };
 
         this.onResize = this.onResize.bind(this);
@@ -207,6 +211,8 @@ class Editor extends React.Component<any, State> {
             } else if (this.state.savedFeedback === FEEDBACK_FAIL) {
                 style.backgroundColor = getColor(settings.theme, dt, 'error');
             }
+            style.maxWidth = this.state.width - 220;
+
             fileForm = (
                 <Form inline={true} className="inlineBlock" onSubmit={this.handleFormSubmit}>
                     <input className="form-control" type="text"
@@ -294,6 +300,13 @@ class Editor extends React.Component<any, State> {
             this.setState(prevState => {
                 return {initialCode: prevState.code};
             });
+        }
+        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
+        let height = (window.innerHeight > 0) ? window.innerHeight : window.screen.height;
+        if (height <= width) {
+            this.setState({width: width / 2});
+        } else {
+            this.setState({width: width});
         }
     }
 }

@@ -331,7 +331,7 @@ export class Database {
     }
 
     private init(): void {
-        this.dbRequest = window.indexedDB.open('FilesDB', 2);
+        this.dbRequest = window.indexedDB.open('FilesDB', 3);
         this.dbRequest.onupgradeneeded = (event: any) => {
             let db = event.target.result;
             try {
