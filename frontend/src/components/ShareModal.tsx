@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import { Glyphicon } from 'react-bootstrap';
 import QRCode from './QRCode';
 const Modal = require('react-bootstrap').Modal;
 
@@ -36,7 +35,7 @@ class ShareModal extends React.Component<Props, any> {
                                 value={this.props.link} readOnly={true}/>
                             <span className="input-group-btn">
                                 <button className="btn btn-def-alt" onClick={this.copyShareLink} type="button">
-                                    <Glyphicon glyph={'copy'} />
+                                    <span className="glyphicon glyphicon-copy" />
                                 </button>
                             </span>
                         </div>

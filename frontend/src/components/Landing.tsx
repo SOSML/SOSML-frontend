@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Glyphicon, Grid, Alert } from 'react-bootstrap';
+import { Alert, Container } from 'react-bootstrap';
 
 import { SHARING_ENABLED } from '../config';
 
@@ -29,7 +29,7 @@ class Landing extends React.Component<any, any> {
             sharing = (
                 <div>
                     You can share the code that is currently shown in SOSML by using
-                    the <p className="buttonSimul"><Glyphicon glyph="link" />&nbsp;Share
+                    the <p className="buttonSimul"><span className="glyphicon glyphicon-link" />&nbsp;Share
                     </p> button. Your code will be uploaded to the servers
                     of Saarland University and you are provided with a link to download your file.
                     Files are always snapshots, neither you nor anyone with the link is able to
@@ -37,7 +37,7 @@ class Landing extends React.Component<any, any> {
                     file again (getting a new link for it).
 
                     <br/><br/>
-                    <Alert bsStyle="info"><strong>Warning: </strong>
+                    <Alert variant="info"><strong>Warning: </strong>
                     Only upload files and content to which you own the copyright.
                     By uploading a file to the servers of Saarland University, you grant Saarland
                     University and the <a href="https://github.com/SOSML"> SOSML Developers </a>
@@ -50,7 +50,7 @@ class Landing extends React.Component<any, any> {
         }
 
         return (
-            <Grid className="flexy">
+            <Container className="flexy">
                 <h2>SOSML - the Online Interpreter for Standard ML</h2>
                 <hr />
                 <p>
@@ -71,35 +71,35 @@ class Landing extends React.Component<any, any> {
                     If there is some mistake or an unhandled exception, your code and the output
                     will become red instead. (You may configure SOSML to use different
                     colors on the <a href="/settings">
-                    <Glyphicon glyph="cog" />&nbsp;Settings</a> page.)
+                    <span className="glyphicon glyphicon-cog" />&nbsp;Settings</a> page.)
 
                     <br/><br/>
 
-                    <Alert bsStyle="info"><strong>Warning: </strong>
+                    <Alert variant="info"><strong>Warning: </strong>
                     Long computations might be terminated by your web browser
                     due to limitations for how long a script is allowed to run.
                     This time limit may be changed on the <a href="/settings">
-                        <Glyphicon glyph="cog" />&nbsp;Settings</a> page.
+                        <span className="glyphicon glyphicon-cog" />&nbsp;Settings</a> page.
                     </Alert>
                 </div>
 
                 <h3>Save your work!</h3>
                 <div>
                     If you want to keep SML programs in SOSML, you have to store them
-                    using the <p className="buttonSimul"><Glyphicon glyph="file" />&nbsp;Store
+                    using the <p className="buttonSimul"><span className="glyphicon glyphicon-file" />&nbsp;Store
                     </p> button above your code.
                     When you change your code, you have to store the file again.
                     To view or change your stored files, just
-                    head to the <a href="/files"><Glyphicon glyph="duplicate"/>&nbsp;Files</a> page.
+                    head to the <a href="/files"><span className="glyphicon glyphicon-duplicate"/>&nbsp;Files</a> page.
 
                     <br/><br/>
 
-                    <Alert bsStyle="info"><strong>Warning: </strong>
+                    <Alert variant="info"><strong>Warning: </strong>
                     The files are stored locally inside your web browser. If you delete the
                     website data of SOSML, all your files will be deleted.
                     To export yor work from your web browser, head to
-                    the <a href="/files"><Glyphicon glyph="duplicate" />&nbsp;Files</a> page and hit
-                    the <p className="buttonSimul"><Glyphicon glyph="download-alt" />&nbsp;Save
+                    the <a href="/files"><span className="glyphicon glyphicon-duplicate" />&nbsp;Files</a> page and hit
+                    the <p className="buttonSimul"><span className="glyphicon glyphicon-download-alt" />&nbsp;Save
                     </p> button next to the file you want to save.
                     </Alert>
                 </div>
@@ -109,12 +109,12 @@ class Landing extends React.Component<any, any> {
 
                 <button className="btn btn-suc-alt" onClick={this.handleRedirectToEdit}
                     style={style} type="button">
-                    <Glyphicon glyph="pencil" />&nbsp;Take me to the editor.
+                    <span className="glyphicon glyphicon-pencil" />&nbsp;Take me to the editor.
                 </button>
 
                 <br/>
                 <br/>
-            </Grid>
+            </Container>
         );
     }
 }

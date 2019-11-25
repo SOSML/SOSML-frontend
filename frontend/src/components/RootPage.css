@@ -369,7 +369,7 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     transition: opacity .15s linear
 }
 
-.fade.in {
+.fade.show {
     opacity: 1
 }
 
@@ -377,7 +377,7 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     display: none
 }
 
-.collapse.in {
+.collapse.show {
     display: block
 }
 
@@ -394,21 +394,6 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     -webkit-transition-property: height,visibility;
     -o-transition-property: height,visibility;
     transition-property: height,visibility
-}
-
-.fade {
-    opacity: 0;
-    -webkit-transition: opacity .15s linear;
-    -o-transition: opacity .15s linear;
-    transition: opacity .15s linear
-}
-
-.fade.in {
-    opacity: 1
-}
-
-.collapse {
-    display: none
 }
 
 .input-group {
@@ -479,13 +464,13 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     display: block
 }
 
-.nav>li>a {
+.nav-link2 {
     position: relative;
     display: block;
     padding: 10px 15px
 }
 
-.nav>li>a:focus,.nav>li>a:hover {
+.nav-link2:focus,.nav-link2:hover {
     text-decoration: none;
     background-color: #eee
 }
@@ -493,7 +478,7 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
 .navbar {
     position: relative;
     min-height: 50px;
-    margin-bottom: 20px;
+    margin-bottom: 3px;
     border: 1px solid transparent
 }
 
@@ -508,12 +493,11 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     padding-left: 15px;
     overflow-x: visible;
     -webkit-overflow-scrolling: touch;
-    border-top: 1px solid transparent;
     -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.1)
 }
 
-.navbar-collapse.in {
+.navbar-collapse.show {
     overflow-y: auto
 }
 
@@ -532,22 +516,22 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
         overflow: visible!important
     }
 
-    .navbar-collapse.in {
+    .navbar-collapse.show {
         overflow-y: visible
     }
 
-    .navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse,.navbar-static-top .navbar-collapse {
+    .fixed-bottom .navbar-collapse,.fixed-top .navbar-collapse,.navbar-static-top .navbar-collapse {
         padding-right: 0;
         padding-left: 0
     }
 }
 
-.navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse {
+.fixed-bottom .navbar-collapse,.fixed-top .navbar-collapse {
     max-height: 340px
 }
 
 @media (max-device-width: 480px) and (orientation:landscape) {
-    .navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse {
+    .fixed-bottom .navbar-collapse,.fixed-top .navbar-collapse {
         max-height:200px
     }
 }
@@ -564,14 +548,14 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     }
 }
 
-.navbar-fixed-bottom,.navbar-fixed-top {
+.fixed-bottom,.fixed-top {
     position: fixed;
     right: 0;
     left: 0;
     z-index: 1030
 }
 
-.navbar-fixed-top {
+.fixed-top {
     top: 0;
     border-width: 0 0 1px
 }
@@ -594,45 +578,42 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     }
 }
 
-.navbar-toggle {
-    position: relative;
+.navbar-toggler {
     float: right;
-    padding: 9px 10px;
-    margin-top: 8px;
-    margin-right: 15px;
-    margin-bottom: 8px;
+    padding: 14px;
     background-color: transparent;
     background-image: none;
-    border: 1px solid transparent;
-    border-radius: 4px
+    border: 0px solid transparent;
 }
 
-.navbar-toggle:focus {
+.navbar-toggler:focus {
     outline: 0
 }
 
-.navbar-toggle .icon-bar {
-    display: block;
+.navbar-toggler-icon {
+    display: inline-block;
+    vertical-align: middle;
+    content: "";
     width: 22px;
-    height: 2px;
-    border-radius: 1px
+    height: 22px;
+    border-radius: 0px
 }
 
-.navbar-toggle .icon-bar+.icon-bar {
+.navbar-toggler-icon+.icon {
     margin-top: 4px
 }
 
 @media (min-width: 768px) {
-    .navbar-toggle {
+    .navbar-toggler {
         display:none
     }
 }
 
-.navbar-nav {
-    margin: 7.5px -15px
+.navbar-nav, .navbar-right {
+    margin: 5px -15px
 }
 
-.navbar-nav>li>a {
+.nav-link2 {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 20px
@@ -644,28 +625,15 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
         margin: 0
     }
 
-    .navbar-nav>li {
-        float: left
+    .navbar-right {
+        float:right;
+        margin: 0
     }
 
-    .navbar-nav>li>a {
+    .nav-link2 {
+        float: left;
         padding-top: 15px;
         padding-bottom: 15px
-    }
-}
-
-@media (min-width: 768px) {
-    .navbar-left {
-        float:left!important
-    }
-
-    .navbar-right {
-        float: right!important;
-        margin-right: -15px
-    }
-
-    .navbar-right~.navbar-right {
-        margin-right: 0
     }
 }
 
@@ -706,7 +674,7 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     transform: translate(0,-25%)
 }
 
-.modal.in .modal-dialog {
+.modal.show .modal-dialog {
     -webkit-transform: translate(0,0);
     -ms-transform: translate(0,0);
     -o-transform: translate(0,0);
@@ -731,30 +699,8 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     background-clip: padding-box;
     border: 1px solid #999;
     border: 1px solid rgba(0,0,0,.2);
-    border-radius: 6px;
+    border-radius: 0px;
     outline: 0;
-    -webkit-box-shadow: 0 3px 9px rgba(0,0,0,.5);
-    box-shadow: 0 3px 9px rgba(0,0,0,.5)
-}
-
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1040;
-    background-color: #000
-}
-
-.modal-backdrop.fade {
-    filter: alpha(opacity=0);
-    opacity: 0
-}
-
-.modal-backdrop.in {
-    filter: alpha(opacity=50);
-    opacity: .5
 }
 
 .modal-header {
@@ -823,7 +769,7 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     line-break: auto
 }
 
-.tooltip.in {
+.tooltip.show {
     filter: alpha(opacity=90);
     opacity: .9
 }
@@ -912,7 +858,7 @@ body.fullscreen nav {
 }
 
 .form-control, .btn-group-sm>.btn, .btn-sm, .btn-default, .btn, .alert,
-.modal-content, .navbar-toggle {
+.modal-content, .navbar-toggler {
     border-radius: 0;
 }
 
@@ -1089,6 +1035,11 @@ b,strong {
     content: "\e003";
 }
 
+.glyphicon-menu-hamburger:before {
+    content: "\e236";
+    padding: 2px 0;
+}
+
 .cm-label {
     display: inline-block;
     max-width: 100%;
@@ -1112,4 +1063,57 @@ b,strong {
 .qr {
     width: 60%;
     margin: 0 auto;
+}
+
+.splitter-layout {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.splitter-layout .layout-pane {
+    position: relative;
+    flex: 0 0 auto;
+    overflow: auto;
+}
+
+.splitter-layout .layout-pane.layout-pane-primary {
+    flex: 1 1 auto;
+}
+
+.splitter-layout > .layout-splitter {
+    flex: 0 0 auto;
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
+    background-color: #ccc;
+}
+
+.splitter-layout .layout-splitter:hover {
+    background-color: #bbb;
+}
+
+.splitter-layout.layout-changing {
+    cursor: col-resize;
+}
+
+.splitter-layout.layout-changing > .layout-splitter {
+    background-color: #aaa;
+}
+
+.splitter-layout.splitter-layout-vertical {
+    flex-direction: column;
+}
+
+.splitter-layout.splitter-layout-vertical.layout-changing {
+    cursor: row-resize;
+}
+
+.splitter-layout.splitter-layout-vertical > .layout-splitter {
+    width: 100%;
+    height: 4px;
+    cursor: row-resize;
 }

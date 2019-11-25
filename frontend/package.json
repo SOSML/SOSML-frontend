@@ -1,6 +1,6 @@
 {
     "name": "@sosml/frontend",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/SOSML/SOSML-frontend.git"
@@ -11,21 +11,21 @@
     "dependencies": {
         "@types/jest": "^20.0.8",
         "@types/node": "^8.10.58",
-        "@types/react": "^16.9.11",
+        "@types/react": "^16.9.13",
         "@types/react-bootstrap": "^0.31.2",
         "@types/react-dom": "^16.9.4",
         "@types/react-router": "^4.0.15",
         "@types/react-router-dom": "^4.0.7",
+        "codemirror": "^5.49.2",
         "file-saver": "^1.3.3",
-        "react": "^15.6.1",
-        "react-bootstrap": "^0.31.3",
-        "react-codemirror": "^1.0.0",
-        "react-dom": "^15.6.1",
-        "react-router": "^4.2.0",
-        "react-router-bootstrap": "^0.24.4",
-        "react-router-dom": "^4.2.2",
+        "react-bootstrap": "^1.0.0-beta.16",
+        "react": "^16.12.0",
+        "react-dom": "^16.12.0",
+        "react-router": "^5.1.2",
+        "react-router-dom": "^5.1.2",
+        "react-router-bootstrap": "^0.25.0",
         "react-scripts": "^3.2.0",
-        "react-splitter-layout": "^0.2.1"
+        "react-splitter-layout": "^4.0.0"
     },
     "scripts": {
         "start": "npm run version-ts; react-scripts start",
@@ -34,11 +34,11 @@
         "version-ts": "echo \"export const REF_NAME = '${CI_COMMIT_REF_NAME}';\nexport const COMMIT_SHA = '`git rev-parse --short HEAD`';\nexport const PIPELINE_ID = '${CI_PIPELINE_ID}';\nexport const BUILD_DATE = '`date --utc`';\" > ./src/components/Version.tsx"
     },
     "devDependencies": {
-        "precompress": "^5.1.0",
+        "@sosml/interpreter": "^1.3.5",
+        "precompress": "^5.1.1",
         "tslint": "^5.0.0",
         "typescript": "^3.7.0",
-        "workbox-cli": "^4.3.1",
-        "@sosml/interpreter": "^1.3.5"
+        "workbox-cli": "^4.3.1"
     },
     "browserslist": {
         "production": [

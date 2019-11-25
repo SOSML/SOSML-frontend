@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import Playground from './Playground';
-import { Form , Alert, Button, Glyphicon } from 'react-bootstrap';
+import { Form , Alert, Button } from 'react-bootstrap';
 import { API } from '../api';
 import { getColor } from '../theme';
 import { getInterfaceSettings, Database, getTabId, setTabId,
@@ -178,11 +178,11 @@ class Editor extends React.Component<any, State> {
             let style: any = {};
             style.margin = '0 3px 3px';
             errorBar = (
-                <Alert bsStyle="danger" style={style}>
+                <Alert variant="danger" style={style}>
                     <b>Error: </b>
                     The specified file does not exist.
                     <div className="miniSpacer" />
-                    <Button bsStyle="dng-alt" onClick={(evt: any) => {
+                    <Button className="button btn-dng-alt" onClick={(evt: any) => {
                         this.setState({error: ''});
                     }}>Dismiss</Button>
                 </Alert>
@@ -193,11 +193,11 @@ class Editor extends React.Component<any, State> {
             let style: any = {};
             style.margin = '0 3px 3px';
             topBar = (
-                <Alert bsStyle="info" style={style}>
+                <Alert variant="info" style={style}>
                     <b>Warning: </b>
                     You are viewing a read-only file.
                     <div className="miniSpacer" />
-                    <Button bsStyle="suc-alt" onClick={this.handleRedirectToEdit}>Create
+                    <Button className="button btn-suc-alt" onClick={this.handleRedirectToEdit}>Create
                     an editable copy</Button>
                 </Alert>
             );
@@ -218,8 +218,8 @@ class Editor extends React.Component<any, State> {
                     <input className="form-control" type="text"
                         value={this.state.fileName} onChange={this.handleFileNameChange}
                         style={style} placeholder="File name"/>
-                    <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleSave}>
-                        <Glyphicon glyph="file" /> Store
+                    <Button size="sm" className="button btn-pri-alt" onClick={this.handleSave}>
+                        <span className="glyphicon glyphicon-file" /> Store
                     </Button>
                 </Form>
             );

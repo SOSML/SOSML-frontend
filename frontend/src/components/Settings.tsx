@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Glyphicon, Checkbox } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 import { getColor, getTheme } from '../theme';
 import { InterpreterSettings, InterfaceSettings, getInterpreterSettings,
@@ -65,59 +65,59 @@ class Settings extends React.Component<any, State> {
         );
         if (advanced) {
             result.push(
-                <Checkbox key={2} checked={this.state.inter.allowStructuresAnywhere}
+                <Form.Check type="checkbox" key={2} checked={this.state.inter.allowStructuresAnywhere}
                     onChange={this.changeHandler('inter', 'allowStructuresAnywhere')}>
                     Allow structures to be defined in local declaration expressions.
-                </Checkbox>
+                </Form.Check>
             );
             result.push(
-                <Checkbox key={3} checked={this.state.inter.allowSignaturesAnywhere}
+                <Form.Check type="checkbox" key={3} checked={this.state.inter.allowSignaturesAnywhere}
                     onChange={this.changeHandler('inter', 'allowSignaturesAnywhere')}>
                     Allow signatures to be defined in all non top-level declarations.
-                </Checkbox>
+                </Form.Check>
             );
             result.push(
-                <Checkbox key={4} checked={this.state.inter.allowFunctorsAnywhere}
+                <Form.Check type="checkbox" key={4} checked={this.state.inter.allowFunctorsAnywhere}
                     onChange={this.changeHandler('inter', 'allowFunctorsAnywhere')}>
                     Allow functors to be defined in all non top-level declarations.
-                </Checkbox>
+                </Form.Check>
             );
             result.push(
-                <Checkbox key={5} checked={this.state.inter.allowVector}
+                <Form.Check type="checkbox" key={5} checked={this.state.inter.allowVector}
                     onChange={this.changeHandler('inter', 'allowVector')}>
                     Allow vector patterns and expressions.
-                </Checkbox>
+                </Form.Check>
             );
             result.push(
-                <Checkbox key={6} checked={this.state.inter.allowSuccessorML}
+                <Form.Check type="checkbox" key={6} checked={this.state.inter.allowSuccessorML}
                     onChange={this.changeHandler('inter', 'allowSuccessorML')}>
                     Enable support for 'SuccessorML' (experimental)
-                </Checkbox>
+                </Form.Check>
             );
             result.push(
-                <Checkbox key={65} checked={this.state.inter.realEquality}
+                <Form.Check type="checkbox" key={65} checked={this.state.inter.realEquality}
                     onChange={this.changeHandler('inter', 'realEquality')}>
                     Turn real into a type with equality.
-                </Checkbox>
+                </Form.Check>
             );
             result.push(
-                <Checkbox key={7} checked={this.state.inter.strictMode}
+                <Form.Check type="checkbox" key={7} checked={this.state.inter.strictMode}
                     onChange={this.changeHandler('inter', 'strictMode')}>
                     Enforce single-typed results
-                </Checkbox>
+                </Form.Check>
             );
         }
         result.push(
-            <Checkbox key={8} checked={this.state.inter.disableElaboration}
+            <Form.Check type="checkbox" key={8} checked={this.state.inter.disableElaboration}
                 onChange={this.changeHandler('inter', 'disableElaboration')}>
                 <b>Disable</b> elaboration.
-            </Checkbox>
+            </Form.Check>
         );
         result.push(
-            <Checkbox key={9} checked={this.state.inter.disableEvaluation}
+            <Form.Check type="checkbox" key={9} checked={this.state.inter.disableEvaluation}
                 onChange={this.changeHandler('inter', 'disableEvaluation')}>
                 <b>Disable</b> evaluation.
-            </Checkbox>
+            </Form.Check>
         );
         result.push(
             <p key={10}>
@@ -138,10 +138,10 @@ class Settings extends React.Component<any, State> {
             </div>
         );
         result.push(
-            <Checkbox key={17} checked={this.state.front.autoSelectTheme}
+            <Form.Check type="checkbox" key={17} checked={this.state.front.autoSelectTheme}
                 onChange={this.changeHandler('front', 'autoSelectTheme', true)}>
                 Try to detect a system-wide dark mode and correspondingly adjust the theme used.
-            </Checkbox>
+            </Form.Check>
         );
         if (!this.state.front.autoSelectTheme) {
             result.push(
@@ -154,23 +154,23 @@ class Settings extends React.Component<any, State> {
                     value={this.state.front.successColor2}
                         onChange={this.colorChangeHandler('successColor2')}/><br /><br />
                     <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
-                        <Glyphicon glyph="repeat" /> Reset colors to theme default
+                        <span className="glyphicon glyphicon-repeat" /> Reset colors to theme default
                     </button> <br /><br />
                 </div>
             );
         }
 
         result.push(
-            <Checkbox key={13} checked={this.state.front.outputHighlight}
+            <Form.Check type="checkbox" key={13} checked={this.state.front.outputHighlight}
                 onChange={this.changeHandler('front', 'outputHighlight')}>
                 Enable colored output
-            </Checkbox>
+            </Form.Check>
         );
         result.push(
-            <Checkbox key={14} checked={this.state.front.autoIndent}
+            <Form.Check type="checkbox" key={14} checked={this.state.front.autoIndent}
                 onChange={this.changeHandler('front', 'autoIndent')}>
                 Enable auto-indent
-            </Checkbox>
+            </Form.Check>
         );
 
         let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
@@ -178,37 +178,37 @@ class Settings extends React.Component<any, State> {
 
         if (width < height) {
             result.push(
-                <Checkbox key={142} checked={this.state.front.useMobile}
+                <Form.Check type="checkbox" key={142} checked={this.state.front.useMobile}
                     onChange={this.changeHandler('front', 'useMobile')}>
                     Use mobile-friendly editor.
-                </Checkbox>
+                </Form.Check>
             );
         }
         if (advanced) {
             result.push(
-                <Checkbox key={140} checked={this.state.front.showHiddenFiles}
+                <Form.Check type="checkbox" key={140} checked={this.state.front.showHiddenFiles}
                     onChange={this.changeHandler('front', 'showHiddenFiles')}>
                     Display hidden files.
-                </Checkbox>
+                </Form.Check>
             );
             result.push(
-                <Checkbox key={141} checked={this.state.front.globalLastCache}
+                <Form.Check type="checkbox" key={141} checked={this.state.front.globalLastCache}
                     onChange={this.changeHandler('front', 'globalLastCache')}>
                     Show last edited code when opening the editor.
-                </Checkbox>
+                </Form.Check>
             );
         }
         result.push(
-            <Checkbox key={15} checked={this.state.front.fullscreen}
+            <Form.Check type="checkbox" key={15} checked={this.state.front.fullscreen}
                 onChange={this.changeHandler('front', 'fullscreen')}>
                 Switch editor into fullscreen mode (Use ESC to return to the normal mode.)
-            </Checkbox>
+            </Form.Check>
         );
         result.push(
-            <Checkbox key={16} checked={this.state.front.advancedMode}
+            <Form.Check type="checkbox" key={16} checked={this.state.front.advancedMode}
                 onChange={this.changeHandler('front', 'advancedMode')}>
                 Show <em>more</em> things to break.
-            </Checkbox>
+            </Form.Check>
         );
         return result;
     }

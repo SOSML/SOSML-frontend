@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Nav, NavItem, Glyphicon } from 'react-bootstrap';
+import { Nav } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
 import './MenuBar.css';
-const LinkContainer = require('react-router-bootstrap').LinkContainer;
+// const LinkContainer = require('react-router-bootstrap').LinkContainer;
 const Navbar = require('react-bootstrap').Navbar;
 
 interface State {
@@ -22,32 +22,40 @@ class MenuBar extends React.Component<any, State> {
 
     render() {
         return (
-            <Navbar inverse={true} collapseOnSelect={true} fixedTop={true}
-                fluid={true} className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
-                <Navbar.Header>
-                    <Navbar.Brand>
-                        <NavLink to="/">
-                            SOSML
+            <Navbar collapseOnSelect fixed="top"
+                className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
+                <Navbar.Brand>
+                    <Nav.Link eventKey="0" as="div">
+                    <NavLink to="/" className="nav-brand">
+                        SOSML
+                    </NavLink>
+                    </Nav.Link>
+                </Navbar.Brand>
+                <Navbar.Toggle aria-controls="basic-navbar-nav">
+                    <span className="glyphicon glyphicon-menu-hamburger" /> Menu
+                </Navbar.Toggle>
+                <Navbar.Collapse id="basic-navbar-nav">
+                <Nav>
+                    <Nav.Link eventKey="1" as="div">
+                        <NavLink to="/editor" className="nav-link2">
+                        <span className="glyphicon glyphicon-pencil" /> Editor
                         </NavLink>
-                    </Navbar.Brand>
-                    <Navbar.Toggle />
-                </Navbar.Header>
-                <Navbar.Collapse>
-                    <Nav>
-                        <LinkContainer exact={true} to="/editor">
-                            <NavItem><Glyphicon glyph={'pencil'} /> Editor</NavItem>
-                        </LinkContainer>
-                    </Nav>
-                    <Nav>
-                        <LinkContainer to="/files">
-                            <NavItem><Glyphicon glyph="duplicate" /> Files</NavItem>
-                        </LinkContainer>
-                    </Nav>
-                    <Nav pullRight={true}>
-                        <LinkContainer to="/settings">
-                            <NavItem><Glyphicon glyph={'cog'} /> Settings</NavItem>
-                        </LinkContainer>
-                    </Nav>
+                    </Nav.Link>
+                </Nav>
+                <Nav>
+                    <Nav.Link eventKey="2" as="div">
+                    <NavLink to="/files" className="nav-link2">
+                        <span className="glyphicon glyphicon-duplicate" /> Files
+                    </NavLink>
+                    </Nav.Link>
+                </Nav>
+                <div className="navbar-right">
+                    <Nav.Link eventKey="3" as="div">
+                    <NavLink to="/settings" className="nav-link2">
+                        <span className="glyphicon glyphicon-cog" /> Settings
+                    </NavLink>
+                    </Nav.Link>
+                </div>
                 </Navbar.Collapse>
             </Navbar>
         );

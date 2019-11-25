@@ -1,8 +1,7 @@
 import * as React from 'react';
 
-import { Fade, Button, OverlayTrigger, Tooltip, Grid, Table, Glyphicon } from 'react-bootstrap';
+import { Fade, Button, OverlayTrigger, Tooltip, Container, Table } from 'react-bootstrap';
 import { API } from '../api';
-import './Files.css';
 import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
 import ShareModal from './ShareModal';
 import { getColor } from '../theme';
@@ -68,7 +67,7 @@ class Files extends React.Component<any, State> {
 
         if (this.state.files.length === 0) {
             return (
-                <Grid className="flexy">
+                <Container className="flexy">
                     <h2>Files</h2>
                     <hr/>
                     <h4>Local Files</h4>
@@ -79,7 +78,7 @@ class Files extends React.Component<any, State> {
                     {this.renderExamples()}
                     {modal}
                     <br/> <br/>
-                </Grid>
+                </Container>
             );
         }
 
@@ -90,7 +89,7 @@ class Files extends React.Component<any, State> {
         });
 
         return (
-            <Grid className="flexy">
+            <Container className="flexy">
                     <h2>Files</h2>
                     <hr/>
                     <h4>Local Files</h4>
@@ -103,7 +102,7 @@ class Files extends React.Component<any, State> {
                     {this.renderExamples()}
                     {modal}
                     <br/> <br/>
-            </Grid>
+            </Container>
         );
     }
 
@@ -132,8 +131,8 @@ class Files extends React.Component<any, State> {
         );
         sharesView.push(
             <p key="s@3">Below you can find the share links you created
-            (denoted by <Glyphicon glyph={'upload'}/>), as well
-            as external share links you opened (denoted by <Glyphicon glyph={'download'} />).
+            (denoted by <span className="glyphicon glyphicon-upload"/>), as well
+            as external share links you opened (denoted by <span className="glyphicon glyphicon-download" />).
                 Click on a file to view it in the editor.
             </p>
         );
@@ -312,9 +311,9 @@ class Files extends React.Component<any, State> {
             <div className="miniSpacer" />
         );
         let deleteBtn = (
-            <Button bsSize="small" bsStyle="dng-alt"
+            <Button size="sm" className="button btn-dng-alt"
                 onClick={this.deleteHandlerForAll(files)} style={style3}>
-                <Glyphicon glyph={'trash'} /> { this.state.miniMode ? '' :
+                <span className="glyphicon glyphicon-trash" /> { this.state.miniMode ? '' :
                     (files.length >= 1 && files[0].type
                     === FileType.SHARE ? "Forget All" : "Delete All")}
             </Button>
@@ -331,15 +330,17 @@ class Files extends React.Component<any, State> {
             <tr key={key}>
                 <td style={style} onClick={this.toggleFolder(prefix + name + files[0].type)}>
                     <OverlayTrigger overlay={tooltip}>
-                    <Glyphicon glyph={folderState ? 'folder-open' : 'folder-close'} />
+                    <div className={'glyphicon glyphicon-'
+                        + (folderState ? 'folder-open' : 'folder-close')} />
                     </OverlayTrigger>
                     {space}
                     {name}
                 </td>
                 <td style={style2} onClick={this.toggleFolder(prefix + name + files[0].type)}>
-                    <Button bsSize="small" bsStyle="suc-alt"
+                    <Button size="sm" className="button btn-suc-alt"
                     onClick={this.toggleFolder(prefix + name + files[0].type)} style={style3}>
-                        <Glyphicon glyph={folderState ? 'folder-close' : 'folder-open'} />
+                        <div className={'glyphicon glyphicon-'
+                            + (folderState ? 'folder-close' : 'folder-open')} />
                         {space}
                         {(folderState ? 'Hide ' : 'Show ') + files.length + ' Files'}
                     </Button>
@@ -349,14 +350,14 @@ class Files extends React.Component<any, State> {
             </tr>
         );
         result.push(
-            <Fade in={folderState} unmountOnExit={true} timeout={10}>
-            <tr key={key + 't1'} className="no-hover">
-                <td colSpan={2} style={style4}>
-                    <div>
-                    {renderedFiles}
-                    </div>
-                </td>
-            </tr>
+            <Fade key={key + 'fade1'} in={folderState} unmountOnExit={true} timeout={10}>
+                <tr key={key + 't1'} className="no-hover">
+                    <td colSpan={2} style={style4}>
+                        <div>
+                        {renderedFiles}
+                        </div>
+                    </td>
+                </tr>
             </Fade>
         );
         return result;
@@ -404,21 +405,21 @@ class Files extends React.Component<any, State> {
             <div className="miniSpacer" />
         );
         let deleteBtn = (
-            <Button bsSize="small" bsStyle="dng-alt"
+            <Button size="sm" className="button btn-dng-alt"
                 onClick={this.deleteHandlerFor(file.name)} style={style3}>
-                <Glyphicon glyph={'trash'} /> {this.state.miniMode ? "" : "Delete"}
+                <span className="glyphicon glyphicon-trash" /> {this.state.miniMode ? "" : "Delete"}
             </Button>
         );
         let forgetBtn = (
-            <Button bsSize="small" bsStyle="dng-alt"
+            <Button size="sm" className="button btn-dng-alt"
                 onClick={this.deleteHandlerFor(file.name, true)} style={style3}>
-                <Glyphicon glyph={'trash'} /> {this.state.miniMode ? "" : "Forget"}
+                <span className="glyphicon glyphicon-trash" /> {this.state.miniMode ? "" : "Forget"}
             </Button>
         );
         let linkBtn = (
-            <Button bsSize="small" bsStyle="pri-alt"
+            <Button size="sm" className="button btn-pri-alt"
                 onClick={this.linkHandlerFor(file)} style={style3}>
-                <Glyphicon glyph={'link'} /> {this.state.miniMode ? "" : "Link"}
+                <span className="glyphicon glyphicon-link" /> {this.state.miniMode ? "" : "Link"}
             </Button>
         );
 
@@ -443,24 +444,25 @@ class Files extends React.Component<any, State> {
             <tr key={key}>
                 <td style={style} onClick={this.openHandlerFor(file)}>
                 <OverlayTrigger overlay={tooltip}>
-                        <Glyphicon glyph={glicon} />
+                        <div className={'glyphicon glyphicon-' + glicon} />
                     </OverlayTrigger>
                     {space}
                     {printName}
                 </td>
                 <td style={style2} onClick={this.openHandlerFor(file)}>
-                    <Button bsSize="small" bsStyle="suc-alt"
+                    <Button size="sm" className="button btn-suc-alt"
                     onClick={this.openHandlerFor(file)} style={style3}>
-                        <Glyphicon glyph={file.type === FileType.SHARE ? 'search'
-                            : 'pencil'} /> {this.state.miniMode ? "" :
+                        <div className={'glyphicon glyphicon-' +
+                            (file.type === FileType.SHARE ? 'search'
+                            : 'pencil')} /> {this.state.miniMode ? "" :
                             (file.type === FileType.SHARE ? "View" : "Edit")}
                     </Button>
                     {file.type === FileType.SHARE ? space : ''}
                     {file.type === FileType.SHARE ? linkBtn : ''}
                     <div className="miniSpacer" />
-                    <Button bsSize="small" bsStyle="pri-alt"
+                    <Button size="sm" className="button btn-pri-alt"
                     onClick={this.downloadHandlerFor(file)} style={style3}>
-                        <Glyphicon glyph={'download-alt'} /> {this.state.miniMode ? "" : "Save"}
+                        <span className="glyphicon glyphicon-download-alt" /> {this.state.miniMode ? "" : "Save"}
                     </Button>
                     {file.type !== FileType.SERVER ? space : ''}
                     {file.type === FileType.LOCAL ? deleteBtn : ''}

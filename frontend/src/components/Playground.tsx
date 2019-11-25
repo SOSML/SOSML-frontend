@@ -4,7 +4,7 @@ import MiniWindow from './MiniWindow';
 import ShareModal from './ShareModal';
 import ContractModal from './ContractModal';
 import CodeMirrorWrapper from './CodeMirrorWrapper';
-import { Button, Glyphicon } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import './Playground.css';
 import { API as WebserverAPI } from '../api';
 import { getColor } from '../theme';
@@ -105,8 +105,8 @@ class Playground extends React.Component<Props, State> {
                 <div className="miniSpacer" />
             );
             shareElements = (
-                <Button bsSize="small" bsStyle="pri-alt" onClick={this.handleShareWrapper}>
-                <Glyphicon glyph={'link'} /> Share
+                <Button size="sm" className="btn btn-pri-alt" onClick={this.handleShareWrapper}>
+                <div className="glyphicon glyphicon-link" /> Share
                 </Button>
             );
         }

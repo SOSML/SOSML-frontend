@@ -1,3 +1,5 @@
 .forcedDisplay {
     display: block !important;
+    margin-top: -3px;
+    margin-bottom: 0px;
 }

@@ -1,5 +1,5 @@
-import { bootstrapUtils } from 'react-bootstrap/lib/utils';
-import { Button } from 'react-bootstrap';
+// import { bootstrapUtils } from 'react-bootstrap/lib/utils';
+// import { Button } from 'react-bootstrap';
 
 import { THEMES } from './themes';
 
@@ -78,7 +78,7 @@ export function getColor (theme: string, darkTheme: string | undefined, color: s
 
 function generateButton (name: string, fg: string, bg: string, bd: string, bda: string,
                          textbg: string): string {
-    bootstrapUtils.addStyle(Button, name);
+    // bootstrapUtils.addStyle(Button, name);
 
     return `
     .btn-${name} {
@@ -134,81 +134,81 @@ export function renderTheme (theme: Theme): string {
     return `
     .flexy { color: ${theme.foreground}; background-color: ${theme.background}; }
     .window-content { color: ${theme.foreground}; background-color: ${theme.background}; }
-    .navbar-inverse {
+    .navbar {
         color: ${theme.navbar_fg};
         background-color: ${theme.navbar_bg};
         border-color: ${theme.navbar_bg};
     }
-    .navbar-inverse .navbar-brand {
+    .nav-brand {
         color: ${theme.navbar_fg};
     }
-    .navbar-inverse .navbar-nav > li > a:hover,
-    .navbar-inverse .navbar-nav > li > a:focus,
-    .navbar-inverse .navbar-brand:hover,
-    .navbar-inverse .navbar-brand:focus,
-    .navbar-inverse .navbar-nav > .open > a,
-    .navbar-inverse .navbar-nav > .open > a:hover,
-    .navbar-inverse .navbar-nav > .open > a:focus,
-    .navbar-inverse .navbar-link:hover,
-    .navbar-inverse .btn-link:hover,
-    .navbar-inverse .btn-link:focus
+    .nav-link2:hover,
+    .nav-link2:focus,
+    .nav-brand:hover,
+    .nav-brand:focus,
+    .navbar-nav > .open > a,
+    .navbar-nav > .open > a:hover,
+    .navbar-nav > .open > a:focus,
+    .navbar-link:hover,
+    .navbar .btn-link:hover,
+    .navbar .btn-link:focus
     {
         color: ${theme.navbar_hover};
         background-color: transparent;
     }
 
-    .navbar-inverse .navbar-nav > li > a:hover .glyphicon,
-    .navbar-inverse .navbar-nav > li > a:focus .glyphicon,
-    .navbar-inverse .navbar-brand:hover .glyphicon,
-    .navbar-inverse .navbar-brand:focus .glyphicon,
-    .navbar-inverse .navbar-nav > .open > a .glyphicon,
-    .navbar-inverse .navbar-nav > .open > a:hover .glyphicon,
-    .navbar-inverse .navbar-nav > .open > a:focus .glyphicon,
-    .navbar-inverse .navbar-link:hover .glyphicon,
-    .navbar-inverse .btn-link:hover .glyphicon,
-    .navbar-inverse .btn-link:focus .glyphicon {
+    .nav-link2:hover .glyphicon,
+    .nav-link2:focus .glyphicon,
+    .nav-brand:hover .glyphicon,
+    .nav-brand:focus .glyphicon,
+    .navbar-nav > .open > a .glyphicon,
+    .navbar-nav > .open > a:hover .glyphicon,
+    .navbar-nav > .open > a:focus .glyphicon,
+    .navbar-link:hover .glyphicon,
+    .navbar .btn-link:hover .glyphicon,
+    .navbar .btn-link:focus .glyphicon {
         text-shadow: -1px 0 ${theme.navbar_hover}, 0 1px ${theme.navbar_hover},
         1px 0 ${theme.navbar_hover}, 0 -1px ${theme.navbar_hover};
     }
 
-    .navbar-inverse .navbar-toggle, hr,
-    .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+    .navbar-toggler, hr,
+    .navbar-collapse, .navbar .navbar-form {
         border-color: ${theme.border};
     }
 
-    .navbar-inverse .navbar-toggle .icon-bar {
+    .navbar-toggler-icon {
         background-color: ${theme.navbar_focus_bg};
     }
 
-    .navbar-inverse .navbar-toggle:hover .icon-bar,
-    .navbar-inverse .navbar-toggle:focus .icon-bar {
+    .navbar-toggler-icon:hover,
+    .navbar-toggler-icon:focus {
         background-color: ${theme.navbar_bg};
     }
 
-    .navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus,
-    .navbar-inverse .navbar-nav>.active>a:hover {
+    .nav-link2.active, .nav-link2.active:focus,
+    .nav-link2.active:hover {
         color: ${theme.navbar_focus_fg};
         background-color: ${theme.navbar_focus_bg};
     }
-    .navbar-inverse .navbar-nav>.active>a .glyphicon,
-    .navbar-inverse .navbar-nav>.active>a:focus .glyphicon,
-    .navbar-inverse .navbar-nav>.active>a:hover .glyphicon {
+    .nav-link2.active .glyphicon,
+    .nav-link2.active:focus .glyphicon,
+    .nav-link2.active:hover .glyphicon {
         color: ${theme.navbar_focus_bg};
         text-shadow: -1px 0 ${theme.navbar_focus_fg}, 0 1px ${theme.navbar_focus_fg},
         1px 0 ${theme.navbar_focus_fg}, 0 -1px ${theme.navbar_focus_fg};
     }
 
-    .navbar-inverse .navbar-nav>li>a {
+    .nav-link2 {
         color: ${theme.navbar_fg};
         background-color: ${theme.navbar_bg};
     }
-    .navbar-inverse .navbar-nav>li>a .glyphicon {
+    .nav-link2 .glyphicon {
         color: ${theme.navbar_bg};
         text-shadow: -1px 0 ${theme.navbar_fg}, 0 1px ${theme.navbar_fg},
         1px 0 ${theme.navbar_fg}, 0 -1px ${theme.navbar_fg};
     }
 
-    .navbar-inverse .navbar-toggle:focus, .navbar-inverse .navbar-toggle:hover {
+    .navbar-toggler:focus, .navbar-toggler:hover {
         color: ${theme.navbar_focus_fg};
         background-color: ${theme.navbar_focus_bg};
     }

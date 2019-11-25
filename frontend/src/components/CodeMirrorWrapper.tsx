@@ -2,7 +2,8 @@ import * as React from 'react';
 import './CodeMirrorWrapper.css';
 import { getInterfaceSettings } from '../storage';
 
-const CodeMirror: any = require('react-codemirror');
+let CodeMirror: any = require('codemirror');
+
 require('codemirror/lib/codemirror.css');
 require('../sml.js');
 
@@ -179,11 +180,16 @@ class IncrementalInterpretationHelper {
 export interface Props {
     flex?: boolean;
     onChange?: (x: string) => void;
+    onFocusChange?: (x: boolean) => void;
     code: string;
     readOnly?: boolean;
     outputCallback: (code: string) => any;
     useInterpreter?: boolean;
     timeout: number;
+}
+
+interface State {
+    isFocused: boolean;
 }
 
 function elt(tag: any, content: any, className: any): any {
@@ -201,8 +207,9 @@ function elt(tag: any, content: any, className: any): any {
     return e;
 }
 
-class CodeMirrorWrapper extends React.Component<Props, any> {
+class CodeMirrorWrapper extends React.Component<Props, State> {
     editor: any;
+    codeMirrorInstance: any;
     evalHelper: IncrementalInterpretationHelper;
 
     constructor(props: Props) {
@@ -210,11 +217,78 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
 
         this.evalHelper = new IncrementalInterpretationHelper(this.props.outputCallback);
 
-        this.handleChange = this.handleChange.bind(this);
         this.handleChangeEvent = this.handleChangeEvent.bind(this);
+
+        this.state = {
+            isFocused: false
+        }
+    }
+
+    focus() {
+        if (this.codeMirrorInstance) {
+            this.codeMirrorInstance.focus();
+        }
+    }
+
+    focusChanged(focused: boolean) {
+        this.setState({
+            isFocused: focused,
+        });
+        this.props.onFocusChange && this.props.onFocusChange(focused);
     }
 
     render() {
+        this.evalHelper.setTimeout(this.props.timeout);
+        let editorClassName = 'ReactCodeMirror';
+        if (this.props.flex) {
+            editorClassName += ' flexy flexcomponent';
+        }
+        if (this.state.isFocused) {
+            editorClassName += ' ReactCodeMirror--focused';
+        }
+
+        let value = '';
+        if (this.props.code) {
+            value = this.props.code;
+        }
+        return (
+            <div className={editorClassName}>
+                <textarea
+                    ref={(editor: any) => {this.editor = editor; }}
+                    defaultValue={value}
+                    autoComplete="off"
+                />
+            </div>
+        );
+    }
+
+    componentDidUpdate(prevProps: Props, prevState: any) {
+        if (prevProps.code !== this.props.code) {
+            if (this.editor) {
+                this.codeMirrorInstance.setValue(this.props.code);
+                if (this.props.onChange) {
+                    this.props.onChange(this.props.code);
+                }
+            }
+        } else if (prevProps.useInterpreter !== this.props.useInterpreter) {
+            if (this.props.useInterpreter) {
+                this.evalHelper.enable();
+                this.handleChangeEvent(this.codeMirrorInstance, {
+                    from: {line: 0, ch: 0},
+                    text: this.codeMirrorInstance.getValue().split('\n'),
+                    removed: []
+                });
+            } else {
+                this.evalHelper.disable();
+            }
+        }
+    }
+
+    componentDidMount() {
+        if (!this.props.useInterpreter) {
+            this.evalHelper.disable();
+        }
+
         let autoIndent = getInterfaceSettings().autoIndent;
 
         const options = {
@@ -247,82 +321,34 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
                     } else {
                         cm.execCommand('newlineAndIndent');
                     }
-                })
+                }),
+                Tab: ((cm: any) => {
+                    if (cm.somethingSelected()) {
+                        return cm.indentSelection('add');
+                    } else {
+                        return CodeMirror.commands.insertSoftTab(cm);;
+                    }
+                }),
+                'Shift-Tab': 'indentLess',
+                'Alt-Tab': 'indentAuto'
             }
         };
-        this.evalHelper.setTimeout(this.props.timeout);
-        let classAdd = '';
-        if (this.props.flex) {
-            classAdd = 'flexy flexcomponent';
-        }
-        let value = '';
-        if (this.props.code) {
-            value = this.props.code;
-        }
-        return (
-            <CodeMirror className={classAdd} ref={(editor: any) => {this.editor = editor; }}
-            onChange={this.handleChange}
-            value={value} options={options}/>
-        );
-    }
 
-    componentDidUpdate(prevProps: Props, prevState: any) {
-        if (prevProps.code !== this.props.code) {
-            if (this.editor) {
-                this.editor.getCodeMirror().setValue(this.props.code);
-                if (this.props.onChange) {
-                    this.props.onChange(this.props.code);
-                }
-            }
-        } else if (prevProps.useInterpreter !== this.props.useInterpreter) {
-            if (this.props.useInterpreter) {
-                this.evalHelper.enable();
-                this.handleChangeEvent(this.editor.getCodeMirror(), {
-                    from: {line: 0, ch: 0},
-                    text: this.editor.getCodeMirror().getValue().split('\n'),
-                    removed: []
-                });
-            } else {
-                this.evalHelper.disable();
-            }
-        }
-    }
-
-    componentDidMount() {
-        if (!this.props.useInterpreter) {
-            this.evalHelper.disable();
-        }
-        var GCodeMirror = this.editor.getCodeMirrorInstance();
-        let keyMap = GCodeMirror.keyMap;
-        keyMap.default['Shift-Tab'] = 'indentLess';
-        keyMap.default['Alt-Tab'] = 'indentAuto';
-        keyMap.default.Tab = function(cm2: any) {
-            if (cm2.somethingSelected()) {
-                return cm2.indentSelection('add');
-            } else {
-                return GCodeMirror.commands.insertSoftTab(cm2);
-            }
-        };
-        let cm: any = this.editor.getCodeMirror();
-        cm.refresh();
-        cm.on('change', this.handleChangeEvent);
+        this.codeMirrorInstance = CodeMirror.fromTextArea(this.editor, options);
+        this.codeMirrorInstance.on('change', this.handleChangeEvent);
+        this.codeMirrorInstance.on('focus', this.focusChanged.bind(this, true));
+        this.codeMirrorInstance.on('blur', this.focusChanged.bind(this, false));
 
         this.evalHelper.clear();
         this.evalHelper.handleChangeAt({line: 0, ch: 0, sticky: null}, [''], [''],
-                                       new CodeMirrorSubset(cm));
+                                       new CodeMirrorSubset(this.codeMirrorInstance));
     }
 
     componentWillUnmount() {
-        let cm: any = this.editor.getCodeMirror();
-        cm.off('change', this.handleChangeEvent);
-    }
-
-    /*
-    This is the react-codemirror change handler
-    */
-    handleChange(newValue: string) {
-        if (this.props.onChange) {
-            this.props.onChange(newValue);
+        // let cm: any = this.editor.getCodeMirror();
+        // cm.off('change', this.handleChangeEvent);
+        if (this.codeMirrorInstance) {
+            this.codeMirrorInstance.toTextArea();
         }
     }
 
@@ -331,6 +357,10 @@ class CodeMirrorWrapper extends React.Component<Props, any> {
     */
     handleChangeEvent(codemirror: any, change: any) {
         this.evalHelper.handleChangeAt(change.from, change.text, change.removed, new CodeMirrorSubset(codemirror));
+
+        if (this.props.onChange) {
+            this.props.onChange(codemirror.getValue());
+        }
     }
 }
 
