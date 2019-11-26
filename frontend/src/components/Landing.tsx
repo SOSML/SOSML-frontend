@@ -27,7 +27,7 @@ class Landing extends React.Component<any, any> {
                 <h3>Code Sharing</h3>
             );
             sharing = (
-                <div>
+                <div className="selectable">
                     You can share the code that is currently shown in SOSML by using
                     the <p className="buttonSimul"><span className="glyphicon glyphicon-link" />&nbsp;Share
                     </p> button. Your code will be uploaded to the servers
@@ -37,7 +37,7 @@ class Landing extends React.Component<any, any> {
                     file again (getting a new link for it).
 
                     <br/><br/>
-                    <Alert variant="info"><strong>Warning: </strong>
+                    <Alert variant="info" className="selectable"><strong>Warning: </strong>
                     Only upload files and content to which you own the copyright.
                     By uploading a file to the servers of Saarland University, you grant Saarland
                     University and the <a href="https://github.com/SOSML"> SOSML Developers </a>
@@ -50,7 +50,7 @@ class Landing extends React.Component<any, any> {
         }
 
         return (
-            <Container className="flexy">
+            <Container className="flexy selectable">
                 <h2>SOSML - the Online Interpreter for Standard ML</h2>
                 <hr />
                 <p>
@@ -62,7 +62,7 @@ class Landing extends React.Component<any, any> {
                 </p>
 
                 <h3>How to use SOSML</h3>
-                <div>
+                <div className="selectable">
                     The editor shows two columns. The left column allows to write Standard ML code
                     whereas the right column shows the output of SOSML. Code is evaluated after
                     typing a semicolon (;). SOSML runs locally in your web browser, so no
@@ -75,7 +75,7 @@ class Landing extends React.Component<any, any> {
 
                     <br/><br/>
 
-                    <Alert variant="info"><strong>Warning: </strong>
+                    <Alert variant="info" className="selectable"><strong>Warning: </strong>
                     Long computations might be terminated by your web browser
                     due to limitations for how long a script is allowed to run.
                     This time limit may be changed on the <a href="/settings">
@@ -84,7 +84,7 @@ class Landing extends React.Component<any, any> {
                 </div>
 
                 <h3>Save your work!</h3>
-                <div>
+                <div className="selectable">
                     If you want to keep SML programs in SOSML, you have to store them
                     using the <p className="buttonSimul"><span className="glyphicon glyphicon-file" />&nbsp;Store
                     </p> button above your code.
@@ -94,7 +94,7 @@ class Landing extends React.Component<any, any> {
 
                     <br/><br/>
 
-                    <Alert variant="info"><strong>Warning: </strong>
+                    <Alert variant="info" className="selectable"><strong>Warning: </strong>
                     The files are stored locally inside your web browser. If you delete the
                     website data of SOSML, all your files will be deleted.
                     To export yor work from your web browser, head to

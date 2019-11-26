@@ -379,7 +379,10 @@ export function renderTheme (theme: Theme): string {
     ${generateButton('dng-alt', theme.btn_dng_fg, theme.btn_dng_bg,
                      theme.btn_dng_border, theme.btn_hover, theme.background)}
 
-    ::selection {
+    .selectable::selection, br::selection, strong::selection,  h2::selection, h3::selection,
+    h4::selection, a::selection, p::selection, pre::selection, .footer::selection, b::selection,
+    i::selection, input::selection, .CodeMirror-line::selection, td::selection, label::selection,
+    em::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection {
         color: ${theme.foreground};
         background-color: ${theme.selection_bg} !important;
         background-color: ${theme.selection_bg}77 !important;

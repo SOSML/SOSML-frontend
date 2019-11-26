@@ -45,7 +45,7 @@ CodeMirror.defineMode('sml', function(config, parserConfig) {
         },
         token: function(stream, state) {
             if (stream.eatSpace()) {
-                return null;
+                return 'space';
             }
             var token = undefined;
             try {

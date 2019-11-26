@@ -157,7 +157,7 @@ class Settings extends React.Component<any, State> {
             <h4 key={11}>Editor Settings</h4>
         );
         result.push(
-            <div key={12}>
+            <div key={12} className="selectable">
                 Using general {this.state.front.autoSelectTheme ? '(light)' : ''} theme <input
                 placeholder={this.state.front.theme}
                 style={style} onChange={this.themeChangeHandler} />.<br/>
@@ -174,7 +174,7 @@ class Settings extends React.Component<any, State> {
         );
         if (!this.state.front.autoSelectTheme) {
             result.push(
-                <div key={121}>
+                <div key={121} className="selectable">
                     Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
                         onChange={this.colorChangeHandler('errorColor')}/><br/>
                     Background color for evaluated code: <input type="color" value={this.state.front.successColor1}

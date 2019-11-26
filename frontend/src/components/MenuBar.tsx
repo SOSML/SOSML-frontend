@@ -50,7 +50,7 @@ class MenuBar extends React.Component<any, State> {
                         </Nav.Link>
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav">
-                        <span className="glyphicon glyphicon-menu-hamburger" /> Menu
+                        <span className="glyphicon glyphicon-menu-hamburger" /><b> Menu</b>
                     </Navbar.Toggle>
                 </div>
                 <Navbar.Collapse id="basic-navbar-nav">

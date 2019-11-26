@@ -299,6 +299,7 @@ class CodeMirrorWrapper extends React.Component<Props, State> {
             tabSize: 2,
             matchBrackets: true,
             lineWrapping: true,
+            inputStyle: 'contenteditable',
             readOnly: this.props.readOnly ? true : false,
             foldGutter: {
                 minFoldSize: 2
@@ -345,11 +346,9 @@ class CodeMirrorWrapper extends React.Component<Props, State> {
     }
 
     componentWillUnmount() {
-        // let cm: any = this.editor.getCodeMirror();
-        // cm.off('change', this.handleChangeEvent);
-        if (this.codeMirrorInstance) {
-            this.codeMirrorInstance.toTextArea();
-        }
+        this.codeMirrorInstance.off('change', this.handleChangeEvent);
+        this.codeMirrorInstance.off('focus', this.focusChanged.bind(this, true));
+        this.codeMirrorInstance.off('blur', this.focusChanged.bind(this, false));
     }
 
     /*
