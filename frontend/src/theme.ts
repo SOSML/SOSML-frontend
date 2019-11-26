@@ -382,7 +382,8 @@ export function renderTheme (theme: Theme): string {
     .selectable::selection, br::selection, strong::selection,  h2::selection, h3::selection,
     h4::selection, a::selection, p::selection, pre::selection, .footer::selection, b::selection,
     i::selection, input::selection, .CodeMirror-line::selection, td::selection, label::selection,
-    em::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection {
+    em::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection,
+    .modal-content::selection, .modal-body::selection, .modal-title::selection {
         color: ${theme.foreground};
         background-color: ${theme.selection_bg} !important;
         background-color: ${theme.selection_bg}77 !important;
