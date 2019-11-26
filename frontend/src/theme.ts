@@ -190,6 +190,8 @@ export function renderTheme (theme: Theme): string {
         color: ${theme.navbar_focus_fg};
         background-color: ${theme.navbar_focus_bg};
     }
+    .navbar-toggler:focus .glyphicon,
+    .navbar-toggler:hover .glyphicon,
     .nav-link2.active .glyphicon,
     .nav-link2.active:focus .glyphicon,
     .nav-link2.active:hover .glyphicon {
@@ -202,6 +204,7 @@ export function renderTheme (theme: Theme): string {
         color: ${theme.navbar_fg};
         background-color: ${theme.navbar_bg};
     }
+    .navbar-toggler .glyphicon,
     .nav-link2 .glyphicon {
         color: ${theme.navbar_bg};
         text-shadow: -1px 0 ${theme.navbar_fg}, 0 1px ${theme.navbar_fg},

@@ -489,12 +489,12 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
 }
 
 .navbar-collapse {
+    border-top: 1px solid transparent;
     padding-right: 15px;
     padding-left: 15px;
     overflow-x: visible;
     -webkit-overflow-scrolling: touch;
     -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.1)
 }
 
 .navbar-collapse.show {

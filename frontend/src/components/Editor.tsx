@@ -301,13 +301,6 @@ class Editor extends React.Component<any, State> {
                 return {initialCode: prevState.code};
             });
         }
-        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
-        let height = (window.innerHeight > 0) ? window.innerHeight : window.screen.height;
-        if (height <= width) {
-            this.setState({width: width / 2});
-        } else {
-            this.setState({width: width});
-        }
     }
 }
 

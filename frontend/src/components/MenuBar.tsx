@@ -24,38 +24,40 @@ class MenuBar extends React.Component<any, State> {
         return (
             <Navbar collapseOnSelect fixed="top"
                 className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
-                <Navbar.Brand>
-                    <Nav.Link eventKey="0" as="div">
-                    <NavLink to="/" className="nav-brand">
-                        SOSML
-                    </NavLink>
-                    </Nav.Link>
-                </Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav">
-                    <span className="glyphicon glyphicon-menu-hamburger" /> Menu
-                </Navbar.Toggle>
-                <Navbar.Collapse id="basic-navbar-nav">
-                <Nav>
-                    <Nav.Link eventKey="1" as="div">
-                        <NavLink to="/editor" className="nav-link2">
-                        <span className="glyphicon glyphicon-pencil" /> Editor
+                <div className="navbar-header">
+                    <Navbar.Brand>
+                        <Nav.Link eventKey="0" as="div">
+                        <NavLink to="/" className="nav-brand">
+                            SOSML
                         </NavLink>
-                    </Nav.Link>
-                </Nav>
-                <Nav>
-                    <Nav.Link eventKey="2" as="div">
-                    <NavLink to="/files" className="nav-link2">
-                        <span className="glyphicon glyphicon-duplicate" /> Files
-                    </NavLink>
-                    </Nav.Link>
-                </Nav>
-                <div className="navbar-right">
-                    <Nav.Link eventKey="3" as="div">
-                    <NavLink to="/settings" className="nav-link2">
-                        <span className="glyphicon glyphicon-cog" /> Settings
-                    </NavLink>
-                    </Nav.Link>
+                        </Nav.Link>
+                    </Navbar.Brand>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav">
+                        <span className="glyphicon glyphicon-menu-hamburger" /> Menu
+                    </Navbar.Toggle>
                 </div>
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav>
+                        <Nav.Link eventKey="1" as="div">
+                            <NavLink to="/editor" className="nav-link2">
+                            <span className="glyphicon glyphicon-pencil" /> Editor
+                            </NavLink>
+                        </Nav.Link>
+                    </Nav>
+                    <Nav>
+                        <Nav.Link eventKey="2" as="div">
+                        <NavLink to="/files" className="nav-link2">
+                            <span className="glyphicon glyphicon-duplicate" /> Files
+                        </NavLink>
+                        </Nav.Link>
+                    </Nav>
+                    <div className="navbar-right">
+                        <Nav.Link eventKey="3" as="div">
+                        <NavLink to="/settings" className="nav-link2">
+                            <span className="glyphicon glyphicon-cog" /> Settings
+                        </NavLink>
+                        </Nav.Link>
+                    </div>
                 </Navbar.Collapse>
             </Navbar>
         );
