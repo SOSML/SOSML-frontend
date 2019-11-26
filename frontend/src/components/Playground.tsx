@@ -165,33 +165,19 @@ class Playground extends React.Component<Props, State> {
             </div>
         );
 
-        if (width < height && getInterfaceSettings().useMobile) {
-            return (
-                <div className="playground">
-                    <style>{extraCSS}</style>
-                    <SplitterLayout vertical={true}
-                        onUpdate={this.handleSplitterUpdate} primaryIndex={1}
-                        percentage={true}>
-                        {output}
-                        {codemirror}
-                    </SplitterLayout>
-                    {modal}
-                </div>
-            );
-        } else {
-            return (
-                <div className="playground">
-                    <style>{extraCSS}</style>
-                    <SplitterLayout
-                        onUpdate={this.handleSplitterUpdate} primaryIndex={0}
-                        percentage={true}>
-                        {codemirror}
-                        {output}
-                    </SplitterLayout>
-                    {modal}
-                </div>
-            );
-        }
+        let isVertical = width < height && getInterfaceSettings().useMobile;
+        return (
+            <div className="playground">
+                <style>{extraCSS}</style>
+                <SplitterLayout vertical={isVertical}
+                    onUpdate={this.handleSplitterUpdate} primaryIndex={0}
+                    percentage={true}>
+                    {codemirror}
+                    {output}
+                </SplitterLayout>
+                {modal}
+            </div>
+        );
     }
 
     modalCloseCallback() {

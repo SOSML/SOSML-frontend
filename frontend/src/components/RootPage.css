@@ -1105,7 +1105,7 @@ b,strong {
 }
 
 .splitter-layout.splitter-layout-vertical {
-    flex-direction: column;
+    flex-direction: column-reverse;
 }
 
 .splitter-layout.splitter-layout-vertical.layout-changing {
