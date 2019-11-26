@@ -30,9 +30,9 @@ export const THEME: Theme = {
     'btn_dng_fg': 'crimson',
     'btn_dng_bg': 'black',
     'btn_dng_border': '#d43f3a',
-    'btn_suc_fg': '#266726',
+    'btn_suc_fg': '#1dd41d',
     'btn_suc_bg': 'black',
-    'btn_suc_border': '#4cae4c',
+    'btn_suc_border': '#1dd41d',
     'btn_hover': 'lightcoral',
 
     'cm_builtin': '#ccc',
