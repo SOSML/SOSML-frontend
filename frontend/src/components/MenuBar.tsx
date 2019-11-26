@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Nav } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
+import { getInterfaceSettings } from '../storage';
+import { getColor } from '../theme';
 import './MenuBar.css';
 // const LinkContainer = require('react-router-bootstrap').LinkContainer;
 const Navbar = require('react-bootstrap').Navbar;
@@ -21,11 +23,26 @@ class MenuBar extends React.Component<any, State> {
     }
 
     render() {
+        let settings = getInterfaceSettings();
+        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
+        let white = getColor(settings.theme, dt, 'icon_fg');
+        let black = getColor(settings.theme, dt, 'icon_bg');
+
         return (
             <Navbar collapseOnSelect fixed="top"
                 className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
                 <div className="navbar-header">
-                    <Navbar.Brand>
+                   <Navbar.Brand style={{padding: "10px"}}>
+                        <svg viewBox="0 0 52 52" width="28px">
+                            <circle cx={26} cy={26} r={24} stroke={black} strokeWidth={1}
+                                fill={white} />
+                            <circle cx={26} cy={26} r={10} stroke={black} strokeWidth={1}
+                                fill={black} />
+                            <circle cx={17} cy={15} r={7} stroke={black} strokeWidth={1}
+                                fill="#fff" />
+                        </svg>
+                    </Navbar.Brand>
+                    <Navbar.Brand  style={{'paddingLeft': "0px", 'marginLeft': "-5px"}}>
                         <Nav.Link eventKey="0" as="div">
                         <NavLink to="/" className="nav-brand">
                             SOSML

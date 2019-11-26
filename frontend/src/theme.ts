@@ -55,6 +55,9 @@ export type Theme = {
 
     'qr_bg': string;
     'qr_fg': string;
+
+    'icon_bg': string;
+    'icon_fg': string;
 };
 export type ThemeCollection = { [name: string]: Theme };
 
@@ -356,6 +359,15 @@ export function renderTheme (theme: Theme): string {
         color: ${theme.foreground};
         background-color: ${theme.background};
         border-color: ${theme.border};
+    }
+
+    .splitter-layout.layout-changing > .layout-splitter,
+    .splitter-layout > .layout-splitter {
+        background-color: ${theme.background};
+    }
+
+    .splitter-layout .layout-splitter:hover {
+        background-color: ${theme.border};
     }
 
     ${generateButton('def-alt', theme.foreground, theme.background,

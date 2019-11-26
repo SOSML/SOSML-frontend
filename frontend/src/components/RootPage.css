@@ -1089,19 +1089,10 @@ b,strong {
     width: 4px;
     height: 100%;
     cursor: col-resize;
-    background-color: #ccc;
-}
-
-.splitter-layout .layout-splitter:hover {
-    background-color: #bbb;
 }
 
 .splitter-layout.layout-changing {
     cursor: col-resize;
-}
-
-.splitter-layout.layout-changing > .layout-splitter {
-    background-color: #aaa;
 }
 
 .splitter-layout.splitter-layout-vertical {

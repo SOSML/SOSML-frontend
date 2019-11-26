@@ -52,4 +52,7 @@ export const THEME: Theme = {
 
     'qr_fg': '#4f4f4f',
     'qr_bg': '#ddd',
+
+    'icon_fg': '#bbb',
+    'icon_bg': '#2f2f2f',
 };

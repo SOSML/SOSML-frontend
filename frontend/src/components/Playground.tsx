@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import SplitterLayout from './SplitterLayout';
 import MiniWindow from './MiniWindow';
 import ShareModal from './ShareModal';
 import ContractModal from './ContractModal';
@@ -10,13 +11,6 @@ import { API as WebserverAPI } from '../api';
 import { getColor } from '../theme';
 import { Database, InterfaceSettings, getInterfaceSettings } from '../storage';
 import { SHARING_ENABLED } from '../config';
-
-var SplitterLayout = require('react-splitter-layout').default; // MEGA-HAX because of typescript
-SplitterLayout.prototype.componentDidUpdate = function(prevProps: any, prevState: any) {
-    if (this.props.onUpdate && this.state.secondaryPaneSize !== prevState.secondaryPaneSize) {
-        this.props.onUpdate(this.state.secondaryPaneSize);
-    }
-};
 
 interface State {
     output: string;
