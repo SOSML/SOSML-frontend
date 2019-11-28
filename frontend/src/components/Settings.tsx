@@ -266,17 +266,15 @@ class Settings extends React.Component<any, State> {
             </CardDeck>
         )
 
-        /*
         result.push(
-                <div className="checkbox" key="d17">
+                <div className="checkbox" key="d170">
                 <label>
-            <input type="checkbox" key={17} checked={this.state.front.autoSelectTheme}
+            <input type="checkbox" key={170} checked={this.state.front.autoSelectTheme}
                 onChange={this.changeHandler('front', 'autoSelectTheme', true)}/>
                 Try to detect a system-wide dark mode and correspondingly adjust the theme used.
                 </label>
             </div>
         );
-        */
         if (!this.state.front.autoSelectTheme) {
             result.push(
                 <div key={121} className="selectable">
