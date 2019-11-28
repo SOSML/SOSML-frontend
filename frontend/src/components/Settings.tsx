@@ -253,11 +253,11 @@ class Settings extends React.Component<any, State> {
 
         result.push(
             <div key={12} className="selectable">
-                Using light theme <input
+                Using light theme <input maxLength={4}
                 placeholder={this.state.front.theme}
-                style={style} onChange={this.themeChangeHandler} /> and dark theme <input
-                placeholder={this.state.front.darkTheme}
-                style={style} onChange={this.themeChangeHandler} />.<br/><br/>
+                style={style} onChange={(e: any) => this.themeChangeHandler(e, 'light')} /> and
+                dark theme <input placeholder={this.state.front.darkTheme} maxLength={4}
+                style={style} onChange={(e: any) => this.themeChangeHandler(e, 'dark')} />.<br/><br/>
             </div>
         );
         result.push(
@@ -369,22 +369,14 @@ class Settings extends React.Component<any, State> {
         }
     }
 
-    private themeChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
+    private themeChangeHandler(evt: React.ChangeEvent<HTMLInputElement>, type: 'light' | 'dark') {
         let value = evt.target.value;
 
         if (!getTheme(value, undefined) || this.state.front.theme === value) {
             return;
         }
-
-        this.setState((oldState) => {
-            let deepCopy: any = this.deepCopy(oldState);
-            deepCopy.front.theme = value;
-            return deepCopy;
-        }, () => {
-            this.saveState();
-        });
         evt.target.value = '';
-        window.location.reload();
+        this.changeTheme(type, value);
     }
 
     private deepCopy(json: any): any {

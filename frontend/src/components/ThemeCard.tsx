@@ -34,7 +34,7 @@ class ThemeCard extends React.Component<Props, any> {
                     paddingLeft: "5px"
                 }}>{this.props.themeName}</div>
                 <div className="inlineBlock" style={{
-                    marginTop: "-.8px", marginRight: "-1px",
+                    marginTop: "-1px", marginRight: "-1px",
                     position: "relative",
                     display: "flex",
                     float: "right"}}>
