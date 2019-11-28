@@ -168,6 +168,10 @@ hr {
     font-size: 18px
 }
 
+h5, .h5 {
+    font-size: 16px;
+}
+
 p {
     margin: 0 0 10px
 }
@@ -1108,3 +1112,54 @@ b,strong {
     height: 4px;
     cursor: row-resize;
 }
+
+.card {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 155px;
+    word-wrap: break-word;
+    background-clip: border-box;
+    border: 1px solid;
+}
+
+.card > hr {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.card-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 1.25rem;
+}
+
+.card-title {
+    margin-bottom: 0.75rem;
+}
+
+.card-deck .card {
+    margin-bottom: 15px;
+}
+
+@media (min-width: 155px) {
+    .card-deck {
+        display: grid;
+        grid-template-columns: repeat(auto-fill,minmax(170px, 1fr));
+        margin-right: -7.5px;
+        margin-left: -7.5px;
+        margin-bottom: -15px;
+    }
+    .card-deck .card {
+        -ms-flex: 1 0 0%;
+        flex: 1 0 0%;
+        margin-right: 7.5px;
+        margin-bottom: 15px;
+        margin-left: 7.5px;
+    }
+}
+
+

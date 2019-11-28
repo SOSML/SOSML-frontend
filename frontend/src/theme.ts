@@ -250,6 +250,7 @@ export function renderTheme (theme: Theme): string {
         border-color: ${theme.btn_dng_border};
     }
 
+    .card,
     .alert-info {
         color: ${theme.alert_fg};
         background-color: ${theme.alert_bg};
@@ -371,6 +372,8 @@ export function renderTheme (theme: Theme): string {
     }
 
     ${generateButton('def-alt', theme.foreground, theme.background,
+                     theme.border, theme.link_hover, theme.background)}
+    ${generateButton('def-inv', theme.navbar_focus_fg, theme.navbar_focus_bg,
                      theme.border, theme.link_hover, theme.background)}
     ${generateButton('pri-alt', theme.btn_pri_fg, theme.btn_pri_bg,
                      theme.btn_pri_border, theme.btn_hover, theme.background)}

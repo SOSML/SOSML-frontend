@@ -1,8 +1,11 @@
 import * as React from 'react';
+import { CardDeck } from 'react-bootstrap';
+
 import { REF_NAME, COMMIT_SHA, PIPELINE_ID, BUILD_DATE } from './Version';
 import { getColor, getTheme } from '../theme';
 import { InterpreterSettings, InterfaceSettings, getInterpreterSettings,
     getInterfaceSettings } from '../storage';
+import ThemeCard from './ThemeCard';
 
 interface State {
     inter: InterpreterSettings;
@@ -20,6 +23,7 @@ class Settings extends React.Component<any, State> {
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
         this.resetColorsToDefault = this.resetColorsToDefault.bind(this);
         this.themeChangeHandler = this.themeChangeHandler.bind(this);
+        this.changeTheme = this.changeTheme.bind(this);
     }
 
     render() {
@@ -154,41 +158,12 @@ class Settings extends React.Component<any, State> {
             </p>
         );
         result.push(
+            <h4 key="n11">Theme Settings</h4>
+        );
+        result = result.concat(this.renderThemes());
+        result.push(
             <h4 key={11}>Editor Settings</h4>
         );
-        result.push(
-            <div key={12} className="selectable">
-                Using general {this.state.front.autoSelectTheme ? '(light)' : ''} theme <input
-                placeholder={this.state.front.theme}
-                style={style} onChange={this.themeChangeHandler} />.<br/>
-            </div>
-        );
-        result.push(
-                <div className="checkbox" key="d17">
-                <label>
-            <input type="checkbox" key={17} checked={this.state.front.autoSelectTheme}
-                onChange={this.changeHandler('front', 'autoSelectTheme', true)}/>
-                Try to detect a system-wide dark mode and correspondingly adjust the theme used.
-                </label>
-            </div>
-        );
-        if (!this.state.front.autoSelectTheme) {
-            result.push(
-                <div key={121} className="selectable">
-                    Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
-                        onChange={this.colorChangeHandler('errorColor')}/><br/>
-                    Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
-                        onChange={this.colorChangeHandler('successColor1')}/><br/>
-                    Alternative background color for evaluated code: <input type="color"
-                    value={this.state.front.successColor2}
-                        onChange={this.colorChangeHandler('successColor2')}/><br /><br />
-                    <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
-                        <span className="glyphicon glyphicon-repeat" /> Reset colors to theme default
-                    </button> <br /><br />
-                </div>
-            );
-        }
-
         result.push(
                 <div className="checkbox" key="d13">
                 <label>
@@ -208,21 +183,16 @@ class Settings extends React.Component<any, State> {
             </div>
         );
 
-        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
-        let height = (window.innerHeight > 0) ? window.innerHeight : window.screen.height;
-
-        if (width < height) {
+        if (advanced) {
             result.push(
                 <div className="checkbox" key="d142">
-                <label>
-                <input type="checkbox" key={142} checked={this.state.front.useMobile}
-                    onChange={this.changeHandler('front', 'useMobile')}/>
-                    Use mobile-friendly editor.
-                </label>
+                    <label>
+                        <input type="checkbox" key={142} checked={this.state.front.useMobile}
+                            onChange={this.changeHandler('front', 'useMobile')}/>
+                        Enable vertical editor mode for narrow screens and windows.
+                    </label>
                 </div>
             );
-        }
-        if (advanced) {
             result.push(
                 <div className="checkbox" key="d140">
                 <label>
@@ -260,6 +230,76 @@ class Settings extends React.Component<any, State> {
                 </label>
             </div>
         );
+        return result;
+    }
+
+    private renderThemes() {
+        let style: any = {};
+        style.textAlign = 'right';
+        style.width = '4.5em';
+        style.border = 'none';
+
+        let result: any[] = [];
+        let themeCards: any[] = [];
+
+        for (let tm of ['sayaka', 'homura', 'madoka', 'kyoko']) {
+            themeCards.push(
+                <ThemeCard key={tm} themeName={tm}
+                    activeLight={this.state.front.theme === tm}
+                    activeDark={this.state.front.darkTheme === tm}
+                    changeTheme={this.changeTheme} />
+            );
+        }
+
+        result.push(
+            <div key={12} className="selectable">
+                Using light theme <input
+                placeholder={this.state.front.theme}
+                style={style} onChange={this.themeChangeHandler} /> and dark theme <input
+                placeholder={this.state.front.darkTheme}
+                style={style} onChange={this.themeChangeHandler} />.<br/><br/>
+            </div>
+        );
+        result.push(
+            <CardDeck key={17}>
+                {themeCards}
+            </CardDeck>
+        )
+
+        /*
+        result.push(
+                <div className="checkbox" key="d17">
+                <label>
+            <input type="checkbox" key={17} checked={this.state.front.autoSelectTheme}
+                onChange={this.changeHandler('front', 'autoSelectTheme', true)}/>
+                Try to detect a system-wide dark mode and correspondingly adjust the theme used.
+                </label>
+            </div>
+        );
+        */
+        if (!this.state.front.autoSelectTheme) {
+            result.push(
+                <div key={121} className="selectable">
+                    Background color for erroneous code: <input type="color" value={this.state.front.errorColor}
+                        onChange={this.colorChangeHandler('errorColor')}/><br/>
+                    Background color for evaluated code: <input type="color" value={this.state.front.successColor1}
+                        onChange={this.colorChangeHandler('successColor1')}/><br/>
+                    Alternative background color for evaluated code: <input type="color"
+                    value={this.state.front.successColor2}
+                        onChange={this.colorChangeHandler('successColor2')}/><br /><br />
+                    <button className="btn btn-dng-alt" onClick={this.resetColorsToDefault} type="button">
+                        <span className="glyphicon glyphicon-repeat" /> Reset colors to theme default
+                    </button>
+                </div>
+            );
+        }
+
+        result.push(
+            <p key="b1">
+            {' '}<br/ >
+            </p>
+        );
+
         return result;
     }
 
@@ -303,6 +343,32 @@ class Settings extends React.Component<any, State> {
         }, () => {
             this.saveState();
         });
+    }
+
+    private changeTheme(type: 'light' | 'dark', name: string) {
+        let currentTheme = (type === 'light' ? this.state.front.theme : this.state.front.darkTheme);
+
+        if (!getTheme(name, undefined) || name === currentTheme) {
+            return;
+        }
+        this.setState((oldState) => {
+            let deepCopy: any = this.deepCopy(oldState);
+            if (type === 'light') {
+                deepCopy.front.theme = name;
+            } else {
+                deepCopy.front.darkTheme = name;
+            }
+            return deepCopy;
+        }, () => {
+            this.saveState();
+        });
+
+        let themeIsDark = this.state.front.autoSelectTheme && window.matchMedia
+            && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (type === (themeIsDark ? 'dark' : 'light')) {
+            window.location.reload();
+        }
     }
 
     private themeChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
