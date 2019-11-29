@@ -564,14 +564,6 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     border-width: 0 0 1px
 }
 
-.navbar-brand {
-    float: left;
-    height: 50px;
-    padding: 15px 15px;
-    font-size: 18px;
-    line-height: 20px
-}
-
 .navbar-brand:focus,.navbar-brand:hover {
     text-decoration: none
 }
@@ -1151,7 +1143,6 @@ b,strong {
         grid-template-columns: repeat(auto-fill,minmax(170px, 1fr));
         margin-right: -7.5px;
         margin-left: -7.5px;
-        margin-bottom: -15px;
     }
     .card-deck .card {
         -ms-flex: 1 0 0%;

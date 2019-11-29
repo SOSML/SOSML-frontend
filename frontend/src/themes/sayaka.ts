@@ -21,7 +21,7 @@ export const THEME: Theme = {
 
     'selection_bg': '#23527c',
 
-    'alert_fg': '#31708f',
+    'alert_fg': '#164',
     'alert_bg': '#bce8f1',
     'alert_border': '#2e6da4',
     'btn_pri_fg': '#fff',

@@ -6,6 +6,7 @@ import { getColor, getTheme } from '../theme';
 import { InterpreterSettings, InterfaceSettings, getInterpreterSettings,
     getInterfaceSettings } from '../storage';
 import ThemeCard from './ThemeCard';
+import Icon from './Icon';
 
 interface State {
     inter: InterpreterSettings;
@@ -189,7 +190,7 @@ class Settings extends React.Component<any, State> {
                     <label>
                         <input type="checkbox" key={142} checked={this.state.front.useMobile}
                             onChange={this.changeHandler('front', 'useMobile')}/>
-                        Enable vertical editor mode for narrow screens and windows.
+                        Switch to vertical editor mode on narrow screens and windows.
                     </label>
                 </div>
             );
@@ -241,25 +242,53 @@ class Settings extends React.Component<any, State> {
 
         let result: any[] = [];
         let themeCards: any[] = [];
+        let dt: string | undefined = this.state.front.autoSelectTheme ?
+            this.state.front.darkTheme : undefined;
+        let borderColor = getColor(this.state.front.theme, dt, 'foreground');
+        let bgColor = getColor(this.state.front.theme, dt, 'background');
 
-        for (let tm of ['sayaka', 'homura', 'madoka', 'kyoko']) {
+        for (let tm of ['sayaka', 'madoka', 'homura', 'kyoko']) {
             themeCards.push(
                 <ThemeCard key={tm} themeName={tm}
                     activeLight={this.state.front.theme === tm}
                     activeDark={this.state.front.darkTheme === tm}
-                    changeTheme={this.changeTheme} />
+                    changeTheme={this.changeTheme}
+                    combine={!this.state.front.autoSelectTheme}/>
             );
         }
 
-        result.push(
-            <div key={12} className="selectable">
-                Using light theme <input maxLength={4}
-                placeholder={this.state.front.theme}
-                style={style} onChange={(e: any) => this.themeChangeHandler(e, 'light')} /> and
-                dark theme <input placeholder={this.state.front.darkTheme} maxLength={4}
-                style={style} onChange={(e: any) => this.themeChangeHandler(e, 'dark')} />.<br/><br/>
-            </div>
-        );
+        if (this.state.front.autoSelectTheme) {
+            result.push(
+                <div key={12} className="selectable">
+                    Using light theme <input maxLength={4}
+                    placeholder={this.state.front.theme}
+                    style={style} onChange={(e: any) => this.themeChangeHandler(e, 'light')} /> and
+                    dark theme <input placeholder={this.state.front.darkTheme} maxLength={4}
+                    style={style} onChange={(e: any) => this.themeChangeHandler(e, 'dark')} />.<br/>
+                    Set a new light theme via the <p className="buttonSimul" style={{
+                    padding: '0px 3px 0px 3px'}}><Icon icon="sun" size="13pt" stroke={borderColor}
+                    fill={bgColor}/>
+                    </p> buttons and a new dark theme via the <p className="buttonSimul"
+                    style={{padding: '0px 3px 0px 3px'}}><Icon icon="moon" size="13pt"
+                    stroke={borderColor} fill={bgColor}/></p> buttons
+                    below.
+                    <br/><br/>
+                </div>
+            );
+        } else {
+            result.push(
+                <div key={12} className="selectable">
+                    Using theme <input maxLength={4}
+                    placeholder={this.state.front.theme}
+                    style={style} onChange={(e: any) => this.themeChangeHandler(e, 'light')}/>.<br/>
+                    Set a new theme via the <p className="buttonSimul" style={{
+                    padding: '0px 3px 0px 3px'}}><Icon icon="sunmoon" size="13pt"
+                    stroke={borderColor} fill={bgColor}/>
+                    </p> buttons below.
+                    <br/><br/>
+                </div>
+            );
+        }
         result.push(
             <CardDeck key={17}>
                 {themeCards}

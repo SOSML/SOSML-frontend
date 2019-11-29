@@ -305,6 +305,7 @@ export function renderTheme (theme: Theme): string {
     .cm-s-default span.cm-property, .cm-s-default span.cm-attribute { color: ${theme.cm_prop}; }
     .cm-s-default span.cm-keyword { color: ${theme.cm_keyword}; font-weight: bold }
     .cm-s-default span.cm-string { color: ${theme.cm_string}; }
+    .cm-s-default span.cm-quote { color: ${theme.cm_string}; }
 
     .cm-s-default span.cm-builtin { color: ${theme.cm_builtin}; }
     .cm-s-default span.cm-variable { color: ${theme.cm_variable}; }

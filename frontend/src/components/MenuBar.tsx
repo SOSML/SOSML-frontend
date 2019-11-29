@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { getInterfaceSettings } from '../storage';
 import { getColor } from '../theme';
 import './MenuBar.css';
+import Icon from './Icon';
 // const LinkContainer = require('react-router-bootstrap').LinkContainer;
 const Navbar = require('react-bootstrap').Navbar;
 
@@ -32,20 +33,13 @@ class MenuBar extends React.Component<any, State> {
             <Navbar collapseOnSelect fixed="top"
                 className={(this.state.forcedDisplay) ? 'forcedDisplay' : ''}>
                 <div className="navbar-header">
-                   <Navbar.Brand style={{padding: "10px"}}>
-                        <svg viewBox="0 0 52 52" width="28px">
-                            <circle cx={26} cy={26} r={24} stroke={black} strokeWidth={1}
-                                fill={white} />
-                            <circle cx={26} cy={26} r={10} stroke={black} strokeWidth={1}
-                                fill={black} />
-                            <circle cx={17} cy={15} r={7} stroke={black} strokeWidth={1}
-                                fill="#fff" />
-                        </svg>
-                    </Navbar.Brand>
-                    <Navbar.Brand  style={{'paddingLeft': "0px", 'marginLeft': "-5px"}}>
+                    <Navbar.Brand style={{float: 'left', height: '50px', padding: '9px',
+                        fontSize: '18px', lineHeight: '20px'}}>
                         <Nav.Link eventKey="0" as="div">
                         <NavLink to="/" className="nav-brand">
-                            SOSML
+                            <Icon icon="sosml" stroke={black} fill={white} size="28px" /><span
+                            style={{verticalAlign: "middle"}}> SOSML
+                            </span>
                         </NavLink>
                         </Nav.Link>
                     </Navbar.Brand>
