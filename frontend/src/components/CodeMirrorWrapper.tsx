@@ -182,7 +182,7 @@ export interface Props {
     onChange?: (x: string) => void;
     onFocusChange?: (x: boolean) => void;
     code: string;
-    readOnly?: boolean;
+    readOnly: boolean;
     outputCallback: (code: string) => any;
     useInterpreter?: boolean;
     timeout: number;
@@ -263,6 +263,10 @@ class CodeMirrorWrapper extends React.Component<Props, State> {
     }
 
     componentDidUpdate(prevProps: Props, prevState: any) {
+        if (prevProps.readOnly !== this.props.readOnly) {
+            this.codeMirrorInstance.options.readOnly = this.props.readOnly;
+            this.codeMirrorInstance.refresh();
+        }
         if (prevProps.code !== this.props.code) {
             if (this.editor) {
                 this.codeMirrorInstance.setValue(this.props.code);
