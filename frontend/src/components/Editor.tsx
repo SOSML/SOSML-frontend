@@ -7,6 +7,7 @@ import { getColor } from '../theme';
 import { getInterfaceSettings, Database, getTabId, setTabId,
          getLastCachedFile, setLastCachedFile } from '../storage';
 import './Editor.css';
+import { PIPELINE_ID } from './Version';
 
 const FEEDBACK_NONE = 0;
 const FEEDBACK_SUCCESS = 1;
@@ -24,6 +25,7 @@ interface State {
     savedFeedbackTimer: any;
     error: string;
     width: number;
+    requiredVersion: number;
 }
 
 class Editor extends React.Component<any, State> {
@@ -41,7 +43,8 @@ class Editor extends React.Component<any, State> {
             savedFeedback: FEEDBACK_NONE,
             savedFeedbackTimer: null,
             error: '',
-            width: (height > width ? width : width / 2)
+            width: (height > width ? width : width / 2),
+            requiredVersion: -1,
         };
 
         this.onResize = this.onResize.bind(this);
@@ -50,6 +53,17 @@ class Editor extends React.Component<any, State> {
         this.handleRedirectToEdit = this.handleRedirectToEdit.bind(this);
         this.handleSave = this.handleSave.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
+    }
+
+    extractVersion(code: string): number {
+        let versionRegex = /^\(\*.*SOSML>=(\d{1,8}).*\*\)/i;
+        if (code.search(versionRegex) !== -1) {
+            let res = code.match(versionRegex);
+            if (res !== null && res['1'] !== null) {
+                return +(res['1']);
+            }
+        }
+        return -1;
     }
 
     componentDidMount() {
@@ -70,7 +84,8 @@ class Editor extends React.Component<any, State> {
                 return db.getFile(fileName, true);
             }).then((content: string) => {
                 this.setState((oldState) => {
-                    return {initialCode: content, fileName: dfn};
+                    return {initialCode: content, fileName: dfn,
+                        requiredVersion: this.extractVersion(content)};
                 });
             });
             return;
@@ -92,7 +107,8 @@ class Editor extends React.Component<any, State> {
                     this.setState((oldState) => {
                         return {initialCode: content, fileName: state.fileName,
                                 shareReadMode: state.shareReadMode,
-                                shareHash: state.shareReadMode ? state.fileName : undefined};
+                                shareHash: state.shareReadMode ? state.fileName : undefined,
+                                requiredVersion: this.extractVersion(content)};
                     });
                 });
                 return;
@@ -102,12 +118,13 @@ class Editor extends React.Component<any, State> {
                 }).then((content: string) => {
                     this.setState((oldState) => {
                         return {initialCode: content, fileName: state.shareHash,
-                            shareReadMode: false};
+                            shareReadMode: false, requiredVersion: this.extractVersion(content)};
                     });
                 }).catch((error: any) => {
                     API.loadSharedCode(state.shareHash).then((content: string) => {
                         this.setState((oldState) => {
-                            return {initialCode: content};
+                            return {initialCode: content,
+                                requiredVersion: this.extractVersion(content)};
                         });
 
                         // Cache the shared file as it does not yet exist
@@ -127,12 +144,14 @@ class Editor extends React.Component<any, State> {
                 return db.getFile(shareName, false, true);
             }).then((content: string) => {
                 this.setState((oldState) => {
-                    return {initialCode: content, shareReadMode: true, shareHash: shareName};
+                    return {initialCode: content, shareReadMode: true, shareHash: shareName,
+                        requiredVersion: this.extractVersion(content)};
                 });
             }).catch((error: any) => {
                 API.loadSharedCode(shareName).then((content: string) => {
                     this.setState((oldState) => {
-                        return {initialCode: content, shareReadMode: true, shareHash: shareName};
+                        return {initialCode: content, shareReadMode: true, shareHash: shareName,
+                            requiredVersion: this.extractVersion(content)};
                     });
 
                     // Cache the shared file as it does not yet exist
@@ -162,7 +181,8 @@ class Editor extends React.Component<any, State> {
                 return db.getFile(pfileName, true);
             }).then((content: string) => {
                 this.setState((oldState) => {
-                    return {initialCode: content, fileName: fileName};
+                    return {initialCode: content, fileName: fileName,
+                        requiredVersion: this.extractVersion(content)};
                 });
             });
             return;
@@ -174,11 +194,21 @@ class Editor extends React.Component<any, State> {
         let errorBar: any = '';
         let fileForm: any;
 
-        if (this.state.error) {
-            let style: any = {};
-            style.margin = '0 3px 3px';
+        if (this.state.requiredVersion > +PIPELINE_ID) {
             errorBar = (
-                <Alert variant="danger" style={style}>
+                <Alert variant="danger" style={{margin: '0 3px 3px'}}>
+                    <b>Warning: </b>
+                    The current code requires at least version {this.state.requiredVersion} of
+                    SOSML. It may not work correctly in your version of SOSML
+                    (version {+PIPELINE_ID}).
+                    <div className="miniSpacer" />
+                </Alert>
+            );
+        }
+
+        if (this.state.error) {
+            errorBar = (
+                <Alert variant="danger" style={{margin: '0 3px 3px'}}>
                     <b>Error: </b>
                     The specified file does not exist.
                     <div className="miniSpacer" />
@@ -190,10 +220,8 @@ class Editor extends React.Component<any, State> {
         }
 
         if (this.state.shareReadMode) {
-            let style: any = {};
-            style.margin = '0 3px 3px';
             topBar = (
-                <Alert variant="info" style={style}>
+                <Alert variant="info" style={{margin: '0 3px 3px'}}>
                     <b>Warning: </b>
                     You are viewing a read-only file.
                     <div className="miniSpacer" />
@@ -281,7 +309,7 @@ class Editor extends React.Component<any, State> {
             return;
         }
         this.setState(prevState => {
-            return {code: newCode};
+            return {code: newCode, requiredVersion: this.extractVersion(newCode)};
         });
 
         this.props.history.replace('/editor?' + getTabId() + '&' + this.state.fileName);
