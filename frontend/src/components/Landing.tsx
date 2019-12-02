@@ -27,7 +27,7 @@ class Landing extends React.Component<any, any> {
                 <h3>Code Sharing</h3>
             );
             sharing = (
-                <div className="selectable">
+                <div className="selectable" style={{textAlign: 'justify'}}>
                     You can share the code that is currently shown in SOSML by using
                     the <p className="buttonSimul"><span className="glyphicon glyphicon-link" />&nbsp;Share
                     </p> button. Your code will be uploaded to the servers
@@ -50,7 +50,7 @@ class Landing extends React.Component<any, any> {
         }
 
         return (
-            <Container className="flexy selectable">
+            <Container className="flexy selectable" style={{textAlign: 'justify'}}>
                 <h2>SOSML - the Online Interpreter for Standard ML</h2>
                 <hr />
                 <p>
