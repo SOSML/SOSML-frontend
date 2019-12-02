@@ -37,7 +37,7 @@ class RootPage extends React.Component<any, any> {
                     © 2019 <a href="https://github.com/SOSML">The SOSML Developers</a> | <a
                     href="https://github.com/SOSML/SOSML">Sources on GitHub</a> | <a
                     href="https://github.com/SOSML/SOSML/issues">File a Bug</a> | <a
-                    href="https://www.uni-saarland.de/footer/dialog/impressum.html">Imprint</a>
+                    href="https://www.uni-saarland.de/impressum">Imprint</a>
                 </div>
             );
         }
