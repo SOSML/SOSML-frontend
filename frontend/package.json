@@ -33,7 +33,7 @@
         "version-ts": "echo \"export const REF_NAME = '${CI_COMMIT_REF_NAME}';\nexport const COMMIT_SHA = '`git rev-parse --short HEAD`';\nexport const PIPELINE_ID = '${CI_PIPELINE_ID}';\nexport const BUILD_DATE = '`date --utc`';\" > ./src/components/Version.tsx"
     },
     "devDependencies": {
-        "@sosml/interpreter": "^1.3.5",
+        "@sosml/interpreter": "^1.3.12",
         "precompress": "^5.1.1",
         "tslint": "^5.0.0",
         "typescript": "^3.7.0",

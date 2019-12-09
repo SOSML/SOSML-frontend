@@ -401,7 +401,9 @@ class Settings extends React.Component<any, State> {
     private themeChangeHandler(evt: React.ChangeEvent<HTMLInputElement>, type: 'light' | 'dark') {
         let value = evt.target.value;
 
-        if (!getTheme(value, undefined) || this.state.front.theme === value) {
+        if (!getTheme(value, undefined)
+           || (type === 'light' && this.state.front.theme === value)
+           || (type === 'dark' && this.state.front.darkTheme === value)) {
             return;
         }
         evt.target.value = '';

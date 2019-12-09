@@ -210,7 +210,7 @@ class Editor extends React.Component<any, State> {
             errorBar = (
                 <Alert variant="danger" style={{margin: '0 3px 3px'}}>
                     <b>Error: </b>
-                    The specified file does not exist.
+                    The specified file was not found.
                     <div className="miniSpacer" />
                     <Button className="button btn-dng-alt" onClick={(evt: any) => {
                         this.setState({error: ''});
