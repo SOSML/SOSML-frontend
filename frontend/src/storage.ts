@@ -2,7 +2,10 @@ import { DEFAULT_THEME } from './config';
 import { getColor } from './theme';
 
 export interface InterpreterSettings {
-    allowUnicodeInStrings: boolean;
+    allowUnicodeInStrings: boolean; // unused
+    allowUnicode: boolean;
+    allowUnicodeTypeVariables: boolean;
+    showTypeVariablesAsUnicode: boolean;
     allowVector: boolean;
     allowSuccessorML: boolean;
     disableElaboration: boolean;
@@ -77,6 +80,9 @@ export function getInterpreterSettings(): InterpreterSettings {
     let str: string | null = localStorage.getItem('interpreterSettings');
     let ret: InterpreterSettings = {
         allowUnicodeInStrings: true,
+        allowUnicode: false,
+        allowUnicodeTypeVariables: false,
+        showTypeVariablesAsUnicode: false,
         allowSuccessorML : false,
         disableElaboration: false,
         disableEvaluation: false,

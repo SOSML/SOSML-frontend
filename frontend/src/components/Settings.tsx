@@ -114,6 +114,33 @@ class Settings extends React.Component<any, State> {
                 </div>
             );
             result.push(
+                <div className="checkbox" key="d6a">
+                <label>
+                <input type="checkbox" key={601} checked={this.state.inter.allowUnicode}
+                    onChange={this.changeHandler('inter', 'allowUnicode')}/>
+                    Enable support for Unicode (experimental)
+                </label>
+                </div>
+            );
+            result.push(
+                <div className="checkbox" key="d6b">
+                <label>
+                <input type="checkbox" key={602} checked={this.state.inter.allowUnicodeTypeVariables}
+                    onChange={this.changeHandler('inter', 'allowUnicodeTypeVariables')}/>
+                    Enable support for writing type variables as α, β, γ, etc. (experimental)
+                </label>
+                </div>
+            );
+            result.push(
+                <div className="checkbox" key="d6c">
+                <label>
+                <input type="checkbox" key={603} checked={this.state.inter.showTypeVariablesAsUnicode}
+                    onChange={this.changeHandler('inter', 'showTypeVariablesAsUnicode')}/>
+                    Display type variables as α, β, γ, etc. (experimental)
+                </label>
+                </div>
+            );
+            result.push(
                 <div className="checkbox" key="d65">
                 <label>
                 <input type="checkbox" key={65} checked={this.state.inter.realEquality}
@@ -247,7 +274,12 @@ class Settings extends React.Component<any, State> {
         let borderColor = getColor(this.state.front.theme, dt, 'foreground');
         let bgColor = getColor(this.state.front.theme, dt, 'background');
 
-        for (let tm of ['sayaka', 'madoka', 'homura', 'kyoko']) {
+        let themeList = ['sayaka', 'madoka', 'homura', 'kyoko'];
+        if (this.state.front.advancedMode) {
+            themeList = ['sayaka', 'madoka', 'mami', 'homura', 'kyoko'];
+        }
+
+        for (let tm of themeList) {
             themeCards.push(
                 <ThemeCard key={tm} themeName={tm}
                     activeLight={this.state.front.theme === tm}

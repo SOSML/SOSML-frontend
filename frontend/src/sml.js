@@ -1,11 +1,14 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
-var Interpreter = require('@sosml/interpreter');
-var CodeMirror = require('codemirror');
+import { getInterpreterSettings } from './storage';
+import * as Interpreter from '@sosml/interpreter';
+import * as CodeMirror from 'codemirror';
 
 CodeMirror.defineMode('sml', function(config, parserConfig) {
     var initialState = Interpreter.getFirstState([], {});
+    var settings = getInterpreterSettings();
+    settings.allowCommentToken = true;
 
     function nextTokenFromString(s) {
         var pos = 0;
@@ -29,7 +32,7 @@ CodeMirror.defineMode('sml', function(config, parserConfig) {
                 }
                 return undefined;
             }
-        }, {'allowCommentToken': true});
+        }, settings);
     }
 
     var electricRegex = '^\\s*(\\||in|end)$';
@@ -84,7 +87,7 @@ CodeMirror.defineMode('sml', function(config, parserConfig) {
                         }
                         return res;
                     }
-                }, {'allowCommentToken': true});
+                }, settings);
                 state.remainder = '';
             } catch (e) {
                 if (e.name === 'Input Incomplete') {
