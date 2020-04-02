@@ -24,7 +24,7 @@
         "react-router": "^5.1.2",
         "react-router-bootstrap": "^0.25.0",
         "react-router-dom": "^5.1.2",
-        "react-scripts": "^3.3.0"
+        "react-scripts": "^3.4.0"
     },
     "scripts": {
         "start": "npm run version-ts; react-scripts start",
@@ -33,7 +33,7 @@
         "version-ts": "echo \"export const REF_NAME = '${CI_COMMIT_REF_NAME}';\nexport const COMMIT_SHA = '`git rev-parse --short HEAD`';\nexport const PIPELINE_ID = '${CI_PIPELINE_ID}';\nexport const BUILD_DATE = '`date --utc`';\" > ./src/components/Version.tsx"
     },
     "devDependencies": {
-        "@sosml/interpreter": "^1.5.0",
+        "@sosml/interpreter": "^1.5.1",
         "precompress": "^5.1.1",
         "tslint": "^5.0.0",
         "typescript": "^3.7.0",
