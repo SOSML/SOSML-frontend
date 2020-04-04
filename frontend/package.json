@@ -34,7 +34,7 @@
     },
     "devDependencies": {
         "@sosml/interpreter": "^1.5.1",
-        "precompress": "^5.1.1",
+        "precompress": "^6.2.2",
         "tslint": "^5.0.0",
         "typescript": "^3.7.0",
         "workbox-cli": "^4.3.1"
