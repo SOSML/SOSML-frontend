@@ -27,7 +27,7 @@ interface Props {
     primary: boolean;
     size: number;
     percentage: boolean;
-    children: any[];
+    children: any;
 }
 
 class Pane extends React.Component<Props, any> {
