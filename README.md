@@ -1,39 +1,25 @@
-# SOSML - frontend
+# SOSML - Frontend
 
-# Installation instructions
+A frontend for SOSML, used by sosml.org, that has different themes (with dark mode
+support) and allows for saving SML code in the browser.
+
+# Installation Instructions
 
 ## Prerequisites
 
-Node.JS version 8 or higher and NPM version 5 or higher need to be installed on the system. GNU+Linux is recommended. 
-Make sure you populated the correct and up-to-date submodules installed. If you don't have the SOSML-frontend repository cloned yet use this to also get the submodules:
+Node.JS version 8 or higher and NPM version 5 or higher need to be installed on the system. GNU+Linux is recommended.
 ```
-git clone --recursive https://github.com/SOSML/SOSML-frontend.git
-```
-If you have the the SOSML-frontend repository but not its submodules (e.g. if you cloned without `--recursive`):
-```
-git submodule update --init --recursive
+git clone https://github.com/SOSML/SOSML-frontend.git
 ```
 
 ## Install/Update all NPM dependencies
-To install or(non-exclusive or) update all NPM dependencies and pull all git submodules run:
-```
-./prepare.sh
-```
+To install or(non-exclusive or) update all NPM dependencies run `npm i` in the frontend folder.
 
-## Build the interpreter and frontend
+## Building and Running  frontend
 
-Now you should have beautiful typescript code. To make javascript out of this repo and the submodules run:
-```
-./build.sh
-```
-
-## Install docker
-
-Install the latest version of docker on your system and make sure the docker daemon is running.
-Run `docker pull derjesko/mosmlfallback` to dowload the docker image.
-
-## Run the server
-
-Switch to the `backend` folder. Run `npm install`.
-Ensure that the user running the backend is in the `docker` group.
-Run `node ./src/main.js`. In parallel, run `node ./src/worker.js` to start a worker.
+The frontend can be run locally with `npm run start`, this will use a compiled version of the
+webworker placed in the `frontend/public` server to actually run SML code. To obtain
+optimized files suitable for production, use `npm run build` to populate tho `build`
+folder. The files in the `build` folder are then suitable to be served on a static web
+server. (Consult the SOSML-backend repository on how to run a non-static server that
+allows for file uploading/sharing.)
