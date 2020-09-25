@@ -36,7 +36,7 @@ export const THEME: Theme = {
     'btn_hover': 'white',
 
     'cm_builtin': '#bB7Dbf',
-    'cm_comment': '#4a5f78',
+    'cm_comment': '#99adc5',
     'cm_atom': '#05d48e',
     'cm_number': '#05d48e',
     'cm_prop': '#3aafff',

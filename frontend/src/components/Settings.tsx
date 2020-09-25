@@ -276,7 +276,8 @@ class Settings extends React.Component<any, State> {
 
         let themeList = ['sayaka', 'madoka', 'homura', 'kyoko'];
         if (this.state.front.advancedMode) {
-            themeList = ['sayaka', 'madoka', 'mami', 'homura', 'kyoko'];
+            themeList = ['sayaka', 'madoka', 'mami', 'homura', 'kyoko', 'nagisa',
+                'sana', 'yachiyo'];
         }
 
         for (let tm of themeList) {

@@ -62,6 +62,13 @@ class MenuBar extends React.Component<any, State> {
                         </NavLink>
                         </Nav.Link>
                     </Nav>
+                    <Nav>
+                        <Nav.Link eventKey="2" as="div">
+                        <NavLink to="/wishes" className="nav-link2">
+                            <span className="glyphicon glyphicon-exclamation-sign" /> Wishes
+                        </NavLink>
+                        </Nav.Link>
+                    </Nav>
                     <div className="navbar-right">
                         <Nav.Link eventKey="3" as="div">
                         <NavLink to="/settings" className="nav-link2">

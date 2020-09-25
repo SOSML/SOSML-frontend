@@ -34,6 +34,7 @@ body.fullscreen .window-header {
     font-family: Helvetica,sans-serif;
     font-size: 22px;
     display: inline-block;
+    font-family: monospace;
 }
 
 .window-content {

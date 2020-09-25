@@ -190,7 +190,7 @@ class Files extends React.Component<any, State> {
             );
         } else {
             examplesView.push(
-                <p key="3">Loading sample files...</p>
+                <p key="3">Loading sample files…</p>
             );
         }
 
@@ -296,6 +296,7 @@ class Files extends React.Component<any, State> {
         style2.whiteSpace = 'nowrap';
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
+        style2.fontFamily = 'monospace';
         let style: any = {};
         style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -306,6 +307,7 @@ class Files extends React.Component<any, State> {
         style.overflow = 'hidden';
         style.textOverflow = 'ellipsis';
         style.maxWidth = '8em';
+        style.fontFamily = 'monospace';
 
         let space = (
             <div className="miniSpacer" />
@@ -380,6 +382,7 @@ class Files extends React.Component<any, State> {
         style2.whiteSpace = 'nowrap';
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
+        style2.fontFamily = 'monospace';
         let style: any = {};
         style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -389,6 +392,7 @@ class Files extends React.Component<any, State> {
         style.textOverflow = 'ellipsis';
         style.maxWidth = '8em';
         style.verticalAlign = 'bottom';
+        style.fontFamily = 'monospace';
 
         if (file === undefined) {
             return (

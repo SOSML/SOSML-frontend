@@ -8,15 +8,21 @@ class Landing extends React.Component<any, any> {
         super(props);
 
         this.handleRedirectToEdit = this.handleRedirectToEdit.bind(this);
+        this.handleRedirectToWishes = this.handleRedirectToWishes.bind(this);
     }
 
     handleRedirectToEdit() {
         this.props.history.replace('/editor', {});
     }
 
+    handleRedirectToWishes() {
+        this.props.history.replace('/wishes', {});
+    }
+
     render() {
         let style: any = {};
         style.marginBottom = '20px';
+        style.marginLeft = '20px';
         style.float = 'right';
 
         let sharingH: JSX.Element | undefined;
@@ -29,8 +35,9 @@ class Landing extends React.Component<any, any> {
             sharing = (
                 <div className="selectable" style={{textAlign: 'justify'}}>
                     You can share the code that is currently shown in SOSML by using
-                    the <p className="buttonSimul"><span className="glyphicon glyphicon-link" />&nbsp;Share
-                    </p> button. Your code will be uploaded to the servers
+                    the <p className="buttonSimul"><span
+                    className="glyphicon glyphicon-link"/> Share</p> button. Your code
+                    will be uploaded to the servers
                     of Saarland University and you are provided with a link to download your file.
                     Files are always snapshots, neither you nor anyone with the link is able to
                     modify the file. If you want to share an updated version, you have to share the
@@ -51,7 +58,7 @@ class Landing extends React.Component<any, any> {
 
         return (
             <Container className="flexy selectable" style={{textAlign: 'justify'}}>
-                <h2>SOSML - the Online Interpreter for Standard ML</h2>
+                <h2>SOSML-The Online Interpreter for Standard ML</h2>
                 <hr />
                 <p>
                     Standard ML is a functional programming language with static type checking
@@ -61,7 +68,7 @@ class Landing extends React.Component<any, any> {
                     who are (former) students at Saarland University.
                 </p>
 
-                <h3>How to use SOSML</h3>
+                <h3>How to Use SOSML</h3>
                 <div className="selectable">
                     The editor shows two columns. The left column allows to write Standard ML code
                     whereas the right column shows the output of SOSML. Code is evaluated after
@@ -83,7 +90,7 @@ class Landing extends React.Component<any, any> {
                     </Alert>
                 </div>
 
-                <h3>Save your work!</h3>
+                <h3>Save Your Work!</h3>
                 <div className="selectable">
                     If you want to keep SML programs in SOSML, you have to store them
                     using the <p className="buttonSimul"><span className="glyphicon glyphicon-file" />&nbsp;Store
@@ -111,7 +118,11 @@ class Landing extends React.Component<any, any> {
                     style={style} type="button">
                     <span className="glyphicon glyphicon-pencil" />&nbsp;Take me to the editor.
                 </button>
-
+                <button className="btn btn-pri-alt" onClick={this.handleRedirectToWishes}
+                    style={style} type="button">
+                    <span className="glyphicon glyphicon-exclamation-sign" />&nbsp;I wish I knew
+                    more about SML.
+                </button>
                 <br/>
                 <br/>
             </Container>

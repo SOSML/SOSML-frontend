@@ -89,6 +89,7 @@ function generateButton (name: string, fg: string, bg: string, bd: string, bda: 
         color: ${fg};
         background-color: ${bg};
         border-color: ${bd};
+        font-family: monospace;
     }
     .btn-${name}:hover,
     .btn-${name}:focus,

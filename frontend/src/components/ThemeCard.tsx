@@ -60,7 +60,8 @@ class ThemeCard extends React.Component<Props, any> {
                     fontSize: "16px",
                     display: "inline-block",
                     paddingTop: "4px",
-                    paddingLeft: "5px"
+                    paddingLeft: "5px",
+                    fontFamily: "monospace"
                 }}>{this.props.themeName}</div>
                 <div className="inlineBlock" style={{
                     marginTop: "-1px", marginRight: "-1px",
@@ -86,7 +87,7 @@ class ThemeCard extends React.Component<Props, any> {
                         }}>
                             <Icon icon="sosml" stroke={theme.icon_bg}
                             fill={theme.icon_fg} size="24px" />
-                            <span style={{verticalAlign: "middle", fontSize: "12.5pt"}}><b> SOSML
+                            <span style={{verticalAlign: "middle", fontSize: "12.5pt", fontFamily: "monospace"}}><b> SOSML
                             </b></span>
                         </div>
                         <div style={{
@@ -105,6 +106,7 @@ class ThemeCard extends React.Component<Props, any> {
                                 padding: '1px 2px',
                                 marginTop: '-6px',
                                 marginRight: '-6px',
+                                fontFamily: 'monospace',
                             }}>
                                 Btn
                             </div>
@@ -117,6 +119,7 @@ class ThemeCard extends React.Component<Props, any> {
                                 padding: '1px 2px',
                                 marginTop: '-6px',
                                 marginRight: '6px',
+                                fontFamily: 'monospace',
                             }}>
                                 Btn
                             </div>
@@ -129,6 +132,7 @@ class ThemeCard extends React.Component<Props, any> {
                                 padding: '1px 2px',
                                 marginTop: '-6px',
                                 marginRight: '6px',
+                                fontFamily: 'monospace',
                             }}>
                                 Btn
                             </div>

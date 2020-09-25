@@ -36,7 +36,7 @@ export const THEME: Theme = {
     'btn_hover': 'lightcoral',
 
     'cm_builtin': '#ccc',
-    'cm_comment': '#555',
+    'cm_comment': '#bbb',
     'cm_atom': 'deeppink',
     'cm_number': 'deeppink',
     'cm_prop': 'deeppink',

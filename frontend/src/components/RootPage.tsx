@@ -3,6 +3,7 @@ import * as React from 'react';
 import MenuBar from './MenuBar';
 import Editor from './Editor';
 import Files from './Files';
+import Wishes from './Wishes';
 import Help from './Help';
 import Landing from './Landing';
 import Settings from './Settings';
@@ -50,6 +51,7 @@ class RootPage extends React.Component<any, any> {
                     <Route exact={true} path="/" component={Landing} />
                     <Route path="/editor" component={Editor} />
                     <Route path="/files" component={Files} />
+                    <Route path="/wishes" component={Wishes} />
                     <Route path="/help" component={Help} />
                     <Route path="/settings" component={Settings} />
 
