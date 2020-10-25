@@ -370,6 +370,10 @@ export function renderTheme (theme: Theme): string {
         background-color: ${theme.background};
     }
 
+    code {
+        color: ${theme.alert_fg};
+    }
+
     .splitter-layout .layout-splitter:hover {
         background-color: ${theme.border};
     }

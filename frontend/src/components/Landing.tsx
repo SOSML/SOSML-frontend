@@ -58,7 +58,7 @@ class Landing extends React.Component<any, any> {
 
         return (
             <Container className="flexy selectable" style={{textAlign: 'justify'}}>
-                <h2>SOSML-The Online Interpreter for Standard ML</h2>
+                <h2>SOSML: The Online Interpreter for Standard ML</h2>
                 <hr />
                 <p>
                     Standard ML is a functional programming language with static type checking
@@ -120,8 +120,7 @@ class Landing extends React.Component<any, any> {
                 </button>
                 <button className="btn btn-pri-alt" onClick={this.handleRedirectToWishes}
                     style={style} type="button">
-                    <span className="glyphicon glyphicon-exclamation-sign" />&nbsp;I wish I knew
-                    more about SML.
+                    <span className="glyphicon glyphicon-exclamation-sign" />&nbsp;I wish to learn SML.
                 </button>
                 <br/>
                 <br/>

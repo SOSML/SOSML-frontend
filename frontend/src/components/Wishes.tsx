@@ -1,24 +1,29 @@
 import * as React from 'react';
 
+import Playground from './Playground';
 import { Fade, Button, OverlayTrigger, Tooltip, Container, Table } from 'react-bootstrap';
 // import { API } from '../api';
 // import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
 import { getColor } from '../theme';
-import { getInterfaceSettings, InterpreterSettings } from '../storage';
+import { getInterfaceSettings, Database, InterpreterSettings } from '../storage';
 
+const Modal = require('react-bootstrap').Modal;
 // const FileSaver = require('file-saver');
 
 const WISHES_LOADING = 0;
 // const WISHES_LOADED = 1;
 // const WISHES_FAILED = 2;
 
-const MINIMODE_LB = 450;
+const MINIMODE_LB = 768;
+
+const TEST_START_STRING = '--- Checking your solution ---';
+const TEST_COMPLETE_STRING = '--- All checks passed. Task complete! ---';
 
 interface InterpretationField {
-    interpreterFlags: InterpreterSettings;
-    beforeCode: string; // code to be executed before any user-entered code
-    userDefaultCode: string; // default code displayed
-    afterCode: string; // code used to check the user's input for correctness
+    interpreterSettings: InterpreterSettings | undefined;
+    beforeCode: string | undefined; // code to be executed before any user-entered code
+    userDefaultCode: string | undefined; // default code displayed
+    afterCode: string | undefined; // code used to check the user's input for correctness
 }
 
 interface WishPart {
@@ -36,6 +41,7 @@ interface Wish {
 interface WishSeries {
     id: string;
     name: string;
+    shortName: string;
     description: string;
     wishes: Wish[];
 }
@@ -48,8 +54,14 @@ interface State {
     miniMode: boolean; // shrink everything on small screens
     folder: any;
 
-    wish: Wish | null; // currently opened Wish
-    wishPart: number | null; // currently opened wish part
+    initialCode: string | undefined;
+    code: string | undefined;
+    wishSeries: WishSeries | undefined; // currently opened wish series
+    wish: Wish | undefined; // currently opened Wish
+    wishPart: number | undefined; // currently opened wish part
+    wishPartSolved: boolean | undefined; // true if the user solved the current part
+    wishPartNotification: boolean | undefined; // show a notification for
+
 }
 
 class Wishes extends React.Component<any, State> {
@@ -64,15 +76,31 @@ class Wishes extends React.Component<any, State> {
             miniMode: false,
             folder: {},
 
-            wish: null,
-            wishPart: null,
+            initialCode: undefined,
+            code: undefined,
+            wishSeries: undefined,
+            wish: undefined,
+            wishPart: undefined,
+            wishPartSolved: undefined,
+            wishPartNotification: undefined,
         };
 
+        this.markCurrentTaskSolved = this.markCurrentTaskSolved.bind(this);
+        this.checkWishComplete = this.checkWishComplete.bind(this);
+        this.onWishCodeChange = this.onWishCodeChange.bind(this);
         this.handleBrowserResize = this.handleBrowserResize.bind(this);
+        this.handleResetWish = this.handleResetWish.bind(this);
     }
 
     componentDidMount() {
-        this.refreshFiles();
+        if (this.props.history && this.props.history.location.state) {
+            let state: any = this.props.history.location.state;
+
+            if (state.wish && state.wishPart) {
+                this.setState({wish: state.wish, wishPart: state.wishPart});
+            }
+        }
+
         let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
         this.setState({miniMode: (width < MINIMODE_LB)});
         window.addEventListener('resize', this.handleBrowserResize, {passive: true});
@@ -91,44 +119,70 @@ class Wishes extends React.Component<any, State> {
 
         wishes = [
             {
-                id: "test1",
-                name: "Test Series",
+                id: "shoml",
+                name: "I Wish to Learn Basic SML",
+                shortName: "Basic SML",
                 description: `This is a **test** wish series.
                 And __this__ is its description.
                 And \`\`val x = "Hello World";\`\` is some sample code.`,
                 wishes: [
                     {
                     id: "1",
-                    name: "Test Wish 1",
+                    name: "Programs",
                     prerequesites: [],
                     parts: [
                         {
-                            description: "Description of some task",
+                            description:
+                                "A very basic SML __program__ looks as follows: ``val x = 3 * 10 + 9``. This program consists of a single __declaration__ which declares the __variable__ ``x``. Running this program with the interpreter will then __bind__ ``x`` to the __value__ ``39``. " +
+                                "A single program may consist of multiple declarations:\n" +
+                                    "``\tval x = 17\n\tval y = ~13 * x - 19\n``" +
+                                "This program binds ``x`` to ``17`` and ``y`` to ``-240``.\n\n" +
+                                "**Now it's your turn!**\n" +
+                                "Test out the interpreter below by writing a program that " +
+                                "declares three variables ``x``, " +
+                                "``y``, and ``z``, that binds ``x`` to the value ``39``, " +
+                                "that binds ``y`` to ``~17 * x + 28``, and that binds " +
+                                "``z`` to ``~y``. Just enter your code into the " +
+                                "\"SML\" field below and start the interpretation by entering a ``;``. " +
+                            "Don't worry, your code is automatically stored in your browser.",
                             code: {
-
+                                beforeCode: "",
+                                userDefaultCode: "val x = 10",
+                                afterCode: `
+                                val () = (
+                                    Assert.assert ((x:int) = 39, "\\"x\\" has an incorrect value.");
+                                Assert.assert ((y:int) = ~635, "\\"y\\" has an incorrect value.");
+                                Assert.assert ((z:int) = 635, "\\"z\\" has an incorrect value."));
+                                `
                             }
                         },
                         {
-                            description: "Description of some task",
-                            code: {
-
-                            }
+                            description: "Redeclaration",
+                            code: { }
+                        },
+                        {
+                            description: "``it``",
+                            code: { }
+                        },
+                        {
+                            description: "Error Messages",
+                            code: { }
                         }
                     ]
                 },
                     {
-                    name: "Test Wish 2",
+                    name: "Functions and Conditionals",
                     prerequesites: [],
                     id: "2",
                     parts: [
                         {
-                            description: "Description of some task",
+                            description: "``fun``",
                             code: {
 
                             }
                         },
                         {
-                            description: "Description of some task",
+                            description: "Parenthesis",
                             code: {
 
                             }
@@ -137,14 +191,16 @@ class Wishes extends React.Component<any, State> {
                 }]
             },
             {
-                id: "test2",
-                name: "Test Series 2",
+                id: "chuuml",
+                name: "I Wish to Learn Intermediate SML",
+                shortName: "Intermediate SML",
                 description: "This is a second test wish series.\nAnd this is its description.",
                 wishes: []
             }
         ];
 
-        if( this.state.wish === null || this.state.wishPart === null ) {
+        if (this.state.wishSeries === undefined
+            || this.state.wish === undefined || this.state.wishPart === undefined) {
             // User is not currently working on a wish
             return (
                 <Container className="flexy">
@@ -160,14 +216,195 @@ class Wishes extends React.Component<any, State> {
             // Render the current wish (part)
             return (
                 <Container className="flexy">
-                        <h2>Wishes: {this.state.wish.name}</h2>
+                        {this.state.wishPartNotification ?
+                            this.renderWishPartCompleted(this.state.wishSeries,
+                                                         this.state.wish,
+                                                         this.state.wishPart) : ''}
+                        <h2><span style={{fontSize: 'smaller'}}>{this.state.wishSeries.name}
+                        :</span> {this.state.wish.name}</h2>
+                        <hr/>
+                        {this.renderWishProgress(this.state.wishSeries, this.state.wish,
+                                                 this.state.wishPart)}
+                        <br/>
+                        {this.renderCurrentWish(this.state.wishSeries, this.state.wish,
+                                                this.state.wishPart)}
                         <br/> <br/>
                 </Container>
             );
         }
     }
 
+    private renderWishPartCompleted(wishSeries: WishSeries, wish: Wish, part: number): any {
+        // Shows a modal informing the user that they completed a (part of a) wish for the
+        // first time.
+        // Also informs about the current progress in the current wish and has a button to
+        // the next part / wish
+
+        let headerText = 'Your Wish Has Not Yet Been Granted';
+        let nxtbtn: any = (
+            <button className="btn btn-suc-alt" type="button"
+            // onClick={TODO}
+            >I Wish to Proceed</button>
+        );
+        let nxtbody: any = (
+            <Modal.Body>
+                Congratulations! You successufully completed
+                part {part + 1} of this Wish.<br/>
+                But there is more: {wish.parts.length - part - 1} more
+                part{wish.parts.length - part === 1 ? '' : 's'} await you!
+            </Modal.Body>
+        );
+
+        if (wish.parts.length === part - 1) {
+            headerText = 'A Part of Your Wish Has Been Fulfilled';
+            nxtbtn = (
+                <button className="btn btn-suc-alt" type="button"
+                // onClick={TODO}
+                >Return to the Wishes Overview</button>
+            );
+            nxtbody = (
+                <Modal.Body>
+                    Congratulations! You successfully completed all tasks of this Wish.<br/>
+                    Check out the Wishes Overview to find new Wishes to work on!
+                </Modal.Body>
+            );
+        }
+
+        return (
+            <Modal show={true}
+            // onHide={TODO}
+            >
+                <Modal.Header closeButton={false}>
+                    <Modal.Title>{headerText}</Modal.Title>
+                </Modal.Header>
+                {nxtbody}
+                <Modal.Footer>
+                    <button className="btn btn-def-alt" type="button"
+                    // onClick={TODO}
+                    >Dismiss</button>
+                    {nxtbtn}
+                </Modal.Footer>
+            </Modal>
+        );
+    }
+
+    private renderWishProgress(wishSeries: WishSeries, wish: Wish, part: number): any {
+        return [];
+    }
+
+    private markCurrentTaskSolved( ): void {
+        let wasSolved: boolean = this.state.wishPartSolved === true; // guard against undefined
+        this.setState({
+            wishPartNotification: !wasSolved,
+            wishPartSolved: true
+        });
+    }
+
+    private checkWishComplete(output: string, complete: boolean): void {
+        if (!complete) {
+            return;
+        }
+
+        if (output.endsWith('\n')) {
+            output = output.substr(0, output.length - 1);
+        }
+        let lines: string[] = output.split('\n');
+
+        // Find the last line that contains the string TEST_START_STRING
+        // (This is were the tests start)
+
+        let teststart = lines.length - 1;
+
+        for (; teststart >= 0; teststart--) {
+            if (lines[teststart].includes(TEST_START_STRING)) {
+                break;
+            }
+        }
+
+        if (teststart < 0) {
+            return;
+        }
+
+        // Check that no errors were encountered after that point
+        for (; teststart < lines.length; ++teststart) {
+            if (lines[teststart].startsWith('\\3')) {
+                // Found an error / failed test
+                return;
+            }
+        }
+
+        this.markCurrentTaskSolved( );
+    }
+
+    private renderCurrentWish(wishSeries: WishSeries, wish: Wish, part: number): any {
+        if(part >= wish.parts.length) { return []; }
+
+        let curPart: WishPart = wish.parts[part];
+
+        let res: any[] = [];
+
+        // Description of the current part (containing the task/explanation/etc.)
+        res.push(
+            <div key={wish.id + '@des'}>
+                {this.parseDescriptionString(curPart.description, wish.id)[0]}
+            </div>
+        );
+        res.push(
+            <br key={wish.id + '@br'}/>
+        );
+
+
+        // Code field
+        res.push(
+            <div className="flexy flexcomponent" style={{minHeight: '400px'}}
+                key={wish.id + '@code'}>
+                <Playground readOnly={false} onCodeChange={this.onWishCodeChange}
+                initialCode={this.state.initialCode as string}
+                outputCallback={this.checkWishComplete}
+                onReset={this.handleResetWish}
+                interpreterSettings={curPart.code.interpreterSettings}
+                beforeCode={curPart.code.beforeCode}
+                afterCode={'\n local val _ = printLn "' + TEST_START_STRING + '" in end; local\n'
+                    + (curPart.code.afterCode === undefined ? '' : curPart.code.afterCode)
+                    + '\n val _ = printLn "' + TEST_COMPLETE_STRING + '"; in end;' } />
+            </div>
+        );
+
+        return res;
+    }
+
+    handleResetWish() {
+        if (this.state.wishSeries === undefined
+            || this.state.wish === undefined || this.state.wishPart === undefined) {
+            // There is no code, this method should  not have been called at all...
+            return;
+        }
+
+        let initCode = this.state.wish.parts[this.state.wishPart].code.userDefaultCode ===
+            undefined ? '' : this.state.wish.parts[this.state.wishPart].code.userDefaultCode;
+
+        this.setState({initialCode: initCode, code: initCode});
+    }
+
+    onWishCodeChange(newCode: string) {
+        if (this.state.wishSeries === undefined
+            || this.state.wish === undefined || this.state.wishPart === undefined) {
+            // There is no code, this method should  not have been called at all...
+            return;
+        }
+
+        this.setState({code: newCode});
+
+        Database.getInstance().then((db: Database) => {
+            return db.saveFile(this.getFileName(this.state.wishSeries as WishSeries,
+                               this.state.wish as Wish,
+                               this.state.wishPart as number), this.state.code as string, true);
+        });
+    }
+
     private parseDescriptionString(description: string, key: string, endDelim: string = ''): any {
+        if(description === undefined) { return '<undefined>'; }
+
         let descr: any[] = [];
 
         let pos = 0;
@@ -175,10 +412,13 @@ class Wishes extends React.Component<any, State> {
         while (pos < description.length) {
             switch(description[pos]) {
                 case '\n':
-                    descr.push(<span key={'td@' + key + '@' + pos}>
-                               {curpart}
-                               </span>);
+                    descr.push(<span key={'td@' + key + '@' + pos}>{curpart}</span>);
                     descr.push(<br key={'tdb@' + key + '@' + pos }/>);
+                    curpart = "";
+                    break;
+                case '\t':
+                    descr.push(<span key={'td@' + key + '@' + pos}>{curpart}</span>);
+                    descr.push(<span key={'tbs@' + key + '@' + pos }>&nbsp;&nbsp;&nbsp;&nbsp;</span>);
                     curpart = "";
                     break;
                 default:
@@ -201,22 +441,23 @@ class Wishes extends React.Component<any, State> {
                 if( found ) {
                     let inner = this.parseDescriptionString(description.substr(pos + 2), key,
                                 description[pos] + description[pos + 1]);
-                    descr.push(<span key={'td@' + key + '@' + pos}> {curpart} </span>);
+                    descr.push(<span key={'td@' + key + '@' + pos}>{curpart}</span>);
                     curpart = "";
                     switch(description[pos] + description[pos + 1]) {
                     case '**':
-                        descr.push(<b key={'tdbold@' + key + '@' + pos }> {inner[0]} </b>);
+                        descr.push(<b key={'tdbold@' + key + '@' + pos }>{inner[0]}</b>);
                         break;
                     case '__':
-                        descr.push(<i key={'tdit@' + key + '@' + pos }> {inner[0]} </i>);
+                        descr.push(<i key={'tdit@' + key + '@' + pos }>{inner[0]}</i>);
                         break;
                     case '``':
-                        descr.push(<code key={'tdcode@' + key + '@' + pos }> {inner[0]} </code>);
+                        descr.push(<code key={'tdcode@' + key + '@' + pos }>{inner[0]}</code>);
                         break;
                     default:
                        break;
                     }
                     pos += inner[1] + 4;
+                    continue;
                 }
             }
 
@@ -234,7 +475,8 @@ class Wishes extends React.Component<any, State> {
     private renderSharedWishes() : any {
     }
 
-    private renderFolder(name: string, description: string, inner: any, key: string): any {
+    private renderFolder(name: string, shortName: string,
+                         description: string, inner: any, key: string): any {
         let folderState: boolean = this.state.folder[name + key];
         let settings = getInterfaceSettings();
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
@@ -269,7 +511,7 @@ class Wishes extends React.Component<any, State> {
         style.whiteSpace = 'nowrap';
         style.overflow = 'hidden';
         style.textOverflow = 'ellipsis';
-        style.maxWidth = '8em';
+        style.maxWidth = '10em';
         if( description !== '' ) {
             style.fontSize = 'large';
         }
@@ -301,7 +543,7 @@ class Wishes extends React.Component<any, State> {
                         style={{'fontSize': '75%'}}/>
                     </OverlayTrigger>
                     {space}
-                    {name}
+                    {this.state.miniMode ? shortName : name}
                 </td>
                 <td style={style2} onClick={this.toggleFolder(name + key)}>
                     <Button
@@ -339,7 +581,7 @@ class Wishes extends React.Component<any, State> {
         return result;
     }
 
-    private renderWish(wish: Wish, key: string): any {
+    private renderWish(wishSeries: WishSeries, wish: Wish, key: string): any {
         let settings = getInterfaceSettings();
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
 
@@ -378,7 +620,7 @@ class Wishes extends React.Component<any, State> {
             }
             parts.push(
                 <Button size="sm" className="button btn-suc-alt"
-                    onClick={this.openHandlerFor(wish, i)}
+                    onClick={this.openHandlerFor(wishSeries, wish, i)}
                     key={key + '@b@' + i}
                     style={style3}>
                         <div className={'glyphicon glyphicon-exclamation-sign'} />
@@ -398,14 +640,14 @@ class Wishes extends React.Component<any, State> {
             <Table key={'tbl1@wish@tbl@' + key + '@' + wish.id} hover={true}>
                 <tbody>
                 <tr key={'tbl@wish@' + key + '@' + wish.id}>
-                <td style={style} onClick={this.openHandlerFor(wish, currentPart)}>
+                <td style={style} onClick={this.openHandlerFor(wishSeries, wish, currentPart)}>
                 <OverlayTrigger overlay={tooltip}>
                         <div className={'glyphicon glyphicon-exclamation-sign'} />
                     </OverlayTrigger>
                     {space}
                     {wish.name}
                 </td>
-                <td style={style2} onClick={this.openHandlerFor(wish, currentPart)}>
+                <td style={style2} onClick={this.openHandlerFor(wishSeries, wish, currentPart)}>
                     {parts}
                 </td>
                 </tr>
@@ -424,14 +666,15 @@ class Wishes extends React.Component<any, State> {
 
     private renderWishSeries(wishSeries: WishSeries): any {
         let wishes: any[] = wishSeries.wishes.map((q: Wish) => {
-            return this.renderWish(q, wishSeries.id);
+            return this.renderWish(wishSeries, q, wishSeries.id);
         });
         let style4: any = {};
         style4.padding = '2.5px';
         return (
             <Table key={'tbl1@' + wishSeries.id} hover={true}>
                 <tbody>
-                {this.renderFolder(wishSeries.name, wishSeries.description, wishes, wishSeries.id)}
+                {this.renderFolder(wishSeries.name, wishSeries.shortName,
+                                   wishSeries.description, wishes, wishSeries.id)}
                 <tr key={'tbl1@pad@' + wishSeries.id} className="no-hover">
                     <td style={style4}/>
                     <td style={style4}/>
@@ -444,40 +687,6 @@ class Wishes extends React.Component<any, State> {
     private handleBrowserResize() {
         let nwidth = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
         this.setState({miniMode: (nwidth < MINIMODE_LB)});
-    }
-
-    private refreshFiles() {
-  /*
-        if (SAMPLE_FILES_ENABLED) {
-            Database.getInstance().then((db: Database) => {
-                return db.getFiles(getInterfaceSettings().showHiddenFiles, true);
-            }).then((data: File[]) => {
-                this.setState({files: data.filter((f: File) => f.type !== FileType.SHARE)});
-                this.setState({shares: data.filter((f: File) => f.type === FileType.SHARE)});
-                return API.getCodeExamplesList();
-            }).then((list: string[]) => {
-                let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-                list.sort(collator.compare);
-
-                this.setState({examples: list.map((file) => {
-                    return {
-                        'name': file,
-                        'info': '',
-                        'type': FileType.SERVER
-                    };
-                }), examplesStatus: EXAMPLES_LOADED});
-            }).catch((e) => {
-                this.setState({examplesStatus: EXAMPLES_FAILED});
-            });
-        } else {
-            Database.getInstance().then((db: Database) => {
-                return db.getFiles(getInterfaceSettings().showHiddenFiles, true);
-            }).then((data: File[]) => {
-                this.setState({files: data.filter((f: File) => f.type !== FileType.SHARE)});
-                this.setState({shares: data.filter((f: File) => f.type === FileType.SHARE)});
-            });
-        }
-*/
     }
 
     private deepCopy(json: any): any {
@@ -495,9 +704,29 @@ class Wishes extends React.Component<any, State> {
         };
     }
 
-    private openHandlerFor(wish: Wish, wishPart: number): (evt: any) => void {
+    private getFileName(wishSeries: WishSeries,
+                        wish: Wish, wishPart: number): string {
+        return 'WSH/' + wishSeries.id + '/' + wish.id + '/' + wishPart;
+    }
+
+    private openHandlerFor(wishSeries: WishSeries,
+                           wish: Wish, wishPart: number): (evt: any) => void {
         return (evt: any) => {
-            this.props.history.push('/wishes', {wish: wish, wishPart: wishPart});
+            this.setState({wishSeries: wishSeries, wish: wish, wishPart: wishPart});
+
+            Database.getInstance().then((db: Database) => {
+                return db.getFile(this.getFileName(wishSeries, wish, wishPart), true);
+            }).then((content: string) => {
+                this.setState((oldState) => {
+                    return {initialCode: content};
+                });
+            }).catch(err => { });
+            if (this.state.initialCode === undefined) {
+                // User has no code of previous attempts
+                this.setState({initialCode:
+                              wish.parts[wishPart].code.userDefaultCode === undefined ? ''
+                    : wish.parts[wishPart].code.userDefaultCode});
+            }
             evt.stopPropagation();
         };
     }

@@ -68,6 +68,7 @@ class Settings extends React.Component<any, State> {
             <h4 key={0}>Interpreter Settings</h4>
         );
         if (advanced) {
+            /*
             result.push(
                 <div className="checkbox" key="d2">
                 <label>
@@ -95,6 +96,7 @@ class Settings extends React.Component<any, State> {
                 </label>
                 </div>
             );
+            */
             result.push(
                 <div className="checkbox" key="d5">
                 <label>

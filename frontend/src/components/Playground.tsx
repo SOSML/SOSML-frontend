@@ -9,16 +9,16 @@ import { Button } from 'react-bootstrap';
 import './Playground.css';
 import { API as WebserverAPI } from '../api';
 import { getColor } from '../theme';
-import { Database, InterfaceSettings, getInterfaceSettings } from '../storage';
+import { Database, InterfaceSettings, getInterfaceSettings, InterpreterSettings } from '../storage';
 import { SHARING_ENABLED } from '../config';
 
 interface State {
     output: string;
     code: string;
     sizeAnchor: any;
-    useServer: boolean;
     shareLink: string;
 
+    reset: boolean;
     formContract: boolean;
     interfaceSettings: InterfaceSettings;
 }
@@ -26,9 +26,15 @@ interface State {
 interface Props {
     readOnly: boolean;
     onCodeChange?: (x: string) => void;
+    outputCallback?: (code: string, complete: boolean) => void;
     onResize?: () => void;
     initialCode: string;
-    fileControls: any;
+    fileControls?: any;
+    onReset?: () => void;
+
+    interpreterSettings?: InterpreterSettings; // special interpreter settings
+    beforeCode?: string; // invisible code that is executed before any user code
+    afterCode?: string; // invisible code that is appended to any user code
 }
 
 const SHARE_LINK_ERROR = ':ERROR';
@@ -36,23 +42,22 @@ const SHARE_LINK_ERROR_NO_CONTRACT = ':ERROR_CONTRACT';
 const OUTPUT_MARKUP_SPECIALS = ['\\*', '\\_'];
 
 class Playground extends React.Component<Props, State> {
-    constructor(props: any) {
+    constructor(props: Props) {
         super(props);
 
         this.state = {
-            output: '', code: '', sizeAnchor: 0, useServer: false,
+            reset: false, output: '', code: '', sizeAnchor: 0,
             shareLink: '', formContract: false,
             interfaceSettings: getInterfaceSettings()
         };
 
+        this.clearCodeWindow = this.clearCodeWindow.bind(this);
         this.handleLeftResize = this.handleLeftResize.bind(this);
         this.handleRightResize = this.handleRightResize.bind(this);
-        this.handleRun = this.handleRun.bind(this);
         this.handleCodeChange = this.handleCodeChange.bind(this);
         this.handleSplitterUpdate = this.handleSplitterUpdate.bind(this);
         this.handleBrowserResize = this.handleBrowserResize.bind(this);
         this.handleOutputChange = this.handleOutputChange.bind(this);
-        this.handleSwitchMode = this.handleSwitchMode.bind(this);
         this.handleShare = this.handleShare.bind(this);
         this.handleShareWrapper = this.handleShareWrapper.bind(this);
         this.modalCloseCallback = this.modalCloseCallback.bind(this);
@@ -75,6 +80,13 @@ class Playground extends React.Component<Props, State> {
             return data[0];
         });
         let code: string = this.props.initialCode;
+
+        if (this.state.reset) {
+            code = '';
+            // This is a hacky solution to reset the editor, needs to be done properly
+            this.setState({reset: false});
+        }
+
         let modal: JSX.Element | undefined;
         if (this.state.shareLink !== '') {
             if (this.state.formContract) {
@@ -92,23 +104,36 @@ class Playground extends React.Component<Props, State> {
                 );
             }
         }
-        let spacer: JSX.Element | undefined;
-        let shareElements: JSX.Element | undefined;
-        if (!this.props.readOnly && SHARING_ENABLED) {
-            spacer = (
+        let spacer: JSX.Element | undefined = (
                 <div className="miniSpacer" />
             );
+        let shareElements: JSX.Element | undefined;
+        if (!this.props.readOnly && SHARING_ENABLED) {
             shareElements = (
                 <Button size="sm" className="btn btn-pri-alt" onClick={this.handleShareWrapper}>
                 <div className="glyphicon glyphicon-link" /> Share
                 </Button>
             );
         }
+        let resetBtn: JSX.Element | undefined;
+        if (this.props.onReset !== undefined) {
+            resetBtn = (
+                         <Button size="sm" className="button btn-dng-alt"
+                         onClick={this.clearCodeWindow}>
+                            <span className="glyphicon glyphicon-repeat" /> Reset
+                         </Button>
+                        );
+        }
+
+
         let style: any = {};
         style.marginRight = '-3px';
         style.marginTop = '-.5px';
         let inputHeadBar: JSX.Element = (
             <div className="inlineBlock" style={style}>
+                {resetBtn}
+                {this.props.onReset !== undefined
+                    && this.props.fileControls !== undefined ? spacer : ''}
                 {this.props.fileControls}
                 {spacer}
                 {shareElements}
@@ -143,7 +168,9 @@ class Playground extends React.Component<Props, State> {
                     <CodeMirrorWrapper flex={true}
                     onChange={this.handleCodeChange} code={code}
                     readOnly={this.props.readOnly} outputCallback={this.handleOutputChange}
-                    useInterpreter={!this.state.useServer}
+                    interpreterSettings={this.props.interpreterSettings}
+                    beforeCode={this.props.beforeCode}
+                    afterCode={this.props.afterCode}
                     timeout={this.state.interfaceSettings.timeout} />
                 )} header={(
                     <div className="headerButtons">
@@ -267,14 +294,6 @@ class Playground extends React.Component<Props, State> {
         }
     }
 
-    handleRun() {
-        WebserverAPI.fallbackInterpreter(this.state.code).then((val) => {
-            this.setState({output: val.replace(/\\/g, '\\\\')});
-        }).catch(() => {
-            this.setState({output: 'Error: Server connection failed'});
-        });
-    }
-
     handleCodeChange(newCode: string) {
         this.setState(prevState => {
             return {code: newCode};
@@ -284,11 +303,16 @@ class Playground extends React.Component<Props, State> {
         }
     }
 
-    handleOutputChange(newOutput: string) {
-        this.setState(prevState => {
-            let ret: any = {output: newOutput};
-            return ret;
-        });
+    handleOutputChange(newOutput: string, complete: boolean) {
+        if (!complete) {
+            this.setState(prevState => {
+                let ret: any = {output: newOutput};
+                return ret;
+            });
+        }
+        if (this.props.outputCallback !== undefined) {
+            this.props.outputCallback(newOutput, complete);
+        }
     }
 
     handleShareWrapper() {
@@ -315,10 +339,12 @@ class Playground extends React.Component<Props, State> {
         }
     }
 
-    handleSwitchMode() {
-        this.setState(prevState => {
-            return {useServer: !prevState.useServer, output: ''};
-        });
+    private clearCodeWindow() {
+        this.setState({reset: true});
+        this.render();
+        if (this.props.onReset !== undefined) {
+            this.props.onReset();
+        }
     }
 
     private getBodyClassList() {

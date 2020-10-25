@@ -35,6 +35,7 @@ export interface InterfaceSettings {
     advancedMode: boolean;
     autoSelectTheme: boolean;
     useMobile: boolean;
+    showBeforeCodeResult: boolean;
 }
 
 export enum FileType {
@@ -120,7 +121,8 @@ export function getInterfaceSettings(): InterfaceSettings {
         showHiddenFiles: false,
         advancedMode: false,
         autoSelectTheme: true,
-        useMobile: true
+        useMobile: true,
+        showBeforeCodeResult: true
     };
     fillObjectWithString(ret, str);
     return ret;
@@ -297,7 +299,11 @@ export class Database {
             };
             request.onsuccess = (event: any) => {
                 try {
-                    resolve(event.target.result.value);
+                    if (event.target.result === undefined) {
+                        reject('Reading ' + name + ' failed: File does not exist.');
+                    } else {
+                        resolve(event.target.result.value);
+                    }
                 } catch (e) {
                     reject('Reading ' + name + ' failed with error ' +  e.name + ': ' + e.message);
                 }

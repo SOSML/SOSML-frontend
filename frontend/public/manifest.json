@@ -1,7 +1,7 @@
 {
     "name": "SOSML",
     "short_name": "SOSML",
-    "description": "SOSML - The Online Interpreter for Standard ML (SML)",
+    "description": "SOSML: The Online Interpreter for Standard ML (SML)",
     "start_url": "/editor",
     "background_color": "#000000",
     "theme_color": "#000000",

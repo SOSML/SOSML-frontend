@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './CodeMirrorWrapper.css';
-import { getInterfaceSettings } from '../storage';
+import { getInterfaceSettings, InterpreterSettings } from '../storage';
 
 let CodeMirror: any = require('codemirror');
 
@@ -39,7 +39,7 @@ class CodeMirrorSubset {
 
 class IncrementalInterpretationHelper {
     markers: any;
-    outputCallback: (code: string) => any;
+    outputCallback: (code: string, complete: boolean) => any;
     disabled: boolean;
     worker: Worker;
     codemirror: CodeMirrorSubset;
@@ -47,10 +47,19 @@ class IncrementalInterpretationHelper {
     timeout: number;
     wasTerminated: boolean;
     partialOutput: string;
+    interpreterSettings: string | null;
+    initialExtraCode: string | undefined; // Code to be executed before any user code
+    afterExtraCode: string | undefined; // Code to be executed after any user code
 
-    constructor(outputCallback: (code: string) => any) {
+    constructor(outputCallback: (code: string, complete: boolean) => any,
+                settings: string | null,
+                initialCode: string | undefined = undefined,
+                afterCode: string | undefined = undefined) {
+        this.interpreterSettings = settings;
         this.disabled = false;
         this.outputCallback = outputCallback;
+        this.initialExtraCode = initialCode;
+        this.afterExtraCode = afterCode;
         this.markers = {};
 
         this.worker = new Worker(process.env.PUBLIC_URL + '/webworker.js');
@@ -90,10 +99,11 @@ class IncrementalInterpretationHelper {
             }
         } else if (message.type === 'partial') {
             this.partialOutput += message.data;
-            this.outputCallback(this.partialOutput);
+            this.outputCallback(this.partialOutput, false);
             this.startTimeout();
         } else if (message.type === 'ping' || message.type === 'finished') {
             // The worker is letting us know that he is not dead or finished
+            this.outputCallback(this.partialOutput, true);
             this.partialOutput = '';
             if (this.workerTimeout !== null) {
                 clearTimeout(this.workerTimeout);
@@ -130,8 +140,27 @@ class IncrementalInterpretationHelper {
             this.wasTerminated = false;
             this.worker.postMessage({
                 type: 'settings',
-                data: localStorage.getItem('interpreterSettings')
+                data: this.interpreterSettings
             });
+            if (this.initialExtraCode !== undefined) {
+                if (getInterfaceSettings().showBeforeCodeResult) {
+                    this.worker.postMessage({
+                        type: 'initial',
+                        data: this.initialExtraCode
+                    });
+                } else {
+                    this.worker.postMessage({
+                        type: 'initialSilent',
+                        data: this.initialExtraCode
+                    });
+                }
+            }
+            if (this.afterExtraCode !== undefined) {
+                this.worker.postMessage({
+                    type: 'afterCode',
+                    data: this.afterExtraCode
+                });
+            }
         }
         this.worker.postMessage({
             type: 'interpret',
@@ -159,7 +188,7 @@ class IncrementalInterpretationHelper {
             } else {
                 out = this.partialOutput + '\n' + timeoutStr;
             }
-            this.outputCallback(out);
+            this.outputCallback(out, false);
             this.workerTimeout = null;
             this.clearAllMarkers();
             this.wasTerminated = true;
@@ -183,9 +212,12 @@ export interface Props {
     onFocusChange?: (x: boolean) => void;
     code: string;
     readOnly: boolean;
-    outputCallback: (code: string) => any;
-    useInterpreter?: boolean;
+    outputCallback: (code: string, complete: boolean) => any;
     timeout: number;
+
+    interpreterSettings?: InterpreterSettings;
+    beforeCode?: string;
+    afterCode?: string;
 }
 
 interface State {
@@ -215,7 +247,17 @@ class CodeMirrorWrapper extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        this.evalHelper = new IncrementalInterpretationHelper(this.props.outputCallback);
+        if (this.props.interpreterSettings !== undefined) {
+            this.evalHelper = new IncrementalInterpretationHelper(this.props.outputCallback,
+                                                JSON.stringify(this.props.interpreterSettings),
+                                                this.props.beforeCode,
+                                                this.props.afterCode);
+        } else {
+            this.evalHelper = new IncrementalInterpretationHelper(this.props.outputCallback,
+                                                localStorage.getItem('interpreterSettings'),
+                                                this.props.beforeCode,
+                                                this.props.afterCode);
+        }
 
         this.handleChangeEvent = this.handleChangeEvent.bind(this);
 
@@ -274,25 +316,10 @@ class CodeMirrorWrapper extends React.Component<Props, State> {
                     this.props.onChange(this.props.code);
                 }
             }
-        } else if (prevProps.useInterpreter !== this.props.useInterpreter) {
-            if (this.props.useInterpreter) {
-                this.evalHelper.enable();
-                this.handleChangeEvent(this.codeMirrorInstance, {
-                    from: {line: 0, ch: 0},
-                    text: this.codeMirrorInstance.getValue().split('\n'),
-                    removed: []
-                });
-            } else {
-                this.evalHelper.disable();
-            }
         }
     }
 
     componentDidMount() {
-        if (!this.props.useInterpreter) {
-            this.evalHelper.disable();
-        }
-
         let autoIndent = getInterfaceSettings().autoIndent;
 
         const options = {

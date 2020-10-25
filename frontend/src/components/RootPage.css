@@ -768,7 +768,8 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     white-space: normal;
     filter: alpha(opacity=0);
     opacity: 0;
-    line-break: auto
+    line-break: auto;
+    font-family: monospace;
 }
 
 .tooltip.show {
@@ -813,6 +814,10 @@ input[type=file]:focus,input[type=checkbox]:focus,input[type=radio]:focus {
     clear: both
 }
 
+body.fullscreen>div>.rootPage {
+    height: calc(100vh - 3px);
+}
+
 .rootPage {
     height: stretch;
     min-height: calc(100vh - 55px);
@@ -849,7 +854,7 @@ body {
 
 body.fullscreen {
     padding-top: 3px;
-    height: calc(100vh - 3px);
+    height: stretch;
     min-height: calc(100vh - 3px);
 }
 
@@ -994,6 +999,10 @@ b {
 .table>thead>tr>td .glyphicon,
 .table>thead>tr>th .glyphicon {
     top: 1px;
+}
+
+.glyphicon-repeat:before {
+    content: "\e030";
 }
 
 .glyphicon-pencil:before {
