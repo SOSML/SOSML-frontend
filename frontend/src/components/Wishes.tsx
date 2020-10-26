@@ -215,7 +215,7 @@ class Wishes extends React.Component<any, State> {
         } else {
             // Render the current wish (part)
             return (
-                <Container className="flexy">
+                <Container key={this.state.wish.id + '@' + this.state.wishPart} className="flexy">
                         {this.state.wishPartNotification ?
                             this.renderWishPartCompleted(this.state.wishSeries,
                                                          this.state.wish,
@@ -243,7 +243,7 @@ class Wishes extends React.Component<any, State> {
         let headerText = 'Your Wish Has Not Yet Been Granted';
         let nxtbtn: any = (
             <button className="btn btn-suc-alt" type="button"
-            // onClick={TODO}
+            onClick={this.openHandlerFor(wishSeries, wish, part + 1)}
             >I Wish to Proceed</button>
         );
         let nxtbody: any = (
@@ -255,12 +255,12 @@ class Wishes extends React.Component<any, State> {
             </Modal.Body>
         );
 
-        if (wish.parts.length === part - 1) {
+        if (wish.parts.length === part + 1) {
             headerText = 'A Part of Your Wish Has Been Fulfilled';
             nxtbtn = (
                 <button className="btn btn-suc-alt" type="button"
-                // onClick={TODO}
-                >Return to the Wishes Overview</button>
+                onClick={(evt) => {this.setState({wishSeries: undefined, wish: undefined,
+                    wishPart: undefined})}}>Return to the Wishes Overview</button>
             );
             nxtbody = (
                 <Modal.Body>
@@ -271,17 +271,14 @@ class Wishes extends React.Component<any, State> {
         }
 
         return (
-            <Modal show={true}
-            // onHide={TODO}
-            >
+            <Modal show={true} onHide={() => { this.setState({wishPartNotification: false}); } }>
                 <Modal.Header closeButton={false}>
                     <Modal.Title>{headerText}</Modal.Title>
                 </Modal.Header>
                 {nxtbody}
                 <Modal.Footer>
                     <button className="btn btn-def-alt" type="button"
-                    // onClick={TODO}
-                    >Dismiss</button>
+                    onClick={() => {this.setState({wishPartNotification: false});}}>Dismiss</button>
                     {nxtbtn}
                 </Modal.Footer>
             </Modal>
@@ -424,12 +421,12 @@ class Wishes extends React.Component<any, State> {
                 default:
                     break;
             }
-            if(pos + 1 < description.length) {
-                if( description[pos] + description[pos + 1] === endDelim) {
+            if (pos + 1 < description.length) {
+                if (description[pos] + description[pos + 1] === endDelim) {
                     break;
                 }
                 let found = false;
-                switch(description[pos] + description[pos + 1]) {
+                switch (description[pos] + description[pos + 1]) {
                     case '**':
                     case '__':
                     case '``':
@@ -438,7 +435,7 @@ class Wishes extends React.Component<any, State> {
                     default:
                         break;
                 }
-                if( found ) {
+                if (found) {
                     let inner = this.parseDescriptionString(description.substr(pos + 2), key,
                                 description[pos] + description[pos + 1]);
                     descr.push(<span key={'td@' + key + '@' + pos}>{curpart}</span>);
@@ -712,7 +709,13 @@ class Wishes extends React.Component<any, State> {
     private openHandlerFor(wishSeries: WishSeries,
                            wish: Wish, wishPart: number): (evt: any) => void {
         return (evt: any) => {
-            this.setState({wishSeries: wishSeries, wish: wish, wishPart: wishPart});
+            this.setState((oldState) => ({
+                wishSeries: wishSeries,
+                wish: wish,
+                wishPart: wishPart,
+                wishPartNotification: false,
+                wishPartSolved: false // TODO sav progress
+            }));
 
             Database.getInstance().then((db: Database) => {
                 return db.getFile(this.getFileName(wishSeries, wish, wishPart), true);
@@ -723,9 +726,9 @@ class Wishes extends React.Component<any, State> {
             }).catch(err => { });
             if (this.state.initialCode === undefined) {
                 // User has no code of previous attempts
-                this.setState({initialCode:
+                this.setState((oldState) => ({initialCode:
                               wish.parts[wishPart].code.userDefaultCode === undefined ? ''
-                    : wish.parts[wishPart].code.userDefaultCode});
+                    : wish.parts[wishPart].code.userDefaultCode}));
             }
             evt.stopPropagation();
         };

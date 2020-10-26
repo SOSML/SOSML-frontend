@@ -155,12 +155,10 @@ class IncrementalInterpretationHelper {
                     });
                 }
             }
-            if (this.afterExtraCode !== undefined) {
-                this.worker.postMessage({
-                    type: 'afterCode',
-                    data: this.afterExtraCode
-                });
-            }
+            this.worker.postMessage({
+                type: 'afterCode',
+                data: this.afterExtraCode
+            });
         }
         this.worker.postMessage({
             type: 'interpret',
