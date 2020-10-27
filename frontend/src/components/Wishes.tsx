@@ -287,7 +287,57 @@ class Wishes extends React.Component<any, State> {
     }
 
     private renderWishProgress(wishSeries: WishSeries, wish: Wish, part: number): any {
-        return [];
+        let qnbtn: any[] = [];
+        let partsCompleted = getWishStatus(wishSeries.id, wish.id);
+
+        let space = (
+            <div className="miniSpacer" />
+        );
+        qnbtn.push(
+            <span key={'lbl'} style={{fontFamily: 'monospace'}}>
+                Select a Part:
+            </span>
+        );
+        for (let i = 0; i < wish.parts.length; i++) {
+            qnbtn.push(space);
+            let btnType = 'button btn-suc-alt';
+            let icon = 'glyphicon-ok-sign'
+            if (i > partsCompleted) {
+                btnType = 'button btn-dng-alt';
+                icon = 'glyphicon-lock'
+            } else if (i === partsCompleted) {
+                btnType = 'button btn-pri-alt';
+                icon = 'glyphicon-exclamation-sign';
+            }
+
+            qnbtn.push(
+                <Button size="sm" className={btnType}
+                    onClick={this.openHandlerFor(wishSeries, wish, i)}
+                    key={'quicknav@b@' + i}
+                    disabled={i > partsCompleted || part === i}>
+                        <div className={'glyphicon ' + icon} />
+                    </Button>
+            );
+        }
+
+        return(
+            <Table>
+            <tbody>
+            <tr>
+                <td style={{border: 'none', padding: 'unset'}}>
+                    <Button size="sm" className="button btn-suc-alt"
+                    onClick={(evt) => {this.setState({wishSeries: undefined, wish: undefined,
+                    wishPart: undefined})}}>
+                        Return to the Wishes Overview
+                    </Button>
+                </td>
+                <td style={{border: 'none', padding: 'unset', textAlign: 'right'}}>
+                    {qnbtn}
+                </td>
+            </tr>
+            </tbody>
+            </Table>
+        );
     }
 
     private markCurrentTaskSolved( ): void {
@@ -635,10 +685,13 @@ class Wishes extends React.Component<any, State> {
                 parts.push(space);
             }
             let btnType = 'button btn-suc-alt';
+            let icon = 'glyphicon-ok-sign'
             if (i > partsCompleted) {
                 btnType = 'button btn-dng-alt';
+                icon = 'glyphicon-lock'
             } else if (i === partsCompleted) {
                 btnType = 'button btn-pri-alt';
+                icon = 'glyphicon-exclamation-sign';
             }
             parts.push(
                 <Button size="sm" className={btnType}
@@ -646,7 +699,7 @@ class Wishes extends React.Component<any, State> {
                     key={key + '@b@' + i}
                     disabled={i > partsCompleted}
                     style={style3}>
-                        <div className={'glyphicon glyphicon-exclamation-sign'} />
+                        <div className={'glyphicon ' + icon} />
                     </Button>
             );
         }

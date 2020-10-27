@@ -1033,6 +1033,14 @@ b {
     content: "\e118";
 }
 
+.glyphicon-ok-sign:before {
+    content: "\e084";
+}
+
+.glyphicon-lock:before {
+    content: "\e033";
+}
+
 .glyphicon-link:before {
     content: "\e144";
 }
