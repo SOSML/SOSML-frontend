@@ -287,6 +287,7 @@ class Files extends React.Component<any, State> {
         style3.marginTop = '-8.8px';
         style3.marginRight = '-9px';
         style3.marginLeft = '8px';
+        style3.cursor = 'pointer';
         let style2: any = {};
         style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -297,9 +298,11 @@ class Files extends React.Component<any, State> {
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
         style2.fontFamily = 'monospace';
+        style2.cursor = 'pointer';
         let style: any = {};
         style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style.cursor = 'pointer';
         if (!folderState) {
             style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         }
@@ -375,6 +378,7 @@ class Files extends React.Component<any, State> {
         style3.marginTop = '-8.8px';
         style3.marginRight = '-9px';
         style3.marginLeft = '8px';
+        style3.cursor = 'pointer';
         let style2: any = {};
         style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -383,6 +387,7 @@ class Files extends React.Component<any, State> {
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
         style2.fontFamily = 'monospace';
+        style2.cursor = 'pointer';
         let style: any = {};
         style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -393,6 +398,7 @@ class Files extends React.Component<any, State> {
         style.maxWidth = '8em';
         style.verticalAlign = 'bottom';
         style.fontFamily = 'monospace';
+        style.cursor = 'pointer';
 
         if (file === undefined) {
             return (

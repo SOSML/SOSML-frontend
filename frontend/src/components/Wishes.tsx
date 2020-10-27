@@ -235,6 +235,10 @@ class Wishes extends React.Component<any, State> {
         }
     }
 
+    isWishCompleted(wishSeries: WishSeries, wish: Wish) {
+        return getWishStatus(wishSeries.id, wish.id) >= wish.parts.length;
+    }
+
     private renderWishPartCompleted(wishSeries: WishSeries, wish: Wish, part: number): any {
         // Shows a modal informing the user that they completed a (part of a) wish for the
         // first time.
@@ -250,7 +254,7 @@ class Wishes extends React.Component<any, State> {
         let nxtbody: any = (
             <Modal.Body>
                 Congratulations! You successufully completed
-                part {part + 1} of this Wish.<br/>
+                Part {part + 1} of this Wish.<br/>
                 But there is more: {wish.parts.length - part - 1} more
                 part{wish.parts.length - part === 1 ? '' : 's'} await you!
             </Modal.Body>
@@ -419,7 +423,7 @@ class Wishes extends React.Component<any, State> {
 
         // Code field
         res.push(
-            <div className="flexy flexcomponent" style={{minHeight: '400px'}}
+            <div className="flexy flexcomponent" style={{minHeight: '500px'}}
                 key={wish.id + '@code@' + this.state.initialCode}>
                 <Playground readOnly={this.state.wishPartNotification === true}
                 onCodeChange={this.onWishCodeChange}
@@ -559,6 +563,7 @@ class Wishes extends React.Component<any, State> {
         style3.marginTop = '-8.8px';
         style3.marginRight = '-9px';
         style3.marginLeft = '8px';
+        style3.cursor = 'pointer';
         let style2: any = {};
         style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -567,9 +572,11 @@ class Wishes extends React.Component<any, State> {
         style2.whiteSpace = 'nowrap';
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
+        style2.cursor = 'pointer';
         let style: any = {};
         style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
+        style.cursor = 'pointer';
         if( description !== '' || !folderState )
             style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.whiteSpace = 'nowrap';
@@ -657,6 +664,7 @@ class Wishes extends React.Component<any, State> {
         style3.marginTop = '-8.8px';
         style3.marginRight = '-9px';
         style3.marginLeft = '8px';
+        style3.cursor = 'pointer';
         let style2: any = {};
         style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -665,6 +673,7 @@ class Wishes extends React.Component<any, State> {
         style2.textAlign = 'right';
         style2.verticalAlign = 'top';
         style2.fontFamily = 'monospace';
+        style2.cursor = 'pointer';
         let style: any = {};
         style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -675,6 +684,7 @@ class Wishes extends React.Component<any, State> {
         style.maxWidth = '8em';
         style.verticalAlign = 'bottom';
         style.fontFamily = 'monospace';
+        style.cursor = 'pointer';
 
         let parts: any[] = [];
         let space = (
