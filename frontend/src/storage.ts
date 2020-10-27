@@ -64,6 +64,31 @@ export function displayName(share: File): string {
     return share.info.date.toISOString().substr(0, 10) + '/' + share.name;
 }
 
+// Returns the number of solved parts of the specified wish
+export function getWishStatus(wishSeriesId: string, wishId: string): number {
+    let str: string | null = localStorage.getItem('wishProgress');
+    let wishname = wishSeriesId + '@' + wishId;
+    if (typeof str === 'string') {
+        let data: any = JSON.parse(str);
+        if (data.hasOwnProperty(wishname)) {
+            return data[wishname];
+        }
+    }
+    return 0;
+}
+
+export function setWishStatus(wishSeriesId: string, wishId: string, completedParts: number): void {
+    let str: string | null = localStorage.getItem('wishProgress');
+    let wishname = wishSeriesId + '@' + wishId;
+
+    let data: any = {};
+    if (typeof str === 'string') {
+        data = JSON.parse(str);
+    }
+    data[wishname] = completedParts;
+    localStorage.setItem('wishProgress', JSON.stringify(data));
+}
+
 export const HIDDEN_FILE_PREFIX = '.GRF_SD/';
 
 function fillObjectWithString(obj: any, str: string | null) {

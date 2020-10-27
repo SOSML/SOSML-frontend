@@ -5,7 +5,8 @@ import { Fade, Button, OverlayTrigger, Tooltip, Container, Table } from 'react-b
 // import { API } from '../api';
 // import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
 import { getColor } from '../theme';
-import { getInterfaceSettings, Database, InterpreterSettings } from '../storage';
+import { getInterfaceSettings, Database, InterpreterSettings, getWishStatus,
+         setWishStatus } from '../storage';
 
 const Modal = require('react-bootstrap').Modal;
 // const FileSaver = require('file-saver');
@@ -17,7 +18,7 @@ const WISHES_LOADING = 0;
 const MINIMODE_LB = 768;
 
 const TEST_START_STRING = '--- Checking your solution ---';
-const TEST_COMPLETE_STRING = '--- All checks passed. Task complete! ---';
+const TEST_COMPLETE_STRING = '--- All checks passed. Part complete! ---';
 
 interface InterpretationField {
     interpreterSettings: InterpreterSettings | undefined;
@@ -290,11 +291,26 @@ class Wishes extends React.Component<any, State> {
     }
 
     private markCurrentTaskSolved( ): void {
+        if (this.state.wishSeries === undefined
+            || this.state.wish === undefined
+            || this.state.wishPart === undefined) {
+            return;
+        }
+
+        let wishSeriesId = (this.state.wishSeries as WishSeries).id;
+        let wishId = (this.state.wish as Wish).id;
+        let wishPart = (this.state.wishPart as number);
+
         let wasSolved: boolean = this.state.wishPartSolved === true; // guard against undefined
         this.setState({
             wishPartNotification: !wasSolved,
             wishPartSolved: true
         });
+
+        if (!wasSolved) {
+            setWishStatus(wishSeriesId, wishId,
+                          Math.max(getWishStatus(wishSeriesId, wishId), wishPart + 1));
+        }
     }
 
     private checkWishComplete(output: string, complete: boolean): void {
@@ -354,8 +370,9 @@ class Wishes extends React.Component<any, State> {
         // Code field
         res.push(
             <div className="flexy flexcomponent" style={{minHeight: '400px'}}
-                key={wish.id + '@code'}>
-                <Playground readOnly={false} onCodeChange={this.onWishCodeChange}
+                key={wish.id + '@code@' + this.state.initialCode}>
+                <Playground readOnly={this.state.wishPartNotification === true}
+                onCodeChange={this.onWishCodeChange}
                 initialCode={this.state.initialCode as string}
                 outputCallback={this.checkWishComplete}
                 onReset={this.handleResetWish}
@@ -582,6 +599,8 @@ class Wishes extends React.Component<any, State> {
         let settings = getInterfaceSettings();
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
 
+        let partsCompleted = getWishStatus(wishSeries.id, wish.id);
+
         let style4: any = {};
         style4.padding = '2.5px';
         let style3: any = {};
@@ -611,21 +630,26 @@ class Wishes extends React.Component<any, State> {
         let space = (
             <div className="miniSpacer" />
         );
-        for( let i = 0; i < wish.parts.length; i++ ) {
+        for (let i = 0; i < wish.parts.length; i++) {
             if (i > 0) {
                 parts.push(space);
             }
+            let btnType = 'button btn-suc-alt';
+            if (i > partsCompleted) {
+                btnType = 'button btn-dng-alt';
+            } else if (i === partsCompleted) {
+                btnType = 'button btn-pri-alt';
+            }
             parts.push(
-                <Button size="sm" className="button btn-suc-alt"
+                <Button size="sm" className={btnType}
                     onClick={this.openHandlerFor(wishSeries, wish, i)}
                     key={key + '@b@' + i}
+                    disabled={i > partsCompleted}
                     style={style3}>
                         <div className={'glyphicon glyphicon-exclamation-sign'} />
                     </Button>
             );
         }
-
-        let currentPart = 0;
 
         let tooltip = (
             <Tooltip id={'tooltip' + key}>
@@ -633,18 +657,22 @@ class Wishes extends React.Component<any, State> {
             </Tooltip>
         );
 
+        if (partsCompleted >= wish.parts.length) {
+            partsCompleted = wish.parts.length - 1;
+        }
+
         return (
             <Table key={'tbl1@wish@tbl@' + key + '@' + wish.id} hover={true}>
                 <tbody>
                 <tr key={'tbl@wish@' + key + '@' + wish.id}>
-                <td style={style} onClick={this.openHandlerFor(wishSeries, wish, currentPart)}>
+                <td style={style} onClick={this.openHandlerFor(wishSeries, wish, partsCompleted)}>
                 <OverlayTrigger overlay={tooltip}>
                         <div className={'glyphicon glyphicon-exclamation-sign'} />
                     </OverlayTrigger>
                     {space}
                     {wish.name}
                 </td>
-                <td style={style2} onClick={this.openHandlerFor(wishSeries, wish, currentPart)}>
+                <td style={style2} onClick={this.openHandlerFor(wishSeries, wish, partsCompleted)}>
                     {parts}
                 </td>
                 </tr>
@@ -714,7 +742,8 @@ class Wishes extends React.Component<any, State> {
                 wish: wish,
                 wishPart: wishPart,
                 wishPartNotification: false,
-                wishPartSolved: false // TODO sav progress
+                wishPartSolved: getWishStatus(wishSeries.id, wish.id) > wishPart,
+                initialCode: undefined
             }));
 
             Database.getInstance().then((db: Database) => {
