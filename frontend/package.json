@@ -10,10 +10,10 @@
     "license": "GPL-3.0",
     "dependencies": {
         "@types/jest": "^20.0.8",
-        "@types/node": "^8.10.65",
-        "@types/react": "^16.9.53",
+        "@types/node": "^8.10.66",
+        "@types/react": "^16.9.56",
         "@types/react-bootstrap": "^0.31.2",
-        "@types/react-dom": "^16.9.8",
+        "@types/react-dom": "^16.9.9",
         "@types/react-router": "^4.0.15",
         "@types/react-router-dom": "^4.0.7",
         "codemirror": "^5.58.2",
@@ -33,7 +33,7 @@
         "version-ts": "echo \"export const REF_NAME = '${CI_COMMIT_REF_NAME}';\nexport const COMMIT_SHA = '`git rev-parse --short HEAD`';\nexport const PIPELINE_ID = '${CI_PIPELINE_ID}';\nexport const BUILD_DATE = '`date --utc`';\" > ./src/components/Version.tsx"
     },
     "devDependencies": {
-        "@sosml/interpreter": "^1.5.3",
+        "@sosml/interpreter": "^1.5.6",
         "precompress": "^6.3.2",
         "tslint": "^5.0.0",
         "typescript": "^3.9.7",

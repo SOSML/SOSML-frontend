@@ -4,8 +4,8 @@ import { NavLink } from 'react-router-dom';
 import { getInterfaceSettings } from '../storage';
 import { getColor } from '../theme';
 import './MenuBar.css';
+import { WISHING_ENABLED } from '../config';
 import Icon from './Icon';
-// const LinkContainer = require('react-router-bootstrap').LinkContainer;
 const Navbar = require('react-bootstrap').Navbar;
 
 interface State {
@@ -28,6 +28,19 @@ class MenuBar extends React.Component<any, State> {
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
         let white = getColor(settings.theme, dt, 'icon_fg');
         let black = getColor(settings.theme, dt, 'icon_bg');
+
+        let wshlink: any;
+        if (WISHING_ENABLED) {
+            wshlink = (
+                <Nav>
+                    <Nav.Link eventKey="2" as="div">
+                    <NavLink to="/wishes" className="nav-link2">
+                        <span className="glyphicon glyphicon-exclamation-sign" /> Wishes
+                    </NavLink>
+                    </Nav.Link>
+                </Nav>
+            );
+        }
 
         return (
             <Navbar collapseOnSelect fixed="top"
@@ -62,13 +75,7 @@ class MenuBar extends React.Component<any, State> {
                         </NavLink>
                         </Nav.Link>
                     </Nav>
-                    <Nav>
-                        <Nav.Link eventKey="2" as="div">
-                        <NavLink to="/wishes" className="nav-link2">
-                            <span className="glyphicon glyphicon-exclamation-sign" /> Wishes
-                        </NavLink>
-                        </Nav.Link>
-                    </Nav>
+                    {wshlink}
                     <div className="navbar-right">
                         <Nav.Link eventKey="3" as="div">
                         <NavLink to="/settings" className="nav-link2">

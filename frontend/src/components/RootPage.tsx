@@ -4,12 +4,12 @@ import MenuBar from './MenuBar';
 import Editor from './Editor';
 import Files from './Files';
 import Wishes from './Wishes';
-import Help from './Help';
 import Landing from './Landing';
 import Settings from './Settings';
 import FileIntermediate from './FileIntermediate';
 import { getInterfaceSettings } from '../storage';
 import { renderTheme, getTheme } from '../theme';
+import { WISHING_ENABLED } from '../config';
 // import ShareIntermediate from './ShareIntermediate';
 import {
     BrowserRouter as Router,
@@ -43,6 +43,17 @@ class RootPage extends React.Component<any, any> {
             );
         }
 
+        let wishes: any;
+        if (WISHING_ENABLED) {
+            wishes = (
+                <Route path="/wishes" component={Wishes} />
+            );
+        } else {
+            wishes = (
+                <Route path="/wishes" component={Landing} />
+            );
+        }
+
         return (
             <Router>
                 <div className="rootPage">
@@ -51,10 +62,9 @@ class RootPage extends React.Component<any, any> {
                     <Route exact={true} path="/" component={Landing} />
                     <Route path="/editor" component={Editor} />
                     <Route path="/files" component={Files} />
-                    <Route path="/wishes" component={Wishes} />
-                    <Route path="/help" component={Help} />
+                    <Route path="/help" component={Landing} />
                     <Route path="/settings" component={Settings} />
-
+                    {wishes}
                     <Route path="/file/:name" component={FileIntermediate} />
                     <Route path="/examplefile/:name" component={FileIntermediate} />
                     <Route path="/share/:hash" component={Editor} />

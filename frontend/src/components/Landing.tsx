@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Alert, Container } from 'react-bootstrap';
 
-import { SHARING_ENABLED } from '../config';
+import { SHARING_ENABLED, WISHING_ENABLED } from '../config';
 
 class Landing extends React.Component<any, any> {
     constructor(props: any) {
@@ -27,6 +27,7 @@ class Landing extends React.Component<any, any> {
 
         let sharingH: JSX.Element | undefined;
         let sharing: JSX.Element | undefined;
+        let wishB: JSX.Element | undefined;
 
         if (SHARING_ENABLED) {
             sharingH = (
@@ -53,6 +54,14 @@ class Landing extends React.Component<any, any> {
                     Further, we cannot guarantee the availability of your uploaded files.
                     </Alert>
                 </div>
+            );
+        }
+        if (WISHING_ENABLED) {
+            wishB = (
+                <button className="btn btn-pri-alt" onClick={this.handleRedirectToWishes}
+                    style={style} type="button">
+                    <span className="glyphicon glyphicon-exclamation-sign" />&nbsp;I wish to learn SML.
+                </button>
             );
         }
 
@@ -118,10 +127,7 @@ class Landing extends React.Component<any, any> {
                     style={style} type="button">
                     <span className="glyphicon glyphicon-pencil" />&nbsp;Take me to the editor.
                 </button>
-                <button className="btn btn-pri-alt" onClick={this.handleRedirectToWishes}
-                    style={style} type="button">
-                    <span className="glyphicon glyphicon-exclamation-sign" />&nbsp;I wish to learn SML.
-                </button>
+                {wishB}
                 <br/>
                 <br/>
             </Container>
