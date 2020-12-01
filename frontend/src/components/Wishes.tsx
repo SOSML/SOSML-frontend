@@ -5,8 +5,8 @@ import { Fade, Button, OverlayTrigger, Tooltip, Container, Table } from 'react-b
 // import { API } from '../api';
 // import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
 import { getColor } from '../theme';
-import { getInterfaceSettings, Database, InterpreterSettings, getWishStatus,
-         setWishStatus } from '../storage';
+import { getInterfaceSettings, Database, getWishStatus, setWishStatus, WishPart, Wish,
+         WishSeries } from '../storage';
 
 const Modal = require('react-bootstrap').Modal;
 // const FileSaver = require('file-saver');
@@ -19,33 +19,6 @@ const MINIMODE_LB = 768;
 
 const TEST_START_STRING = '--- Checking your solution ---';
 const TEST_COMPLETE_STRING = '--- All checks passed. Part complete! ---';
-
-interface InterpretationField {
-    interpreterSettings: InterpreterSettings | undefined;
-    beforeCode: string | undefined; // code to be executed before any user-entered code
-    userDefaultCode: string | undefined; // default code displayed
-    afterCode: string | undefined; // code used to check the user's input for correctness
-}
-
-interface WishPart {
-    description: string;
-    code: InterpretationField;
-}
-
-interface Wish {
-    id: string;
-    name: string; // Name of the wish
-    prerequesites: string[]; // names of the wishes that should be completed before this wish
-    parts: WishPart[];
-}
-
-interface WishSeries {
-    id: string;
-    name: string;
-    shortName: string;
-    description: string;
-    wishes: Wish[];
-}
 
 interface State {
     wishes: WishSeries[]; // wish series shipped with SOSML-frontend

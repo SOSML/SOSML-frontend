@@ -4,19 +4,47 @@ Defines API used to communicate with the backend server.
 
 */
 
+import { WishSeries } from './storage';
+
+const LAST_SHARE_TIMEOUT = 15000;
+
 export class API {
     static EMULATE: boolean = false;
     static LAST_SHARE: Date | undefined;
 
-    static fallbackInterpreter(code: string): Promise<string> {
-        return fetch('/api/fallback/',
+    static shareWish(wish: WishSeries): Promise<string> {
+        if (API.LAST_SHARE !== undefined) {
+            if (new Date().getTime() - API.LAST_SHARE.getTime() <= LAST_SHARE_TIMEOUT) {
+                return Promise.reject('Please wait a little until you try to share again.');
+            }
+        }
+        API.LAST_SHARE = new Date();
+        return fetch('/api/wishare/',
             {
                 headers: {
                   'Accept': 'text/plain',
                   'Content-Type': 'application/json'
                 },
-                method: 'POST',
-                body: JSON.stringify({'code': code})
+                method: 'PUT',
+                body: JSON.stringify(wish)
+            }
+        ).then(function(response: any) {
+            if (!response.ok) {
+                return Promise.reject(response.status);
+            } else {
+                return response.text();
+            }
+        });
+    }
+
+    static loadSharedWish(hash: string): Promise<string> {
+        return fetch('/api/wishare/' + hash,
+            {
+                headers: {
+                  'Accept': 'text/plain',
+                  'Content-Type': 'application/json'
+                },
+                method: 'GET'
             }
         ).then(function(response: any) {
             if (!response.ok) {
@@ -29,7 +57,7 @@ export class API {
 
     static shareCode(code: string): Promise<string> {
         if (API.LAST_SHARE !== undefined) {
-            if (new Date().getTime() - API.LAST_SHARE.getTime() <= 15000) {
+            if (new Date().getTime() - API.LAST_SHARE.getTime() <= LAST_SHARE_TIMEOUT) {
                 return Promise.reject('Please wait a little until you try to share again.');
             }
         }
@@ -70,6 +98,46 @@ export class API {
         });
     }
 
+    static getPublicWishList(): Promise<string[]> {
+        return fetch('/api/wishlist/',
+            {
+                headers: {
+                  'Accept': 'text/json',
+                  'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            }
+        ).then(function(response: any) {
+            if (!response.ok) {
+                return Promise.reject(response.status);
+            } else {
+                return response.json();
+            }
+        }).then(function(data: any) {
+            return data.codes.map((name: any) => {
+                return name.replace('.json', '');
+            });
+        });
+    }
+
+    static getPublicWish(name: string): Promise<string> {
+        return fetch('/wish/' + name.replace(/\//g, '%2F'),
+            {
+                headers: {
+                  'Accept': 'text/plain',
+                  'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            }
+        ).then(function(response: any) {
+            if (!response.ok) {
+                return Promise.reject(response.status);
+            } else {
+                return response.text();
+            }
+        });
+    }
+
     static getCodeExamplesList(): Promise<string[]> {
         return fetch('/api/list/',
             {
@@ -92,7 +160,7 @@ export class API {
         });
     }
 
-    static getCodeExample(name: string): Promise<String> {
+    static getCodeExample(name: string): Promise<string> {
         return fetch('/code/' + name.replace(/\//g, '%2F'),
             {
                 headers: {
