@@ -9,7 +9,8 @@ import { Button } from 'react-bootstrap';
 import './Playground.css';
 import { API as WebserverAPI } from '../api';
 import { getColor } from '../theme';
-import { Database, InterfaceSettings, getInterfaceSettings, InterpreterSettings } from '../storage';
+import { Database, InterfaceSettings, getInterfaceSettings,
+         InterpreterSettings, getInterpreterSettings } from '../storage';
 import { SHARING_ENABLED } from '../config';
 
 interface State {
@@ -67,6 +68,31 @@ class Playground extends React.Component<Props, State> {
     }
 
     render() {
+        let extraCSS = '';
+        let settings = getInterfaceSettings();
+
+        let interpreterSettings: InterpreterSettings =
+            this.props.interpreterSettings === undefined ? getInterpreterSettings()
+            : this.props.interpreterSettings;
+
+        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
+        if (dt === undefined) {
+            extraCSS += '.eval-fail { background-color: '
+            + this.state.interfaceSettings.errorColor + ' !important; }';
+            extraCSS += '.eval-success { background-color: '
+            + this.state.interfaceSettings.successColor1 + ' !important; }';
+            extraCSS += '.eval-success-odd { background-color: '
+            + this.state.interfaceSettings.successColor2 + ' !important; }';
+        } else {
+            extraCSS += '.eval-fail { background-color: '
+            + getColor(settings.theme, dt, 'error') + ' !important; }';
+            extraCSS += '.eval-success { background-color: '
+            + getColor(settings.theme, dt, 'success') + ' !important; }';
+            extraCSS += '.eval-success-odd { background-color: '
+            + getColor(settings.theme, dt, 'success_alt') + ' !important; }';
+        }
+
+
         let cleanedOutput = this.state.output;
         if (cleanedOutput.endsWith('\n')) {
             cleanedOutput = cleanedOutput.substr(0, cleanedOutput.length - 1);
@@ -74,10 +100,23 @@ class Playground extends React.Component<Props, State> {
         let lines: string[] = cleanedOutput.split('\n');
         var key = 0;
         var markingColor = 0;
-        let lineItems = lines.map((line) => {
-            let data: [JSX.Element, number] = this.parseLine(line, key++, markingColor);
+        let lineItems: JSX.Element[] = [];
+        lines.map((line) => {
+            let data: [JSX.Element, number, number] = this.parseLine(line, key++, markingColor);
+            if (markingColor !== data[1] && data[2] > interpreterSettings.showUsedTimeWhenAbove
+               && interpreterSettings.showUsedTimeWhenAbove > -1) {
+                let excTime = (
+                    <pre style={{padding: 0, display: 'inline', margin: 0, borderRadius: 0,
+                        fontSize: '70%', float: 'right', border: '0'}}
+                    className={this.getHighlightForColor(data[1])} key={key + '@time'}>
+                    {' ' + data[2] + 'ms'}
+                    </pre>
+                );
+                lineItems.push(excTime);
+            }
             markingColor = data[1];
-            return data[0];
+            lineItems.push(data[0]);
+            return 0;
         });
         let code: string = this.props.initialCode;
 
@@ -140,24 +179,6 @@ class Playground extends React.Component<Props, State> {
             </div>
         );
 
-        let extraCSS = '';
-        let settings = getInterfaceSettings();
-        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
-        if (dt === undefined) {
-            extraCSS += '.eval-fail { background-color: '
-            + this.state.interfaceSettings.errorColor + ' !important; }';
-            extraCSS += '.eval-success { background-color: '
-            + this.state.interfaceSettings.successColor1 + ' !important; }';
-            extraCSS += '.eval-success-odd { background-color: '
-            + this.state.interfaceSettings.successColor2 + ' !important; }';
-        } else {
-            extraCSS += '.eval-fail { background-color: '
-            + getColor(settings.theme, dt, 'error') + ' !important; }';
-            extraCSS += '.eval-success { background-color: '
-            + getColor(settings.theme, dt, 'success') + ' !important; }';
-            extraCSS += '.eval-success-odd { background-color: '
-            + getColor(settings.theme, dt, 'success_alt') + ' !important; }';
-        }
 
         let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
         let height = (window.innerHeight > 0) ? window.innerHeight : window.screen.height;
@@ -181,8 +202,11 @@ class Playground extends React.Component<Props, State> {
         );
         let output = (
             <div className="flexcomponent flexy">
-                <MiniWindow content={<div>{lineItems}</div>}
-                    title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
+                <MiniWindow content={
+                    <div>
+                        {lineItems}
+                    </div>
+                } title="Output" className="flexy" updateAnchor={this.state.sizeAnchor}/>
             </div>
         );
 
@@ -352,9 +376,38 @@ class Playground extends React.Component<Props, State> {
         return body.classList;
     }
 
-    private parseLine(line: string, key: number, markingColor: number): [JSX.Element, number] {
+    private getHighlightForColor(markingColor: number): string {
+        switch (markingColor) {
+            case 1:
+                return 'eval-success';
+            case 2:
+                return 'eval-success-odd';
+            case 3:
+                return 'eval-fail';
+            default:
+                break;
+        }
+        return '';
+    }
+
+    // parses \1, \2, \3 marks and formatting; returns [parsed line, new color, execution
+    // time]
+    private parseLine(line: string, key: number,
+                      markingColor: number): [JSX.Element, number, number] {
         let start = 0;
+        let executionTime = -1;
         let items: any[] = [];
+
+        if (line.startsWith('@')) { // time marks have the form @time@<rest of the line>
+            line = line.substring(1);
+            let ed = line.indexOf('@');
+            if (ed >= 0 && ed < line.length) {
+                executionTime = +line.substr(0, ed);
+                line = line.substr(ed + 1);
+            } else {
+                line = '@' + line;
+            }
+        }
         if (line.startsWith('\\1')) {
             line = line.substring(2);
             markingColor = 1;
@@ -365,21 +418,10 @@ class Playground extends React.Component<Props, State> {
             line = line.substring(2);
             markingColor = 3;
         }
-        if (line.startsWith('>')) {
-            let regex = /^>( *).*$/g;
-            let match = regex.exec(line);
-            if (match != null) {
-                if (match[1].length > 1) {
-                    start = match[1].length + 1;
-                    items.push('>');
-                    for (let i = 0; i < match[1].length; i++) {
-                        items.push((
-                            <div key={i} style={{display: 'inline-block'}}>&nbsp;</div>
-                        ));
-                    }
-                }
-            }
-        }
+
+        // Make sure spaces in strings are non-breakable
+        line = line.replaceAll(' ', ' '); // second space is nbsp
+
         while (true) {
             // eslint-disable-next-line
             let indexList = OUTPUT_MARKUP_SPECIALS.map((x: string) => {
@@ -421,32 +463,20 @@ class Playground extends React.Component<Props, State> {
         }
         let addClass = 'pre-reset ';
         if (this.state.interfaceSettings.outputHighlight) {
-            switch (markingColor) {
-                case 1:
-                    addClass += 'eval-success';
-                    break;
-                case 2:
-                    addClass += 'eval-success-odd';
-                    break;
-                case 3:
-                    addClass += 'eval-fail';
-                    break;
-                default:
-                    break;
-            }
+            addClass += this.getHighlightForColor(markingColor);
         }
         if (items.length === 0) {
             return [(
                 <pre className={addClass} key={line + (key++)}>
                     <div className="miniSpacer" />
                 </pre>
-            ), markingColor];
+            ), markingColor, executionTime];
         } else {
             return [(
-                <pre className={addClass} key={line + (key++)}>
+                <pre className={addClass} key={line + (key++)} style={{overflow: 'visible'}}>
                     {items}
                 </pre>
-            ), markingColor];
+            ), markingColor, executionTime];
         }
     }
 }

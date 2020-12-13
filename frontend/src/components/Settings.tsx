@@ -22,6 +22,7 @@ class Settings extends React.Component<any, State> {
         };
 
         this.timeoutChangeHandler = this.timeoutChangeHandler.bind(this);
+        this.timeDisplayChangeHandler = this.timeDisplayChangeHandler.bind(this);
         this.resetColorsToDefault = this.resetColorsToDefault.bind(this);
         this.themeChangeHandler = this.themeChangeHandler.bind(this);
         this.changeTheme = this.changeTheme.bind(this);
@@ -195,6 +196,15 @@ class Settings extends React.Component<any, State> {
             <h4 key={11}>Editor Settings</h4>
         );
         result.push(
+            <div className="checkbox" key="d16">
+                <label>
+                <input type="checkbox" key={16} checked={this.state.front.advancedMode}
+                    onChange={this.changeHandler('front', 'advancedMode')}/>
+                Show <em>more</em> things to break.
+                </label>
+            </div>
+        );
+        result.push(
                 <div className="checkbox" key="d13">
                 <label>
             <input type="checkbox" key={13} checked={this.state.front.outputHighlight}
@@ -212,7 +222,6 @@ class Settings extends React.Component<any, State> {
                 </label>
             </div>
         );
-
         if (advanced) {
             result.push(
                 <div className="checkbox" key="d142">
@@ -252,14 +261,23 @@ class Settings extends React.Component<any, State> {
             </div>
         );
         result.push(
-            <div className="checkbox" key="d16">
+                <div className="checkbox" key="d12">
                 <label>
-                <input type="checkbox" key={16} checked={this.state.front.advancedMode}
-                    onChange={this.changeHandler('front', 'advancedMode')}/>
-                Show <em>more</em> things to break.
+            <input type="checkbox" key={12} checked={this.state.inter.showUsedTimeWhenAbove >= 0}
+                onChange={this.timeDisplayFlipHandler()}/>
+                Show execution time
                 </label>
             </div>
         );
+        if (this.state.inter.showUsedTimeWhenAbove >= 0) {
+            result.push(
+                <p key={100}>
+                    Show execution time only if larger than <input type="number" min="1" step="100"
+                    value={this.state.inter.showUsedTimeWhenAbove} style={style}
+                    onChange={this.timeDisplayChangeHandler} placeholder="9029"/> ms.
+                </p>
+            );
+        }
         return result;
     }
 
@@ -405,6 +423,32 @@ class Settings extends React.Component<any, State> {
         }, () => {
             this.saveState();
         });
+    }
+
+    private timeDisplayChangeHandler(evt: React.ChangeEvent<HTMLInputElement>) {
+        let value = parseInt(evt.target.value, 10);
+        if (value < 0) {
+            return;
+        }
+        this.setState((oldState) => {
+            let deepCopy: any = this.deepCopy(oldState);
+            deepCopy.inter.showUsedTimeWhenAbove = Math.min(value, 10000000000);
+            return deepCopy;
+        }, () => {
+            this.saveState();
+        });
+    }
+
+    private timeDisplayFlipHandler() {
+        return () => {
+            this.setState((oldState) => {
+                let deepCopy: any = this.deepCopy(oldState);
+                deepCopy.inter.showUsedTimeWhenAbove = -this.state.inter.showUsedTimeWhenAbove;
+                return deepCopy;
+            }, () => {
+                this.saveState();
+            });
+        };
     }
 
     private changeTheme(type: 'light' | 'dark', name: string) {

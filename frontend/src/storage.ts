@@ -16,6 +16,7 @@ export interface InterpreterSettings {
     allowFunctorsAnywhere: boolean;
     strictMode: boolean;
     realEquality: boolean;
+    showUsedTimeWhenAbove: number; // show time it took to compute a state
 }
 
 export interface InterfaceSettings {
@@ -146,6 +147,7 @@ export function getInterpreterSettings(): InterpreterSettings {
         allowFunctorsAnywhere: false,
         strictMode: true,
         realEquality: false,
+        showUsedTimeWhenAbove: -500, // disabled by default; disabled when value is negative
     };
     fillObjectWithString(ret, str);
     return ret;
