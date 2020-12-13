@@ -272,7 +272,7 @@ class Settings extends React.Component<any, State> {
         if (this.state.inter.showUsedTimeWhenAbove >= 0) {
             result.push(
                 <p key={100}>
-                    Show execution time only if larger than <input type="number" min="1" step="100"
+                    Show execution time only if larger than <input type="number" min="0" step="100"
                     value={this.state.inter.showUsedTimeWhenAbove} style={style}
                     onChange={this.timeDisplayChangeHandler} placeholder="9029"/> ms.
                 </p>
@@ -443,7 +443,11 @@ class Settings extends React.Component<any, State> {
         return () => {
             this.setState((oldState) => {
                 let deepCopy: any = this.deepCopy(oldState);
-                deepCopy.inter.showUsedTimeWhenAbove = -this.state.inter.showUsedTimeWhenAbove;
+                if (this.state.inter.showUsedTimeWhenAbove === 0) {
+                    deepCopy.inter.showUsedTimeWhenAbove = -500;
+                } else {
+                    deepCopy.inter.showUsedTimeWhenAbove = -this.state.inter.showUsedTimeWhenAbove;
+                }
                 return deepCopy;
             }, () => {
                 this.saveState();
