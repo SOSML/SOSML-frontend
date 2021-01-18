@@ -1,6 +1,8 @@
 import { DEFAULT_THEME } from './config';
 import { getColor } from './theme';
 
+export * from './wishes';
+
 export interface InterpreterSettings {
     allowUnicodeInStrings: boolean; // unused
     allowUnicode: boolean;
@@ -49,33 +51,6 @@ export interface File {
     name: string;
     info: any;
     type: FileType;
-}
-
-export interface InterpretationField {
-    interpreterSettings: InterpreterSettings | undefined;
-    beforeCode: string | undefined; // code to be executed before any user-entered code
-    userDefaultCode: string | undefined; // default code displayed
-    afterCode: string | undefined; // code used to check the user's input for correctness
-}
-
-export interface WishPart {
-    description: string;
-    code: InterpretationField;
-}
-
-export interface Wish {
-    id: string;
-    name: string; // Name of the wish
-    prerequesites: string[]; // names of the wishes that should be completed before this wish
-    parts: WishPart[];
-}
-
-export interface WishSeries {
-    id: string;
-    name: string;
-    shortName: string;
-    description: string;
-    wishes: Wish[];
 }
 
 export function displayName(share: File): string {

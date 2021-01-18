@@ -1,0 +1,76 @@
+{
+    "id": "1_shoml",
+    "name": "I Wish to Learn Basic SML",
+    "shortName": "Basic SML",
+    "description": [
+        "This is a **test** wish series.\n",
+        "And __this__ is its description.\n",
+        "And ``val x = \"Hello World\";`` is some sample code."
+    ],
+    "wishes": [
+        {
+            "name": "Programs",
+            "prerequesites": [],
+            "parts": [
+                {
+                    "description": [
+                        "A very basic SML __program__ looks as follows: ``val x = 3 * 10 + 9``.",
+                        "This program consists of a single __declaration__ which declares the __variable__ ``x``.",
+                        "Running this   program with the interpreter will then __bind__ ``x`` to the __value__ ``39``.",
+                        "A single program may consist of multiple declarations:\n",
+                        "``\tval x = 17\n\tval y = ~13 * x - 19\n``",
+                        "This program binds ``x`` to ``17`` and ``y`` to ``-240``.\n\n",
+                        "**Now it's your turn!**\n",
+                        "Test out the interpreter below by writing a program that ",
+                        "declares three variables ``x``, ",
+                        "``y``, and ``z``, that binds ``x`` to the value ``39``, ",
+                        "that binds ``y`` to ``~17 * x + 28``, and that binds ",
+                        "``z`` to ``~y``. Just enter your code into the ",
+                        "\"SML\" field below and start the interpretation by entering a ``;``.  ",
+                        "Don't worry, your code is automatically stored in your browser."
+                    ],
+                    "code": {
+                        "userDefaultCode": [ "val x = 10" ],
+                        "afterCode": [
+                            "val () = Assert.assert (x = 39, \"\\\"x\\\" has an incorrect value.\");",
+                            "val () = Assert.assert (y = ~635, \"\\\"y\\\" has an incorrect value.\");",
+                            "val () = Assert.assert (z = 635, \"\\\"z\\\" has an incorrect value.\");"
+                        ]
+                    }
+                },
+                {
+                    "description": [ "Redeclaration" ],
+                    "code": {
+                    }
+                },
+                {
+                    "description": [ "``it``" ],
+                    "code": {
+                    }
+                },
+                {
+                    "description": [ "Error Messages" ],
+                    "code": {
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Functions and Conditionals",
+            "prerequesites": [ "1_Programs" ],
+            "parts": [
+                {
+                    "description": [ "``fun``" ],
+                    "code": {
+                    }
+                },
+                {
+                    "description": [ "Parenthesis" ],
+                    "code": {
+                    }
+                }
+            ]
+        }
+    ]
+}
+

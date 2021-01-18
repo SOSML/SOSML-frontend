@@ -6,7 +6,7 @@ import { Fade, Button, OverlayTrigger, Tooltip, Container, Table } from 'react-b
 // import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
 import { getColor } from '../theme';
 import { getInterfaceSettings, Database, getWishStatus, setWishStatus, WishPart, Wish,
-         WishSeries } from '../storage';
+         WishSeries, DEFAULT_WISHES } from '../storage';
 
 const Modal = require('react-bootstrap').Modal;
 // const FileSaver = require('file-saver');
@@ -43,7 +43,7 @@ class Wishes extends React.Component<any, State> {
         super(props);
 
         this.state = {
-            wishes: [],
+            wishes: DEFAULT_WISHES,
             externalWishes: [],
             sharedWishes: [],
             externalWishesStatus: WISHES_LOADING,
@@ -91,88 +91,6 @@ class Wishes extends React.Component<any, State> {
             return collator.compare(q1.id, q2.id);
         });
 
-        wishes = [
-            {
-                id: "shoml",
-                name: "I Wish to Learn Basic SML",
-                shortName: "Basic SML",
-                description: `This is a **test** wish series.
-                And __this__ is its description.
-                And \`\`val x = "Hello World";\`\` is some sample code.`,
-                wishes: [
-                    {
-                    id: "1",
-                    name: "Programs",
-                    prerequesites: [],
-                    parts: [
-                        {
-                            description:
-                                "A very basic SML __program__ looks as follows: ``val x = 3 * 10 + 9``. This program consists of a single __declaration__ which declares the __variable__ ``x``. Running this program with the interpreter will then __bind__ ``x`` to the __value__ ``39``. " +
-                                "A single program may consist of multiple declarations:\n" +
-                                    "``\tval x = 17\n\tval y = ~13 * x - 19\n``" +
-                                "This program binds ``x`` to ``17`` and ``y`` to ``-240``.\n\n" +
-                                "**Now it's your turn!**\n" +
-                                "Test out the interpreter below by writing a program that " +
-                                "declares three variables ``x``, " +
-                                "``y``, and ``z``, that binds ``x`` to the value ``39``, " +
-                                "that binds ``y`` to ``~17 * x + 28``, and that binds " +
-                                "``z`` to ``~y``. Just enter your code into the " +
-                                "\"SML\" field below and start the interpretation by entering a ``;``. " +
-                            "Don't worry, your code is automatically stored in your browser.",
-                            code: {
-                                beforeCode: "",
-                                userDefaultCode: "val x = 10",
-                                afterCode: `
-                                val () = (
-                                    Assert.assert ((x:int) = 39, "\\"x\\" has an incorrect value.");
-                                Assert.assert ((y:int) = ~635, "\\"y\\" has an incorrect value.");
-                                Assert.assert ((z:int) = 635, "\\"z\\" has an incorrect value."));
-                                `
-                            }
-                        },
-                        {
-                            description: "Redeclaration",
-                            code: { }
-                        },
-                        {
-                            description: "``it``",
-                            code: { }
-                        },
-                        {
-                            description: "Error Messages",
-                            code: { }
-                        }
-                    ]
-                },
-                    {
-                    name: "Functions and Conditionals",
-                    prerequesites: [],
-                    id: "2",
-                    parts: [
-                        {
-                            description: "``fun``",
-                            code: {
-
-                            }
-                        },
-                        {
-                            description: "Parenthesis",
-                            code: {
-
-                            }
-                        }
-                    ]
-                }]
-            },
-            {
-                id: "chuuml",
-                name: "I Wish to Learn Intermediate SML",
-                shortName: "Intermediate SML",
-                description: "This is a second test wish series.\nAnd this is its description.",
-                wishes: []
-            }
-        ];
-
         if (this.state.wishSeries === undefined
             || this.state.wish === undefined || this.state.wishPart === undefined) {
             // User is not currently working on a wish
@@ -189,7 +107,7 @@ class Wishes extends React.Component<any, State> {
         } else {
             // Render the current wish (part)
             return (
-                <Container key={this.state.wish.id + '@' + this.state.wishPart} className="flexy">
+                <Container key={this.state.wish.name + '@' + this.state.wishPart} className="flexy">
                         {this.state.wishPartNotification ?
                             this.renderWishPartCompleted(this.state.wishSeries,
                                                          this.state.wish,
@@ -209,7 +127,7 @@ class Wishes extends React.Component<any, State> {
     }
 
     isWishCompleted(wishSeries: WishSeries, wish: Wish) {
-        return getWishStatus(wishSeries.id, wish.id) >= wish.parts.length;
+        return getWishStatus(wishSeries.id, wish.name) >= wish.parts.length;
     }
 
     private renderWishPartCompleted(wishSeries: WishSeries, wish: Wish, part: number): any {
@@ -265,18 +183,19 @@ class Wishes extends React.Component<any, State> {
 
     private renderWishProgress(wishSeries: WishSeries, wish: Wish, part: number): any {
         let qnbtn: any[] = [];
-        let partsCompleted = getWishStatus(wishSeries.id, wish.id);
+        let partsCompleted = getWishStatus(wishSeries.id, wish.name);
 
-        let space = (
-            <div className="miniSpacer" />
-        );
+        let space = (key: number) => { return (
+                <div key={'wpr@spacer@' + key} className="miniSpacer" />
+            );
+        };
         qnbtn.push(
             <span key={'lbl'} style={{fontFamily: 'monospace'}}>
                 Select a Part:
             </span>
         );
         for (let i = 0; i < wish.parts.length; i++) {
-            qnbtn.push(space);
+            qnbtn.push(space(i));
             let btnType = 'button btn-suc-alt';
             let icon = 'glyphicon-ok-sign'
             if (i > partsCompleted) {
@@ -325,7 +244,7 @@ class Wishes extends React.Component<any, State> {
         }
 
         let wishSeriesId = (this.state.wishSeries as WishSeries).id;
-        let wishId = (this.state.wish as Wish).id;
+        let wishId = (this.state.wish as Wish).name;
         let wishPart = (this.state.wishPart as number);
 
         let wasSolved: boolean = this.state.wishPartSolved === true; // guard against undefined
@@ -385,28 +304,29 @@ class Wishes extends React.Component<any, State> {
 
         // Description of the current part (containing the task/explanation/etc.)
         res.push(
-            <div key={wish.id + '@des'}>
-                {this.parseDescriptionString(curPart.description, wish.id)[0]}
+            <div key={wish.name + '@des'}>
+                {this.parseDescriptionString(curPart.description.join(''), wish.name)[0]}
             </div>
         );
         res.push(
-            <br key={wish.id + '@br'}/>
+            <br key={wish.name + '@br'}/>
         );
 
 
         // Code field
         res.push(
             <div className="flexy flexcomponent" style={{minHeight: '500px'}}
-                key={wish.id + '@code@' + this.state.initialCode}>
+                key={wish.name + '@code@' + this.state.initialCode}>
                 <Playground readOnly={this.state.wishPartNotification === true}
                 onCodeChange={this.onWishCodeChange}
                 initialCode={this.state.initialCode as string}
                 outputCallback={this.checkWishComplete}
                 onReset={this.handleResetWish}
                 interpreterSettings={curPart.code.interpreterSettings}
-                beforeCode={curPart.code.beforeCode}
+                beforeCode={curPart.code.beforeCode === undefined ? undefined :
+                    curPart.code.beforeCode.join('')}
                 afterCode={'\n local val _ = printLn "' + TEST_START_STRING + '" in end; local\n'
-                    + (curPart.code.afterCode === undefined ? '' : curPart.code.afterCode)
+                    + (curPart.code.afterCode === undefined ? '' : curPart.code.afterCode.join(''))
                     + '\n val _ = printLn "' + TEST_COMPLETE_STRING + '"; in end;' } />
             </div>
         );
@@ -421,8 +341,10 @@ class Wishes extends React.Component<any, State> {
             return;
         }
 
-        let initCode = this.state.wish.parts[this.state.wishPart].code.userDefaultCode ===
-            undefined ? '' : this.state.wish.parts[this.state.wishPart].code.userDefaultCode;
+        let initCode: string = '';
+        if(this.state.wish.parts[this.state.wishPart].code.userDefaultCode !== undefined) {
+            initCode = (this.state.wish.parts[this.state.wishPart].code.userDefaultCode as string[]).join('');
+        }
 
         this.setState({initialCode: initCode, code: initCode});
     }
@@ -517,10 +439,14 @@ class Wishes extends React.Component<any, State> {
     }
 
     private renderFolder(name: string, shortName: string,
-                         description: string, inner: any, key: string): any {
+                         description: string[], inner: any, key: string): any {
         let folderState: boolean = this.state.folder[name + key];
         let settings = getInterfaceSettings();
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
+
+        if(description === undefined) {
+            description = [];
+        }
 
         let style5: any = {};
         style5.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
@@ -540,7 +466,7 @@ class Wishes extends React.Component<any, State> {
         let style2: any = {};
         style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        if( description !== '' || !folderState )
+        if(description.length > 0 || !folderState)
             style2.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         style2.whiteSpace = 'nowrap';
         style2.textAlign = 'right';
@@ -550,13 +476,13 @@ class Wishes extends React.Component<any, State> {
         style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.cursor = 'pointer';
-        if( description !== '' || !folderState )
+        if(description.length > 0 || !folderState)
             style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
         style.whiteSpace = 'nowrap';
         style.overflow = 'hidden';
         style.textOverflow = 'ellipsis';
         style.maxWidth = '10em';
-        if( description !== '' ) {
+        if(description.length > 0) {
             style.fontSize = 'large';
         }
         style.fontFamily = 'monospace';
@@ -573,7 +499,7 @@ class Wishes extends React.Component<any, State> {
 
         let desc = (
             <div key={"sd@" + key}>
-                {this.parseDescriptionString(description, key)[0]}
+                {this.parseDescriptionString(description.join(''), key)[0]}
             </div>
         );
 
@@ -602,7 +528,7 @@ class Wishes extends React.Component<any, State> {
                 </td>
             </tr>
         );
-        if(description !== '') {
+        if(description.length > 0) {
             result.push(
                 <tr key={key + 't@1'} className="no-hover">
                     <td colSpan={2} style={style5}>
@@ -629,7 +555,7 @@ class Wishes extends React.Component<any, State> {
         let settings = getInterfaceSettings();
         let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
 
-        let partsCompleted = getWishStatus(wishSeries.id, wish.id);
+        let partsCompleted = getWishStatus(wishSeries.id, wish.name);
 
         let style4: any = {};
         style4.padding = '2.5px';
@@ -698,9 +624,9 @@ class Wishes extends React.Component<any, State> {
         }
 
         return (
-            <Table key={'tbl1@wish@tbl@' + key + '@' + wish.id} hover={true}>
+            <Table key={'tbl1@wish@tbl@' + key + '@' + wish.name} hover={true}>
                 <tbody>
-                <tr key={'tbl@wish@' + key + '@' + wish.id}>
+                <tr key={'tbl@wish@' + key + '@' + wish.name}>
                 <td style={style} onClick={this.openHandlerFor(wishSeries, wish, partsCompleted)}>
                 <OverlayTrigger overlay={tooltip}>
                         <div className={'glyphicon glyphicon-exclamation-sign'} />
@@ -726,9 +652,9 @@ class Wishes extends React.Component<any, State> {
     }
 
     private renderWishSeries(wishSeries: WishSeries): any {
-        let wishes: any[] = wishSeries.wishes.map((q: Wish) => {
+        let wishes: any[] = wishSeries.wishes !== undefined ? wishSeries.wishes.map((q: Wish) => {
             return this.renderWish(wishSeries, q, wishSeries.id);
-        });
+        }) : [];
         let style4: any = {};
         style4.padding = '2.5px';
         return (
@@ -767,7 +693,7 @@ class Wishes extends React.Component<any, State> {
 
     private getFileName(wishSeries: WishSeries,
                         wish: Wish, wishPart: number): string {
-        return 'WSH/' + wishSeries.id + '/' + wish.id + '/' + wishPart;
+        return 'WSH/' + wishSeries.id + '/' + wish.name + '/' + wishPart;
     }
 
     private openHandlerFor(wishSeries: WishSeries,
@@ -778,7 +704,7 @@ class Wishes extends React.Component<any, State> {
                 wish: wish,
                 wishPart: wishPart,
                 wishPartNotification: false,
-                wishPartSolved: getWishStatus(wishSeries.id, wish.id) > wishPart,
+                wishPartSolved: getWishStatus(wishSeries.id, wish.name) > wishPart,
                 initialCode: undefined
             }));
 
@@ -793,7 +719,7 @@ class Wishes extends React.Component<any, State> {
                 // User has no code of previous attempts
                 this.setState((oldState) => ({initialCode:
                               wish.parts[wishPart].code.userDefaultCode === undefined ? ''
-                    : wish.parts[wishPart].code.userDefaultCode}));
+                    : (wish.parts[wishPart].code.userDefaultCode as string[]).join('')}));
             }
             evt.stopPropagation();
         };
