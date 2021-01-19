@@ -1,13 +1,13 @@
 import { ThemeCollection } from '../theme';
 
-import { THEME as THEME_YACHIYO } from './yachiyo';
-import { THEME as THEME_KYOKO } from './kyoko';
-import { THEME as THEME_MADOKA } from './madoka';
-import { THEME as THEME_SAYAKA } from './sayaka';
-import { THEME as THEME_HOMURA } from './homura';
-import { THEME as THEME_MAMI } from './mami';
-import { THEME as THEME_SANA } from './sana';
-import { THEME as THEME_NAGISA } from './nagisa';
+import THEME_YACHIYO from './yachiyo.theme.json';
+import THEME_KYOKO from './kyoko.theme.json';
+import THEME_MADOKA from './madoka.theme.json';
+import THEME_SAYAKA from './sayaka.theme.json';
+import THEME_HOMURA from './homura.theme.json';
+import THEME_MAMI from './mami.theme.json';
+import THEME_SANA from './sana.theme.json';
+import THEME_NAGISA from './nagisa.theme.json';
 
 export let THEMES: ThemeCollection = {
     'yachiyo':  THEME_YACHIYO,
