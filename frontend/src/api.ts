@@ -121,7 +121,7 @@ export class API {
     }
 
     static getPublicWish(name: string): Promise<string> {
-        return fetch('/wish/' + name.replace(/\//g, '%2F'),
+        return fetch('/api/wish/' + name.replace(/\//g, '%2F'),
             {
                 headers: {
                   'Accept': 'text/plain',
@@ -161,7 +161,7 @@ export class API {
     }
 
     static getCodeExample(name: string): Promise<string> {
-        return fetch('/code/' + name.replace(/\//g, '%2F'),
+        return fetch('/api/code/' + name.replace(/\//g, '%2F'),
             {
                 headers: {
                   'Accept': 'text/plain',
