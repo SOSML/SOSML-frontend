@@ -1,4 +1,4 @@
-import { DEFAULT_THEME, WISHING_HIDDEN } from './config';
+import { DEFAULT_THEME, WISHING_ENABLED, WISHING_HIDDEN } from './config';
 import { getColor } from './theme';
 
 export * from './wishes';
@@ -157,6 +157,16 @@ export function getInterfaceSettings(): InterfaceSettings {
     };
     fillObjectWithString(ret, str);
     return ret;
+}
+
+export function wishingHidden(): boolean {
+    if (!WISHING_ENABLED) { return true; }
+
+    if (WISHING_HIDDEN) {
+        return getInterfaceSettings().wishingHidden;
+    }
+
+    return false;
 }
 
 export function setInterfaceSettings(settings: InterfaceSettings) {

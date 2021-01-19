@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Alert, Container } from 'react-bootstrap';
 
-import { SHARING_ENABLED, WISHING_ENABLED } from '../config';
+import { wishingHidden } from '../storage';
+import { SHARING_ENABLED } from '../config';
 
 class Landing extends React.Component<any, any> {
     constructor(props: any) {
@@ -56,7 +57,7 @@ class Landing extends React.Component<any, any> {
                 </div>
             );
         }
-        if (WISHING_ENABLED) {
+        if (!wishingHidden()) {
             wishB = (
                 <button className="btn btn-pri-alt" onClick={this.handleRedirectToWishes}
                     style={style} type="button">

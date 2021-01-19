@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { Nav } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
-import { getInterfaceSettings } from '../storage';
+import { getInterfaceSettings, wishingHidden } from '../storage';
 import { getColor } from '../theme';
 import './MenuBar.css';
-import { WISHING_ENABLED } from '../config';
 import Icon from './Icon';
 const Navbar = require('react-bootstrap').Navbar;
 
@@ -30,7 +29,7 @@ class MenuBar extends React.Component<any, State> {
         let black = getColor(settings.theme, dt, 'icon_bg');
 
         let wshlink: any;
-        if (WISHING_ENABLED) {
+        if (!wishingHidden()) {
             wshlink = (
                 <Nav>
                     <Nav.Link eventKey="2" as="div">

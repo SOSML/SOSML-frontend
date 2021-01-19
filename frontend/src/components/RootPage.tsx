@@ -7,9 +7,8 @@ import Wishes from './Wishes';
 import Landing from './Landing';
 import Settings from './Settings';
 import FileIntermediate from './FileIntermediate';
-import { getInterfaceSettings } from '../storage';
+import { getInterfaceSettings, wishingHidden } from '../storage';
 import { renderTheme, getTheme } from '../theme';
-import { WISHING_ENABLED } from '../config';
 // import ShareIntermediate from './ShareIntermediate';
 import {
     BrowserRouter as Router,
@@ -44,7 +43,7 @@ class RootPage extends React.Component<any, any> {
         }
 
         let wishes: any;
-        if (WISHING_ENABLED) {
+        if (!wishingHidden()) {
             wishes = (
                 <Route path="/wishes" component={Wishes} />
             );
