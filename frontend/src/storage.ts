@@ -1,4 +1,4 @@
-import { DEFAULT_THEME } from './config';
+import { DEFAULT_THEME, WISHING_HIDDEN } from './config';
 import { getColor } from './theme';
 
 export * from './wishes';
@@ -39,6 +39,7 @@ export interface InterfaceSettings {
     autoSelectTheme: boolean;
     useMobile: boolean;
     showBeforeCodeResult: boolean;
+    wishingHidden: boolean; // wishing interface is hidden until the user opens a wishare link
 }
 
 export enum FileType {
@@ -151,7 +152,8 @@ export function getInterfaceSettings(): InterfaceSettings {
         advancedMode: false,
         autoSelectTheme: true,
         useMobile: true,
-        showBeforeCodeResult: true
+        showBeforeCodeResult: true,
+        wishingHidden: WISHING_HIDDEN
     };
     fillObjectWithString(ret, str);
     return ret;
