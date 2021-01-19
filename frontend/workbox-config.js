@@ -4,7 +4,7 @@ module.exports = {
         'build/static/js/**.js',
         'build/static/fonts/*',
         'build/manifest.json',
-        'build/**/*.wish.json',
+        'build/**.json',
         'build/**.png',
         'build/webworker.js',
         'build/index.html'
