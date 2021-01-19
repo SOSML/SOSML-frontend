@@ -35,7 +35,7 @@ class RootPage extends React.Component<any, any> {
         } else {
             footer = (
                 <div className="footer">
-                    © 2020 <a href="https://github.com/SOSML">The SOSML Developers</a> | <a
+                    © 2021 <a href="https://github.com/SOSML">The SOSML Developers</a> | <a
                     href="https://github.com/SOSML/SOSML">Sources on GitHub</a> | <a
                     href="https://github.com/SOSML/SOSML/issues">File a Bug</a> | <a
                     href="https://www.uni-saarland.de/impressum">Imprint</a>
