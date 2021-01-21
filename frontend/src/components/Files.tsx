@@ -1,11 +1,13 @@
 import * as React from 'react';
 
-import { Fade, Button, OverlayTrigger, Tooltip, Container, Table } from 'react-bootstrap';
+import { Container, Table } from 'react-bootstrap';
 import { API } from '../api';
 import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
 import ShareModal from './ShareModal';
-import { getColor } from '../theme';
 import { displayName, getInterfaceSettings, File, FileType, Database } from '../storage';
+import FileListItem from './FileListItem';
+import FileListFolder from './FileListFolder';
+import FileListButton from './FileListButton';
 
 const FileSaver = require('file-saver');
 
@@ -200,7 +202,6 @@ class Files extends React.Component<any, State> {
     private renderFileList(files: File[], prefix: string = ''): any {
         let style: any = {};
         style.textAlign = 'center';
-        // let filesView = this.state.files.map((file) => { return this.renderFile(file); });
         let filesView: any[] = [];
 
         let currentFolder: File[] = [];
@@ -275,172 +276,60 @@ class Files extends React.Component<any, State> {
         }
 
         let folderState: boolean = this.state.folder[prefix + name + files[0].type];
-        let settings = getInterfaceSettings();
-        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
 
-        let style4: any = {};
-        style4.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style4.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style4.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style4.borderTop = 'none';
-        let style3: any = {};
-        style3.marginTop = '-8.8px';
-        style3.marginRight = '-9px';
-        style3.marginLeft = '8px';
-        style3.cursor = 'pointer';
-        let style2: any = {};
-        style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        if (!folderState) {
-            style2.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
+        let headerButtons: any[] = [];
+        if (files.length >= 1 && files[0].type !== FileType.SERVER) {
+            let space = (
+                <div className="miniSpacer" key={key + '@fhead1'}/>
+            );
+            let deleteBtn = (
+                <FileListButton iconName="trash" key={key + '@fhead2'} onClick={this.deleteHandlerForAll(files)}>
+                    {this.state.miniMode ? '' : (files.length >= 1 && files[0].type
+                        === FileType.SHARE ? "Forget All" : "Delete All")}
+                </FileListButton>
+            );
+            headerButtons.push(space);
+            headerButtons.push(deleteBtn);
         }
-        style2.whiteSpace = 'nowrap';
-        style2.textAlign = 'right';
-        style2.verticalAlign = 'top';
-        style2.fontFamily = 'monospace';
-        style2.cursor = 'pointer';
-        let style: any = {};
-        style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.cursor = 'pointer';
-        if (!folderState) {
-            style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        }
-        style.whiteSpace = 'nowrap';
-        style.overflow = 'hidden';
-        style.textOverflow = 'ellipsis';
-        style.maxWidth = '8em';
-        style.fontFamily = 'monospace';
 
-        let space = (
-            <div className="miniSpacer" />
+        return (
+            <FileListFolder isOpened={folderState} folderName={name}
+                onClick={this.toggleFolder(prefix + name + files[0].type)}
+                headerButtons={headerButtons}
+                keyHint={key} key={key} openCloseButtonText={files.length + ' Files'}>
+                {renderedFiles}
+            </FileListFolder>
         );
-        let deleteBtn = (
-            <Button size="sm" className="button btn-dng-alt"
-                onClick={this.deleteHandlerForAll(files)} style={style3}>
-                <span className="glyphicon glyphicon-trash" /> { this.state.miniMode ? '' :
-                    (files.length >= 1 && files[0].type
-                    === FileType.SHARE ? "Forget All" : "Delete All")}
-            </Button>
-        );
-
-        let tooltip = (
-            <Tooltip id={'tooltip' + key}>
-                {name}
-            </Tooltip>
-        );
-
-        let result: any[] = [];
-        result.push(
-            <tr key={key}>
-                <td style={style} onClick={this.toggleFolder(prefix + name + files[0].type)}>
-                    <OverlayTrigger overlay={tooltip}>
-                    <div className={'glyphicon glyphicon-'
-                        + (folderState ? 'folder-open' : 'folder-close')} />
-                    </OverlayTrigger>
-                    {space}
-                    {name}
-                </td>
-                <td style={style2} onClick={this.toggleFolder(prefix + name + files[0].type)}>
-                    <Button size="sm" className="button btn-suc-alt"
-                    onClick={this.toggleFolder(prefix + name + files[0].type)} style={style3}>
-                        <div className={'glyphicon glyphicon-'
-                            + (folderState ? 'folder-close' : 'folder-open')} />
-                        {space}
-                        {(folderState ? 'Hide ' : 'Show ') + files.length + ' Files'}
-                    </Button>
-                    {files.length >= 1 && files[0].type !== FileType.SERVER ? space : ''}
-                    {files.length >= 1 && files[0].type !== FileType.SERVER ? deleteBtn : ''}
-                </td>
-            </tr>
-        );
-        result.push(
-            <Fade key={key + 'fade1'} in={folderState} unmountOnExit={true} timeout={10}>
-                <tr key={key + 't1'} className="no-hover">
-                    <td colSpan={2} style={style4}>
-                        <div>
-                        {renderedFiles}
-                        </div>
-                    </td>
-                </tr>
-            </Fade>
-        );
-        return result;
     }
 
     private renderFile(file: File | undefined, key: number, prefix: string = '') {
-        let settings = getInterfaceSettings();
-        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
-
-        let style4: any = {};
-        style4.padding = '2.5px';
-        let style3: any = {};
-        style3.marginTop = '-8.8px';
-        style3.marginRight = '-9px';
-        style3.marginLeft = '8px';
-        style3.cursor = 'pointer';
-        let style2: any = {};
-        style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.whiteSpace = 'nowrap';
-        style2.textAlign = 'right';
-        style2.verticalAlign = 'top';
-        style2.fontFamily = 'monospace';
-        style2.cursor = 'pointer';
-        let style: any = {};
-        style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.whiteSpace = 'nowrap';
-        style.overflow = 'hidden';
-        style.textOverflow = 'ellipsis';
-        style.maxWidth = '8em';
-        style.verticalAlign = 'bottom';
-        style.fontFamily = 'monospace';
-        style.cursor = 'pointer';
-
         if (file === undefined) {
             return (
-                <tr key={key} className="no-hover">
-                    <td style={style4}/>
-                    <td style={style4}/>
-                </tr>
+                <FileListItem key={key} />
             );
         }
 
         let printName = displayName(file).substr(prefix.length);
-
         let space = (
             <div className="miniSpacer" />
         );
         let deleteBtn = (
-            <Button size="sm" className="button btn-dng-alt"
-                onClick={this.deleteHandlerFor(file.name)} style={style3}>
-                <span className="glyphicon glyphicon-trash" /> {this.state.miniMode ? "" : "Delete"}
-            </Button>
+            <FileListButton onClick={this.deleteHandlerFor(file.name)}>
+                {this.state.miniMode ? "" : "Delete"}
+            </FileListButton>
         );
         let forgetBtn = (
-            <Button size="sm" className="button btn-dng-alt"
-                onClick={this.deleteHandlerFor(file.name, true)} style={style3}>
-                <span className="glyphicon glyphicon-trash" /> {this.state.miniMode ? "" : "Forget"}
-            </Button>
+            <FileListButton onClick={this.deleteHandlerFor(file.name, true)}>
+                {this.state.miniMode ? "" : "Forget"}
+            </FileListButton>
         );
         let linkBtn = (
-            <Button size="sm" className="button btn-pri-alt"
-                onClick={this.linkHandlerFor(file)} style={style3}>
-                <span className="glyphicon glyphicon-link" /> {this.state.miniMode ? "" : "Link"}
-            </Button>
-        );
-
-        let tooltip = (
-            <Tooltip id={'tooltip' + key}>
-                {printName}
-            </Tooltip>
+            <FileListButton iconName="link" btnType="pri" onClick={this.linkHandlerFor(file)}>
+                {this.state.miniMode ? "" : "Link"}
+            </FileListButton>
         );
 
         let glicon = 'file';
-
         if (file.type === FileType.SHARE) {
             glicon = 'download';
 
@@ -451,34 +340,23 @@ class Files extends React.Component<any, State> {
         }
 
         return (
-            <tr key={key}>
-                <td style={style} onClick={this.openHandlerFor(file)}>
-                <OverlayTrigger overlay={tooltip}>
-                        <div className={'glyphicon glyphicon-' + glicon} />
-                    </OverlayTrigger>
-                    {space}
-                    {printName}
-                </td>
-                <td style={style2} onClick={this.openHandlerFor(file)}>
-                    <Button size="sm" className="button btn-suc-alt"
-                    onClick={this.openHandlerFor(file)} style={style3}>
-                        <div className={'glyphicon glyphicon-' +
-                            (file.type === FileType.SHARE ? 'search'
-                            : 'pencil')} /> {this.state.miniMode ? "" :
-                            (file.type === FileType.SHARE ? "View" : "Edit")}
-                    </Button>
-                    {file.type === FileType.SHARE ? space : ''}
-                    {file.type === FileType.SHARE ? linkBtn : ''}
-                    <div className="miniSpacer" />
-                    <Button size="sm" className="button btn-pri-alt"
-                    onClick={this.downloadHandlerFor(file)} style={style3}>
-                        <span className="glyphicon glyphicon-download-alt" /> {this.state.miniMode ? "" : "Save"}
-                    </Button>
-                    {file.type !== FileType.SERVER ? space : ''}
-                    {file.type === FileType.LOCAL ? deleteBtn : ''}
-                    {file.type === FileType.SHARE ? forgetBtn : ''}
-                </td>
-            </tr>
+            <FileListItem key={key} onClick={this.openHandlerFor(file)} iconName={glicon}
+                fileName={printName}>
+                <FileListButton btnType="suc" onClick={this.openHandlerFor(file)}
+                    iconName={(file.type === FileType.SHARE ? 'search' : 'pencil')}>
+                        {this.state.miniMode ? "" : (file.type === FileType.SHARE ? "View" : "Edit")}
+                </FileListButton>
+                {file.type === FileType.SHARE ? space : ''}
+                {file.type === FileType.SHARE ? linkBtn : ''}
+                <div className="miniSpacer" />
+                <FileListButton btnType="pri" iconName="download-alt"
+                    onClick={this.downloadHandlerFor(file)}>
+                    {this.state.miniMode ? "" : "Save"}
+                </FileListButton>
+                {file.type !== FileType.SERVER ? space : ''}
+                {file.type === FileType.LOCAL ? deleteBtn : ''}
+                {file.type === FileType.SHARE ? forgetBtn : ''}
+            </FileListItem>
         );
     }
 
@@ -554,16 +432,16 @@ class Files extends React.Component<any, State> {
 
     private downloadHandlerFor(file: File): (evt: any) => void {
         return (evt: any) => {
-            let promis: any;
+            let promise: any;
             if (file.type !== FileType.SERVER) {
-                promis = Database.getInstance().then((db: Database) => {
+                promise = Database.getInstance().then((db: Database) => {
                     return db.getFile(file.name, false, file.type === FileType.SHARE);
                 });
             } else {
-                promis = API.getCodeExample(file.name);
+                promise = API.getCodeExample(file.name);
             }
 
-            promis.then((content: string) => {
+            promise.then((content: string) => {
                 let blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
                 file.name += '.sml';
                 FileSaver.saveAs(blob, file.name);

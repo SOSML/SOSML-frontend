@@ -1,29 +1,38 @@
 import * as React from 'react';
 
 import Playground from './Playground';
-import { Fade, Button, OverlayTrigger, Tooltip, Container, Table } from 'react-bootstrap';
-// import { API } from '../api';
-// import { SAMPLE_FILES_ENABLED, SHARING_ENABLED } from '../config';
-import { getColor } from '../theme';
-import { getInterfaceSettings, Database, getWishStatus, setWishStatus, WishPart, Wish,
+import { Button, Container, Table } from 'react-bootstrap';
+import { API } from '../api';
+import { SAMPLE_WISHES_ENABLED /*, WISHARING_ENABLED */ } from '../config';
+import { Database, getWishStatus, setWishStatus, WishPart, Wish,
          WishSeries, DEFAULT_WISHES } from '../storage';
+
+import FileListItem from './FileListItem';
+import FileListFolder from './FileListFolder';
+import FileListButton from './FileListButton';
 
 const Modal = require('react-bootstrap').Modal;
 // const FileSaver = require('file-saver');
 
 const WISHES_LOADING = 0;
-// const WISHES_LOADED = 1;
-// const WISHES_FAILED = 2;
+const WISHES_LOADED = 1;
+const WISHES_FAILED = 2;
 
 const MINIMODE_LB = 768;
 
 const TEST_START_STRING = '--- Checking your solution ---';
 const TEST_COMPLETE_STRING = '--- All checks passed. Part complete! ---';
 
+interface ExternalWish {
+    fileName: string;
+    downloaded: boolean;
+}
+
 interface State {
     wishes: WishSeries[]; // wish series shipped with SOSML-frontend
-    externalWishes: WishSeries[]; // wishes available on the server
-    sharedWishes: WishSeries[]; // invisible/shared online wishes only obtainable via share link
+    localWishes: WishSeries[]; // wishes saved in the browser
+
+    externalWishes: ExternalWish[]; // names of wish files available on the server
     externalWishesStatus: number;
     miniMode: boolean; // shrink everything on small screens
     folder: any;
@@ -44,8 +53,8 @@ class Wishes extends React.Component<any, State> {
 
         this.state = {
             wishes: DEFAULT_WISHES,
+            localWishes: [],
             externalWishes: [],
-            sharedWishes: [],
             externalWishesStatus: WISHES_LOADING,
             miniMode: false,
             folder: {},
@@ -75,6 +84,7 @@ class Wishes extends React.Component<any, State> {
             }
         }
 
+        this.refreshExternalWishes();
         let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
         this.setState({miniMode: (width < MINIMODE_LB)});
         window.addEventListener('resize', this.handleBrowserResize, {passive: true});
@@ -90,6 +100,10 @@ class Wishes extends React.Component<any, State> {
         wishes.sort((q1: WishSeries, q2: WishSeries) => {
             return collator.compare(q1.id, q2.id);
         });
+        let localWishes = this.deepCopy(this.state.localWishes);
+        localWishes.sort((q1: WishSeries, q2: WishSeries) => {
+            return collator.compare(q1.id, q2.id);
+        });
 
         if (this.state.wishSeries === undefined
             || this.state.wish === undefined || this.state.wishPart === undefined) {
@@ -99,8 +113,14 @@ class Wishes extends React.Component<any, State> {
                         <h2>Wishes</h2>
                         <hr/>
                         {this.renderWishList(wishes)}
+                        <h4>Local Wishes</h4>
+                        <p>
+                        {localWishes.length === 0
+                            ? "Wishes stored locally in your browser will appear here."
+                            : "You can find the wishes that you downloaded from the server here."}
+                        </p>
+                        {this.renderWishList(localWishes)}
                         {this.renderExternalWishes()}
-                        {this.renderSharedWishes()}
                         <br/> <br/>
                 </Container>
             );
@@ -433,69 +453,41 @@ class Wishes extends React.Component<any, State> {
     }
 
     private renderExternalWishes() : any {
-    }
+        if (!SAMPLE_WISHES_ENABLED) {
+            return '';
+        }
 
-    private renderSharedWishes() : any {
+        let examplesView: any[] = [];
+        examplesView.push(
+            <br key="ex@1"/>
+        );
+        examplesView.push(
+            <h4 key="ex@2">Downloadable Wishes</h4>
+        );
+
+        if (this.state.externalWishesStatus === WISHES_LOADED) {
+            let externalWishes = this.renderExternalWishList(this.state.externalWishes);
+            examplesView.push(externalWishes);
+        } else if (this.state.externalWishesStatus === WISHES_FAILED) {
+            examplesView.push(
+                <p key="3">External wishes unavailable.</p>
+            );
+        } else {
+            examplesView.push(
+                <p key="3">Loading external wishes…</p>
+            );
+        }
+
+        return examplesView;
     }
 
     private renderFolder(name: string, shortName: string,
                          description: string[], inner: any, key: string): any {
         let folderState: boolean = this.state.folder[name + key];
-        let settings = getInterfaceSettings();
-        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
 
-        if(description === undefined) {
+        if (description === undefined) {
             description = [];
         }
-
-        let style5: any = {};
-        style5.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style5.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
-        if( !folderState)
-            style5.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        let style4: any = {};
-        style4.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style4.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style4.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style4.borderTop = 'none';
-        let style3: any = {};
-        style3.marginTop = '-8.8px';
-        style3.marginRight = '-9px';
-        style3.marginLeft = '8px';
-        style3.cursor = 'pointer';
-        let style2: any = {};
-        style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        if(description.length > 0 || !folderState)
-            style2.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.whiteSpace = 'nowrap';
-        style2.textAlign = 'right';
-        style2.verticalAlign = 'top';
-        style2.cursor = 'pointer';
-        let style: any = {};
-        style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.cursor = 'pointer';
-        if(description.length > 0 || !folderState)
-            style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.whiteSpace = 'nowrap';
-        style.overflow = 'hidden';
-        style.textOverflow = 'ellipsis';
-        style.maxWidth = '10em';
-        if(description.length > 0) {
-            style.fontSize = 'large';
-        }
-        style.fontFamily = 'monospace';
-
-        let space = (
-            <div className="miniSpacer" />
-        );
-
-        let tooltip = (
-            <Tooltip id={'tooltip' + key}>
-                {name}
-            </Tooltip>
-        );
 
         let desc = (
             <div key={"sd@" + key}>
@@ -503,87 +495,19 @@ class Wishes extends React.Component<any, State> {
             </div>
         );
 
-        let result: any[] = [];
-
-        result.push(
-            <tr key={key}>
-                <td style={style} onClick={this.toggleFolder(name + key)}>
-                    <OverlayTrigger overlay={tooltip}>
-                    <div className={'glyphicon glyphicon-exclamation-sign'}
-                        style={{'fontSize': '75%'}}/>
-                    </OverlayTrigger>
-                    {space}
-                    {this.state.miniMode ? shortName : name}
-                </td>
-                <td style={style2} onClick={this.toggleFolder(name + key)}>
-                    <Button
-                        key={key + '@b1'}
-                        size="sm" className="button btn-suc-alt"
-                        onClick={this.toggleFolder(name + key)} style={style3}>
-                        <div className={'glyphicon glyphicon-'
-                            + (folderState ? 'folder-close' : 'folder-open')} />
-                        {space}
-                        {(folderState ? 'Hide' : 'Show') + ' Progress'}
-                    </Button>
-                </td>
-            </tr>
+        return (
+            <FileListFolder isOpened={folderState}
+            folderName={this.state.miniMode ? shortName : name}
+            onClick={this.toggleFolder(name + key)}
+            keyHint={key} key={key} openCloseButtonText={'Progress'}
+            description={description.length > 0 ? desc : undefined}>
+                {inner}
+            </FileListFolder>
         );
-        if(description.length > 0) {
-            result.push(
-                <tr key={key + 't@1'} className="no-hover">
-                    <td colSpan={2} style={style5}>
-                        {desc}
-                    </td>
-                </tr>
-            );
-        }
-        result.push(
-            <Fade key={key + 'fade1'} in={folderState} unmountOnExit={true} timeout={10}>
-                <tr key={key + 't1'} className="no-hover">
-                    <td colSpan={2} style={style4}>
-                        <div>
-                        {inner}
-                        </div>
-                    </td>
-                </tr>
-            </Fade>
-        );
-        return result;
     }
 
     private renderWish(wishSeries: WishSeries, wish: Wish, key: string): any {
-        let settings = getInterfaceSettings();
-        let dt: string | undefined = settings.autoSelectTheme ? settings.darkTheme : undefined;
-
         let partsCompleted = getWishStatus(wishSeries.id, wish.name);
-
-        let style4: any = {};
-        style4.padding = '2.5px';
-        let style3: any = {};
-        style3.marginTop = '-8.8px';
-        style3.marginRight = '-9px';
-        style3.marginLeft = '8px';
-        style3.cursor = 'pointer';
-        let style2: any = {};
-        style2.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.borderRight = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style2.whiteSpace = 'nowrap';
-        style2.textAlign = 'right';
-        style2.verticalAlign = 'top';
-        style2.fontFamily = 'monospace';
-        style2.cursor = 'pointer';
-        let style: any = {};
-        style.borderTop = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.borderLeft = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.borderBottom = '1px solid ' + getColor(settings.theme, dt, 'border');
-        style.whiteSpace = 'nowrap';
-        style.overflow = 'hidden';
-        style.textOverflow = 'ellipsis';
-        style.maxWidth = '8em';
-        style.verticalAlign = 'bottom';
-        style.fontFamily = 'monospace';
-        style.cursor = 'pointer';
 
         let parts: any[] = [];
         let space = (
@@ -593,31 +517,20 @@ class Wishes extends React.Component<any, State> {
             if (i > 0) {
                 parts.push(space);
             }
-            let btnType = 'button btn-suc-alt';
-            let icon = 'glyphicon-ok-sign'
+            let btnType = 'suc';
+            let icon = 'ok-sign'
             if (i > partsCompleted) {
-                btnType = 'button btn-dng-alt';
-                icon = 'glyphicon-lock'
+                btnType = 'dng';
+                icon = 'lock'
             } else if (i === partsCompleted) {
-                btnType = 'button btn-pri-alt';
-                icon = 'glyphicon-exclamation-sign';
+                btnType = 'pri';
+                icon = 'exclamation-sign';
             }
             parts.push(
-                <Button size="sm" className={btnType}
-                    onClick={this.openHandlerFor(wishSeries, wish, i)}
-                    key={key + '@b@' + i}
-                    disabled={i > partsCompleted}
-                    style={style3}>
-                        <div className={'glyphicon ' + icon} />
-                    </Button>
+                <FileListButton btnType={btnType} onClick={this.openHandlerFor(wishSeries, wish, i)}
+                    key={key + '@b@' + i} disabled={i > partsCompleted} iconName={icon} />
             );
         }
-
-        let tooltip = (
-            <Tooltip id={'tooltip' + key}>
-                {wish.name}
-            </Tooltip>
-        );
 
         if (partsCompleted >= wish.parts.length) {
             partsCompleted = wish.parts.length - 1;
@@ -626,25 +539,64 @@ class Wishes extends React.Component<any, State> {
         return (
             <Table key={'tbl1@wish@tbl@' + key + '@' + wish.name} hover={true}>
                 <tbody>
-                <tr key={'tbl@wish@' + key + '@' + wish.name}>
-                <td style={style} onClick={this.openHandlerFor(wishSeries, wish, partsCompleted)}>
-                <OverlayTrigger overlay={tooltip}>
-                        <div className={'glyphicon glyphicon-exclamation-sign'} />
-                    </OverlayTrigger>
-                    {space}
-                    {wish.name}
-                </td>
-                <td style={style2} onClick={this.openHandlerFor(wishSeries, wish, partsCompleted)}>
-                    {parts}
-                </td>
-                </tr>
-                <tr key={key} className="no-hover">
-                    <td style={style4}/>
-                    <td style={style4}/>
-                </tr>
+                    <FileListItem key={'tbl1@wish@itm@' + key + '@' + wish.name}
+                        iconName={'exclamation-sign'} fileName={wish.name}
+                        onClick={this.openHandlerFor(wishSeries, wish, partsCompleted)}>
+                        {parts}
+                    </FileListItem>
+                    <FileListItem key={key} />
                 </tbody>
             </Table>
         );
+    }
+
+    private renderExternalWishList(externalWishList: ExternalWish[]): any {
+        if (externalWishList.length === 0) {
+            return (
+                <p key="ex@3">No external wishes available.</p>
+            );
+        }
+
+        let filesView: any[] = [];
+
+        // For now, no folder support for external wishes
+        for (let i = 0; i < externalWishList.length; ++i ) {
+            let downloadBtn = [(
+                <FileListButton btnType="pri"
+                    iconName={externalWishList[i].downloaded ? 'ok-sign' : 'download'}
+                    onClick={externalWishList[i].downloaded ? undefined
+                        : this.downloadExternalWish(externalWishList[i])}
+                    disabled={externalWishList[i].downloaded}>
+                    {externalWishList[i].downloaded ? 'Accepted' : 'Accept'}
+                </FileListButton>
+            )];
+            filesView.push(
+                <FileListItem key={'exwish@' + i}
+                onClick={externalWishList[i].downloaded ? undefined
+                    : this.downloadExternalWish(externalWishList[i])}
+                fileName={externalWishList[i].fileName} iconName={'exclamation-sign'}>
+                    {downloadBtn}
+                </FileListItem>
+            );
+            filesView.push(
+                <FileListItem key={'exwish@a' + i} />
+            );
+        }
+
+        return (
+            <Table hover={true}>
+                <tbody>
+                    {filesView}
+                </tbody>
+            </Table>
+        );
+    }
+
+    private downloadExternalWish(externalWish: ExternalWish): (evt: any) => void {
+        return (evt: any) => {
+
+            evt.stopPropagation();
+        };
     }
 
     private renderWishList(wishSeries: WishSeries[]): any {
@@ -723,6 +675,33 @@ class Wishes extends React.Component<any, State> {
             }
             evt.stopPropagation();
         };
+    }
+
+    private refreshExternalWishes() {
+        if (SAMPLE_WISHES_ENABLED) {
+            API.getPublicWishList().then((list: string[]) => {
+                let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+                list.sort(collator.compare);
+
+                this.setState({externalWishes: list.map((file) => {
+                    return {
+                        'fileName': file,
+                        'downloaded': false,
+                    };
+                }), externalWishesStatus: WISHES_LOADED});
+            }).catch((e) => {
+                /*
+                this.setState({externalWishes: ['test', 'test2'].map((file) => {
+                    return {
+                        'fileName': file,
+                        'downloaded': false,
+                    };
+                }), externalWishesStatus: WISHES_LOADED});
+                */
+                this.setState({externalWishesStatus: WISHES_FAILED});
+            });
+
+        }
     }
 }
 
