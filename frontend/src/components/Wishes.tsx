@@ -594,17 +594,14 @@ class Wishes extends React.Component<any, State> {
             API.getPublicWish(externalWish.fileName).then((content: WishSeries) => {
                 Database.getInstance().then((db: Database) => {
                     // store wish in db
-                    db.saveWish(externalWish.fileName, content, WishType.SERVER);
+                    return db.saveWish(externalWish.fileName, content, WishType.SERVER);
                 }).then(() => {
-                    // mark wish as downloaded
-                    setWishDownloaded(externalWish.fileName, true);
                     this.refreshStoredWishes();
+                    setWishDownloaded(externalWish.fileName, true);
                 }).catch((error: any) => {
-                    console.log(error);
                     setWishDownloaded(externalWish.fileName, false);
                 });
             }).catch((error: any) => {
-                console.log(error);
                 setWishDownloaded(externalWish.fileName, false);
             });
             evt.stopPropagation();

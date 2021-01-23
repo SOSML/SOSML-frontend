@@ -115,7 +115,7 @@ export class API {
             }
         }).then(function(data: any) {
             return data.codes.map((name: any) => {
-                return name.replace('.json', '');
+                return name.replace('.wish.json', '');
             });
         });
     }
