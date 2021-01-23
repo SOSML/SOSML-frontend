@@ -507,6 +507,22 @@ class Wishes extends React.Component<any, State> {
     private renderWish(wishSeries: WishSeries, wish: Wish, key: string): any {
         let partsCompleted = getWishStatus(wishSeries.id, wish.name);
 
+        let unlocked = true;
+        // a wish is unlocked if all prerequisites are completed
+        for (let i = 0; i < wish.prerequisites.length; ++i) {
+            let pq = wish.prerequisites[i];
+
+            for (let j = 0; j < wishSeries.wishes.length; ++j) {
+                if (wishSeries.wishes[j].name === pq) {
+                    if (!this.isWishCompleted(wishSeries, wishSeries.wishes[j])) {
+                        unlocked = false;
+                    }
+                    break;
+                }
+            }
+            if (!unlocked) { break; }
+        }
+
         let parts: any[] = [];
         for (let i = 0; i < wish.parts.length; i++) {
             if (i > 0) {
@@ -516,7 +532,7 @@ class Wishes extends React.Component<any, State> {
             }
             let btnType = 'suc';
             let icon = 'ok-sign'
-            if (i > partsCompleted) {
+            if (!unlocked || i > partsCompleted) {
                 btnType = 'dng';
                 icon = 'lock'
             } else if (i === partsCompleted) {
@@ -525,7 +541,8 @@ class Wishes extends React.Component<any, State> {
             }
             parts.push(
                 <FileListButton btnType={btnType} onClick={this.openHandlerFor(wishSeries, wish, i)}
-                    key={key + '@b@' + i} disabled={i > partsCompleted} iconName={icon} />
+                    key={key + '@b@' + i}
+                    disabled={!unlocked || i > partsCompleted} iconName={icon} />
             );
         }
 
@@ -538,7 +555,8 @@ class Wishes extends React.Component<any, State> {
                 <tbody>
                     <FileListItem key={'tbl1@wish@itm@' + key + '@' + wish.name}
                         iconName={'exclamation-sign'} fileName={wish.name}
-                        onClick={this.openHandlerFor(wishSeries, wish, partsCompleted)}>
+                        onClick={unlocked ? this.openHandlerFor(wishSeries, wish, partsCompleted)
+                        : undefined}>
                         {parts}
                     </FileListItem>
                     <FileListItem key={key} />

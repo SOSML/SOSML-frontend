@@ -67,6 +67,7 @@ class RootPage extends React.Component<any, any> {
                     <Route path="/file/:name" component={FileIntermediate} />
                     <Route path="/examplefile/:name" component={FileIntermediate} />
                     <Route path="/share/:hash" component={Editor} />
+                    <Route path="/wishare/:hash" component={Wishes} />
                 {footer}
                 </div>
             </Router>

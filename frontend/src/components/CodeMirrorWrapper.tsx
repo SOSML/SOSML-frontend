@@ -143,7 +143,7 @@ class IncrementalInterpretationHelper {
                 data: this.interpreterSettings
             });
             if (this.initialExtraCode !== undefined) {
-                if (getInterfaceSettings().showBeforeCodeResult) {
+                if (!getInterfaceSettings().hideBeforeCodeResult) {
                     this.worker.postMessage({
                         type: 'initial',
                         data: this.initialExtraCode

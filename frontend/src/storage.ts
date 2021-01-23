@@ -37,7 +37,7 @@ export interface InterfaceSettings {
     advancedMode: boolean;
     autoSelectTheme: boolean;
     useMobile: boolean;
-    showBeforeCodeResult: boolean;
+    hideBeforeCodeResult: boolean;
     wishingHidden: boolean; // wishing interface is hidden until the user opens a wishare link
 }
 
@@ -187,7 +187,7 @@ export function getInterfaceSettings(): InterfaceSettings {
         advancedMode: false,
         autoSelectTheme: true,
         useMobile: true,
-        showBeforeCodeResult: true,
+        hideBeforeCodeResult: true,
         wishingHidden: WISHING_HIDDEN
     };
     fillObjectWithString(ret, str);

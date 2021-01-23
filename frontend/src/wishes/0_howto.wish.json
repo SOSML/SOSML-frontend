@@ -1,0 +1,139 @@
+{
+    "id": "0_howto",
+    "name": "I Wish to Wish",
+    "shortName": "Wishes 101",
+    "description": [
+        "This is a sample __wish series__ to demonstrate how wishes work, ",
+        "and how to create new wish series.\n",
+        "A wish series is defined in a single ``json`` file with the file ending ``.wish.json``.\n",
+        "The top level object needs to have the properties: ``id`` (``string``: a unique id ",
+        "for the wish series that is used to track the user's progress), ",
+        "``name``, ``shortName`` (``string``: A name for the wish series and a shorter variant ",
+        "for narrow screens), ``description`` (``string[]``: A description of the wish series. ",
+        "The strings in the array are directly concatenated, ``code``, **bold**, and __italic__ ",
+        "text is also possible.), ``wishes`` (``Wish[]``: An array of wishes; each wish may have ",
+        "different parts. Consult the first wish for a detailed description)"
+    ],
+    "wishes": [
+        {
+            "name": "A First Wish",
+            "prerequisites": [],
+            "parts": [
+                {
+                    "description": [
+                        "A __wish__ is a series of smaller sub-tasks that share a common theme ",
+                        "or build on top of each other.\n",
+                        "A wish needs to have the following properties: ``name`` (``string``: ",
+                        "A name that is unique for this wish series; used as title and when ",
+                        "checking if the prerequisites for other wishes are met.), ",
+                        "``prerequisites`` (``string[]``: An array of names of wishes in the wish ",
+                        "series that need to be completed before a user can work on this wish.), ",
+                        "``parts`` (``WishPart[]``: An array of the parts that need to be ",
+                        "completed to complete this wish. A detailed description is given ",
+                        "in the next part of this wish.).\n\n",
+                        "To complete this part of the wish, define a variable ``x`` and assign ",
+                        "the value ``5`` to it. Start the interpretation by entering a ``;``."
+                    ],
+                    "code": {
+                        "userDefaultCode": [ "val x = 10" ],
+                        "afterCode": [
+                            "val () = Assert.assert (x = 5, \"\\\"x\\\" has an incorrect value.\");"
+                        ]
+                    }
+                },
+                {
+                    "description": [
+                        "A __wish part__ encapsulates a single task. The code entered by a user ",
+                        "is checked via custom SML code that is run after the user's code.\n",
+                        "In particular, a wish part has the following properties: ",
+                        "``description`` (``string[]``: A description of the task; supports ",
+                        "``code``, **bold**, and __italic__ text.), ``code`` ",
+                        "(``InterpretationField``: An object having four optional properties ",
+                        "``afterCode`` (``string[]`` SML code run **after** the user's input; ",
+                        " a wish part is completed if this code runs without any errors.), ",
+                        "``userDefaultCode`` (``string[]``: SML code initially shown in the ",
+                        "code field), ``beforeCode`` (``string[]``: SML code run **before** ",
+                        "any user code. The result is not shown by default; this can be changed ",
+                        "via the hidden Interface variable ``showBeforeCodeResult``.), ",
+                        "``interpreterSettings`` (``InterpreterSettings``: Special settings ",
+                        "to be used when interpreting the code in this part.))\n\n",
+                        "To complete this part, implement a procedure ``f`` that takes an ``int`` ",
+                        "and that on input ``x`` returns ``1`` if ``x ≤ 1`` and ``f (x-1) + f (x-2)`` ",
+                        "otherwise."
+                    ],
+                    "code": {
+                        "userDefaultCode": [ "fun f x = 1" ],
+                        "afterCode": [
+                            "val () = Assert.assert (f ~1 = 1, \"\\\"f\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (f 0 = 1, \"\\\"f\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (f 10 = 89, \"\\\"f\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (f 15 = 987, \"\\\"f\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (f 43 = 701408733, \"\\\"f\\\" returned an incorrect value.\");",
+                            "val () = (f 44; raise Fail \"Expected \\\"f\\\" to Overflow.\")  handle Overflow => ();"
+                        ]
+                    }
+                },
+                {
+                    "description": [ "As you might have realized, the correctness checks for ",
+                        "the last part were rather lax. A function hard-coding return values for ",
+                        "``~1``, ``0``, ``10``, ``15``, ``43``, and ``44`` would have passed. ",
+                        "In fact, you should always design your ",
+                        "__checker__ under the assumption that a user has full read-access to it; ",
+                        "while ``afterCode`` is not directly visible for a user, it is not hard ",
+                        "to extract it via the Developer Console of the browser. ",
+                        "In fact, a more versed user might even alter the checker code.\n\n",
+                    "In this part, the checker from the last part has been improved, ",
+                        "although you might not notice this if you are an honest user. ",
+                        "Still, the checker is not perfect, so try to write a procedure ``f`` ",
+                        "that passes the checker, but that **does not** solve the task from the ",
+                        "previous part."
+                    ],
+                    "code": {
+                        "userDefaultCode": [ "fun f x = let\n",
+                            "  fun f' 1 (x::_) = x\n",
+                            "    | f' n (x::x'::_) = if n <= 0 then 1 else f' (n-1) [x + x', x]\n",
+                            "in\n",
+                            "  f' x [1, 1]\n",
+                            "end"
+                        ],
+                        "afterCode": [
+                            "val () = Assert.assert (2 * f ~1 = f ~2 + f ~3, \"\\\"f\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (f 0 = 1, \"\\\"f\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (f 1 = 1, \"\\\"f\\\" returned an incorrect value.\");",
+                            "fun check 2 = () | check x = (check (x-1); Assert.assert (f x = f (x-1) + f (x-2), \"\\\"f\\\" returned an incorrect value.\")); val () = check 43;",
+                            "val () = (f 44; raise Fail \"Expected \\\"f\\\" to Overflow.\")  handle Overflow => ();"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "A Second Wish",
+            "prerequisites": [ "A First Wish" ],
+            "parts": [
+                {
+                    "description": [
+                        "Congratulations, you have mastered the basics of how to create a ",
+                        "wish series!\n\n",
+                        "In this part, a ``datatype tree = T of tree list`` has been defined. ",
+                        "The task is to write a procedure ``reverse: tree -> tree`` that ",
+                        "reverses a given tree."
+                    ],
+                    "code": {
+                        "beforeCode": [
+                            "datatype tree = T of tree list;",
+                            "val sampleTree = T[ T[ T[], T[] ], T[] ];",
+                            "val sampleTreeR = T[ T[], T[ T[], T[] ] ];"
+                        ],
+                        "afterCode": [
+                            "val () = Assert.assert (reverse sampleTree = sampleTreeR, \"\\\"reverse\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (reverse (reverse sampleTree) = sampleTree, \"\\\"reverse\\\" returned an incorrect value.\");",
+                            "val () = Assert.assert (reverse sampleTreeR = sampleTree, \"\\\"reverse\\\" returned an incorrect value.\");"
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
+

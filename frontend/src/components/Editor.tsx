@@ -95,15 +95,15 @@ class Editor extends React.Component<any, State> {
             let state: any = this.props.history.location.state;
 
             if (state.fileName) {
-                let promis: Promise<String>;
+                let promise: Promise<String>;
                 if (state.example) {
-                    promis = API.getCodeExample(state.fileName);
+                    promise = API.getCodeExample(state.fileName);
                 } else {
-                    promis = Database.getInstance().then((db: Database) => {
+                    promise = Database.getInstance().then((db: Database) => {
                         return db.getFile(state.fileName);
                     });
                 }
-                promis.then((content: string) => {
+                promise.then((content: string) => {
                     this.setState((oldState) => {
                         return {initialCode: content, fileName: state.fileName,
                                 shareReadMode: state.shareReadMode,

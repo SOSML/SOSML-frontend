@@ -10,7 +10,7 @@
     "wishes": [
         {
             "name": "Programs",
-            "prerequesites": [],
+            "prerequisites": [],
             "parts": [
                 {
                     "description": [
@@ -57,7 +57,7 @@
         },
         {
             "name": "Functions and Conditionals",
-            "prerequesites": [ "1_Programs" ],
+            "prerequisites": [ "1_Programs" ],
             "parts": [
                 {
                     "description": [ "``fun``" ],
