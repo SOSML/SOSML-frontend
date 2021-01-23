@@ -133,7 +133,8 @@ export class API {
             if (!response.ok) {
                 return Promise.reject(response.status);
             }
-            return (JSON.parse(response.text()) as WishSeries);
+            console.log(response);
+            return response.json<WishSeries>();
         });
     }
 
