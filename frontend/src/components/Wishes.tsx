@@ -599,13 +599,9 @@ class Wishes extends React.Component<any, State> {
                     this.refreshStoredWishes();
                     setWishDownloaded(externalWish.fileName, true);
                 }).catch((error: any) => {
-                    console.log('fail1');
-                    console.log(error);
                     setWishDownloaded(externalWish.fileName, false);
                 });
             }).catch((error: any) => {
-                console.log('fail2');
-                console.log(error);
                 setWishDownloaded(externalWish.fileName, false);
             });
             evt.stopPropagation();

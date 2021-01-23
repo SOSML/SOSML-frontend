@@ -133,7 +133,6 @@ export class API {
             if (!response.ok) {
                 return Promise.reject(response.status);
             }
-            console.log(response);
             return response.json<WishSeries>();
         });
     }
