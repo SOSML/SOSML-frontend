@@ -4,8 +4,9 @@ import Playground from './Playground';
 import { Button, Container, Table } from 'react-bootstrap';
 import { API } from '../api';
 import { SAMPLE_WISHES_ENABLED /*, WISHARING_ENABLED */ } from '../config';
-import { Database, getWishStatus, setWishStatus, WishPart, Wish,
-         WishSeries, DEFAULT_WISHES } from '../storage';
+import { Database, ExternalWish, WishType, getWishStatus, setWishStatus, getWishDownloaded,
+         setWishDownloaded } from '../storage';
+import { WishPart, Wish, WishSeries, DEFAULT_WISHES } from '../wishes';
 
 import FileListItem from './FileListItem';
 import FileListFolder from './FileListFolder';
@@ -23,14 +24,9 @@ const MINIMODE_LB = 768;
 const TEST_START_STRING = '--- Checking your solution ---';
 const TEST_COMPLETE_STRING = '--- All checks passed. Part complete! ---';
 
-interface ExternalWish {
-    fileName: string;
-    downloaded: boolean;
-}
-
 interface State {
-    wishes: WishSeries[]; // wish series shipped with SOSML-frontend
-    localWishes: WishSeries[]; // wishes saved in the browser
+    wishes: [WishSeries, ExternalWish][]; // wish series shipped with SOSML-frontend
+    localWishes: [WishSeries, ExternalWish][]; // wishes saved in the browser
 
     externalWishes: ExternalWish[]; // names of wish files available on the server
     externalWishesStatus: number;
@@ -481,8 +477,8 @@ class Wishes extends React.Component<any, State> {
         return examplesView;
     }
 
-    private renderFolder(name: string, shortName: string,
-                         description: string[], inner: any, key: string): any {
+    private renderFolder(name: string, shortName: string, description: string[], inner: any,
+                         key: string, wishInfo: ExternalWish): any {
         let folderState: boolean = this.state.folder[name + key];
 
         if (description === undefined) {
@@ -494,6 +490,8 @@ class Wishes extends React.Component<any, State> {
                 {this.parseDescriptionString(description.join(''), key)[0]}
             </div>
         );
+
+        // TODO: show wishInfo
 
         return (
             <FileListFolder isOpened={folderState}
@@ -510,12 +508,11 @@ class Wishes extends React.Component<any, State> {
         let partsCompleted = getWishStatus(wishSeries.id, wish.name);
 
         let parts: any[] = [];
-        let space = (
-            <div className="miniSpacer" />
-        );
         for (let i = 0; i < wish.parts.length; i++) {
             if (i > 0) {
-                parts.push(space);
+                parts.push(
+                    <div key={'space@' + i} className="miniSpacer" />
+                );
             }
             let btnType = 'suc';
             let icon = 'ok-sign'
@@ -561,19 +558,18 @@ class Wishes extends React.Component<any, State> {
 
         // For now, no folder support for external wishes
         for (let i = 0; i < externalWishList.length; ++i ) {
+            let downloaded: boolean = getWishDownloaded(externalWishList[i].fileName);
+
             let downloadBtn = [(
-                <FileListButton btnType="pri"
-                    iconName={externalWishList[i].downloaded ? 'ok-sign' : 'download'}
-                    onClick={externalWishList[i].downloaded ? undefined
-                        : this.downloadExternalWish(externalWishList[i])}
-                    disabled={externalWishList[i].downloaded}>
-                    {externalWishList[i].downloaded ? 'Accepted' : 'Accept'}
+                <FileListButton btnType="pri" iconName={downloaded ? 'ok-sign' : 'download'}
+                    disabled={downloaded} onClick={downloaded ? undefined
+                        : this.downloadExternalWish(externalWishList[i])}>
+                    {downloaded ? 'Accepted' : 'Accept'}
                 </FileListButton>
             )];
             filesView.push(
                 <FileListItem key={'exwish@' + i}
-                onClick={externalWishList[i].downloaded ? undefined
-                    : this.downloadExternalWish(externalWishList[i])}
+                onClick={downloaded ? undefined : this.downloadExternalWish(externalWishList[i])}
                 fileName={externalWishList[i].fileName} iconName={'exclamation-sign'}>
                     {downloadBtn}
                 </FileListItem>
@@ -594,16 +590,32 @@ class Wishes extends React.Component<any, State> {
 
     private downloadExternalWish(externalWish: ExternalWish): (evt: any) => void {
         return (evt: any) => {
-
+            // try to download wish over api
+            API.getPublicWish(externalWish.fileName).then((content: WishSeries) => {
+                Database.getInstance().then((db: Database) => {
+                    // store wish in db
+                    db.saveWish(externalWish.fileName, content, WishType.SERVER);
+                }).then(() => {
+                    // mark wish as downloaded
+                    setWishDownloaded(externalWish.fileName, true);
+                    this.refreshStoredWishes();
+                }).catch((error: any) => {
+                    setWishDownloaded(externalWish.fileName, false);
+                });
+            }).catch((error: any) => {
+                setWishDownloaded(externalWish.fileName, false);
+            });
             evt.stopPropagation();
         };
     }
 
-    private renderWishList(wishSeries: WishSeries[]): any {
-        return wishSeries.map((q: WishSeries) => { return this.renderWishSeries(q); } );
+    private renderWishList(wishSeries: [WishSeries, ExternalWish][]): any {
+        return wishSeries.map((q: [WishSeries, ExternalWish]) => {
+            return this.renderWishSeries(q[0], q[1]);
+        });
     }
 
-    private renderWishSeries(wishSeries: WishSeries): any {
+    private renderWishSeries(wishSeries: WishSeries, wishInfo: ExternalWish): any {
         let wishes: any[] = wishSeries.wishes !== undefined ? wishSeries.wishes.map((q: Wish) => {
             return this.renderWish(wishSeries, q, wishSeries.id);
         }) : [];
@@ -613,7 +625,7 @@ class Wishes extends React.Component<any, State> {
             <Table key={'tbl1@' + wishSeries.id} hover={true}>
                 <tbody>
                 {this.renderFolder(wishSeries.name, wishSeries.shortName,
-                                   wishSeries.description, wishes, wishSeries.id)}
+                                   wishSeries.description, wishes, wishSeries.id, wishInfo)}
                 <tr key={'tbl1@pad@' + wishSeries.id} className="no-hover">
                     <td style={style4}/>
                     <td style={style4}/>
@@ -677,6 +689,15 @@ class Wishes extends React.Component<any, State> {
         };
     }
 
+    private refreshStoredWishes() {
+        // update downloaded files
+        Database.getInstance().then((db: Database) => {
+            return db.getWishes();
+        }).then((data: [WishSeries, ExternalWish][]) => {
+            this.setState({localWishes: data});
+        });
+    }
+
     private refreshExternalWishes() {
         if (SAMPLE_WISHES_ENABLED) {
             API.getPublicWishList().then((list: string[]) => {
@@ -686,22 +707,14 @@ class Wishes extends React.Component<any, State> {
                 this.setState({externalWishes: list.map((file) => {
                     return {
                         'fileName': file,
-                        'downloaded': false,
+                        'wishType': WishType.SERVER
                     };
                 }), externalWishesStatus: WISHES_LOADED});
             }).catch((e) => {
-                /*
-                this.setState({externalWishes: ['test', 'test2'].map((file) => {
-                    return {
-                        'fileName': file,
-                        'downloaded': false,
-                    };
-                }), externalWishesStatus: WISHES_LOADED});
-                */
                 this.setState({externalWishesStatus: WISHES_FAILED});
             });
-
         }
+        this.refreshStoredWishes();
     }
 }
 

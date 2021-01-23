@@ -1,7 +1,6 @@
 import { DEFAULT_THEME, WISHING_ENABLED, WISHING_HIDDEN } from './config';
+import { WishSeries } from './wishes';
 import { getColor } from './theme';
-
-export * from './wishes';
 
 export interface InterpreterSettings {
     allowUnicodeInStrings: boolean; // unused
@@ -48,10 +47,23 @@ export enum FileType {
     SHARE
 }
 
+export enum WishType {
+    LOCAL = 1,
+    SERVER,
+    SHARE,
+    LOCAL_DEFAULT
+}
+
 export interface File {
     name: string;
     info: any;
     type: FileType;
+}
+
+export interface ExternalWish {
+    fileName: string;
+    info?: any;
+    wishType: WishType;
 }
 
 export function displayName(share: File): string {
@@ -67,6 +79,29 @@ export function displayName(share: File): string {
     }
     return share.info.date.toISOString().substr(0, 10) + '/' + share.name;
 }
+
+export function getWishDownloaded(wishName: string): boolean {
+    let str: string | null = localStorage.getItem('wishDownloaded');
+    if (typeof str === 'string') {
+        let data: any = JSON.parse(str);
+        if (data.hasOwnProperty(wishName)) {
+            return data[wishName];
+        }
+    }
+    return false;
+}
+
+export function setWishDownloaded(wishName: string, status: boolean): void {
+    let str: string | null = localStorage.getItem('wishDownloaded');
+
+    let data: any = {};
+    if (typeof str === 'string') {
+        data = JSON.parse(str);
+    }
+    data[wishName] = status;
+    localStorage.setItem('wishDownloaded', JSON.stringify(data));
+}
+
 
 // Returns the number of solved parts of the specified wish
 export function getWishStatus(wishSeriesId: string, wishId: string): number {
@@ -234,9 +269,9 @@ export class Database {
 
     getReady(): Promise<Database> {
         return new Promise((resolve: (val: any) => void, reject: (err: any) => void) => {
-            if (this.database != null) {
+            if (this.database != null) { // != instead of !== intended
                 resolve(this);
-            } else if (this.dbRequest == null) {
+            } else if (this.dbRequest == null) { // == instead of === intended
                 this.init();
             }
             this.dbRequest.onsuccess = (event: any) => {
@@ -248,6 +283,33 @@ export class Database {
             };
         });
     }
+
+    getWishes(): Promise<[WishSeries, ExternalWish][]> {
+        return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
+            let cursorReq = this.database.transaction(['wishes']).objectStore('wishes').openCursor();
+            cursorReq.onerror = (event: any) => {
+                reject('Error during read');
+            };
+            let wishes: [WishSeries, ExternalWish][] = [];
+            cursorReq.onsuccess = (event: any) => {
+                let cursor = event.target.result;
+                if (cursor) {
+                    if (cursor.value !== undefined) {
+                        wishes.push([cursor.value.value,
+                        {
+                            fileName: cursor.key,
+                            info: cursor.value,
+                            wishType: cursor.value.type,
+                        }]);
+                    }
+                    cursor.continue();
+                } else {
+                    resolve(wishes);
+                }
+            };
+        });
+    }
+
 
     getFiles(allowHidden: boolean = false, readShares: boolean = false): Promise<File[]> {
         return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
@@ -330,6 +392,20 @@ export class Database {
         });
     }
 
+    saveWish(wishName: string, content: WishSeries, wishType: WishType): Promise<boolean> {
+        return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
+            let request = this.database.transaction(['wishes'], 'readwrite').objectStore('wishes').put({
+                name: wishName, value: content, date: new Date().toISOString(), type: wishType
+            });
+            request.onerror = (event) => {
+                reject(false);
+            };
+            request.onsuccess = (event) => {
+                resolve(true);
+            };
+        });
+    }
+
     getFile(fileName: string, isHidden: boolean = false, isShare: boolean = false): Promise<string> {
         let name = (isHidden ? HIDDEN_FILE_PREFIX : '') + fileName;
         let location = isShare ? 'shares' : 'files';
@@ -368,12 +444,25 @@ export class Database {
         });
     }
 
-
-    deleteFile(fileName: string, isHidden: boolean = false, isShare: boolean = false): Promise<boolean> {
-        let name = (isHidden ? HIDDEN_FILE_PREFIX : '') + fileName;
-        let location = isShare ? 'shares' : 'files';
+    getWish(name: string): Promise<[WishSeries, WishType, any]> {
         return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
-            let request = this.database.transaction([location], 'readwrite').objectStore(location).delete(name);
+            let request = this.database.transaction(['wishes']).objectStore('wishes').get(name);
+            request.onerror = (event) => {
+                reject('Error during read');
+            };
+            request.onsuccess = (event: any) => {
+                try {
+                    resolve([event.target.result.value, event.target.result.origin, event.target.result]);
+                } catch (e) {
+                    reject('Reading wish ' + name + ' failed with error ' +  e.name + ': ' + e.message);
+                }
+            };
+        });
+    }
+
+    deleteDBObject(fileName: string, location: string): Promise<boolean> {
+        return new Promise( (resolve: (val: any) => void, reject: (err: any) => void) => {
+            let request = this.database.transaction([location], 'readwrite').objectStore(location).delete(fileName);
             request.onerror = (event) => {
                 reject(false);
             };
@@ -383,15 +472,31 @@ export class Database {
         });
     }
 
+    deleteFile(fileName: string, isHidden: boolean = false, isShare: boolean = false): Promise<boolean> {
+        let name = (isHidden ? HIDDEN_FILE_PREFIX : '') + fileName;
+        let location = isShare ? 'shares' : 'files';
+        return this.deleteDBObject(name, location);
+    }
+
+    deleteWish(wishName: string): Promise<boolean> {
+        return this.deleteDBObject(wishName, 'wishes');
+    }
+
+
     private init(): void {
-        this.dbRequest = window.indexedDB.open('FilesDB', 3);
+        this.dbRequest = window.indexedDB.open('FilesDB', 5);
         this.dbRequest.onupgradeneeded = (event: any) => {
+            console.log(event);
+            console.log('upgrading db');
             let db = event.target.result;
             try {
                 db.createObjectStore('files', { keyPath: 'name'});
             } catch (e) { }
             try {
                 db.createObjectStore('shares', { keyPath: 'name'});
+            } catch (e) { }
+            try {
+                db.createObjectStore('wishes', { keyPath: 'name'});
             } catch (e) { }
         };
         this.dbRequest.onsuccess = (event: any) => {

@@ -4,7 +4,7 @@ Defines API used to communicate with the backend server.
 
 */
 
-import { WishSeries } from './storage';
+import { WishSeries } from './wishes';
 
 const LAST_SHARE_TIMEOUT = 15000;
 
@@ -120,7 +120,7 @@ export class API {
         });
     }
 
-    static getPublicWish(name: string): Promise<string> {
+    static getPublicWish(name: string): Promise<WishSeries> {
         return fetch('/api/wish/' + name.replace(/\//g, '%2F'),
             {
                 headers: {
@@ -132,9 +132,8 @@ export class API {
         ).then(function(response: any) {
             if (!response.ok) {
                 return Promise.reject(response.status);
-            } else {
-                return response.text();
             }
+            return (JSON.parse(response.text()) as WishSeries);
         });
     }
 
