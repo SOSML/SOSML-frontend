@@ -1,6 +1,6 @@
-import { InterpreterSettings, ExternalWish, WishType } from '../storage';
+import { InterpreterSettings, ExternalWish /*, WishType */ } from '../storage';
 
-import WISH_HOWTO from './0_howto.wish.json';
+// import WISH_HOWTO from './0_howto.wish.json';
 // import WISH_SHOML from './1_shoml.wish.json';
 // import WISH_CHUUML from './2_chuuml.wish.json';
 
@@ -31,7 +31,7 @@ export interface WishSeries {
 }
 
 export let DEFAULT_WISHES: [WishSeries, ExternalWish][] = [
-    [WISH_HOWTO, {fileName: '0_howto', wishType: WishType.LOCAL_DEFAULT}],
+//    [WISH_HOWTO, {fileName: '0_howto', wishType: WishType.LOCAL_DEFAULT}],
 //    [WISH_SHOML, {fileName: '1_shoml', wishType: WishType.LOCAL_DEFAULT}],
 //    [WISH_CHUUML, {fileName: '2_chuuml', wishType: WishType.LOCAL_DEFAULT}],
 ];
