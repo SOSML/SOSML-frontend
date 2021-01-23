@@ -486,8 +486,6 @@ export class Database {
     private init(): void {
         this.dbRequest = window.indexedDB.open('FilesDB', 5);
         this.dbRequest.onupgradeneeded = (event: any) => {
-            console.log(event);
-            console.log('upgrading db');
             let db = event.target.result;
             try {
                 db.createObjectStore('files', { keyPath: 'name'});
