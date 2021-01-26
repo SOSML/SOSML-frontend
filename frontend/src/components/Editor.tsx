@@ -139,6 +139,8 @@ class Editor extends React.Component<any, State> {
             }
         }
         if (this.props.match && this.props.match.params && this.props.match.params.hash) {
+            // got redirected from a /share/:hash link
+
             let shareName = this.props.match.params.hash;
             Database.getInstance().then((db: Database) => {
                 return db.getFile(shareName, false, true);

@@ -37,7 +37,7 @@ export class API {
         });
     }
 
-    static loadSharedWish(hash: string): Promise<string> {
+    static loadSharedWish(hash: string): Promise<WishSeries> {
         return fetch('/api/wishare/' + hash,
             {
                 headers: {
@@ -50,7 +50,7 @@ export class API {
             if (!response.ok) {
                 return Promise.reject(response.status);
             } else {
-                return response.text();
+                return response.json();
             }
         });
     }

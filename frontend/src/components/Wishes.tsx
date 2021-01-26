@@ -12,6 +12,7 @@ import FileListItem from './FileListItem';
 import FileListFolder from './FileListFolder';
 import FileListButton from './FileListButton';
 
+import { WishNotification, WishNotificationModal } from './WishNotificationModal';
 const Modal = require('react-bootstrap').Modal;
 // const FileSaver = require('file-saver');
 
@@ -41,6 +42,7 @@ interface State {
     wishPartSolved: boolean | undefined; // true if the user solved the current part
     wishPartNotification: boolean | undefined; // show a notification for
 
+    wishNotification: WishNotification | undefined; // notification that a wishare link was successful
 }
 
 class Wishes extends React.Component<any, State> {
@@ -62,6 +64,8 @@ class Wishes extends React.Component<any, State> {
             wishPart: undefined,
             wishPartSolved: undefined,
             wishPartNotification: undefined,
+
+            wishNotification: undefined,
         };
 
         this.markCurrentTaskSolved = this.markCurrentTaskSolved.bind(this);
@@ -78,6 +82,53 @@ class Wishes extends React.Component<any, State> {
             if (state.wish && state.wishPart) {
                 this.setState({wish: state.wish, wishPart: state.wishPart});
             }
+        }
+
+        if (this.props.match && this.props.match.params && this.props.match.params.hash) {
+            // got redirected from a /wishare/:hash link
+            let shareName = this.props.match.params.hash;
+
+            Database.getInstance().then((db: Database) => {
+                return db.getWish(shareName);
+            }).then((content: [WishSeries, WishType, any]) => {
+                this.setState((oldState) => {
+                    return {
+                        wishNotification: {
+                            wishName: shareName,
+                            wishType: content[1],
+                            isNewWish: false
+                        }
+                    }
+                });
+            }).catch((error: any) => {
+                API.loadSharedWish(shareName).then((content: WishSeries) => {
+                    this.setState((oldState) => {
+                        return {
+                            wishNotification: {
+                                wishName: shareName,
+                                wishType: WishType.SHARE,
+                                isNewWish: true
+                            }
+                        }
+                    });
+
+                    // Cache the shared file as it does not yet exist
+                    Database.getInstance().then((db: Database) => {
+                        return db.saveWish(shareName, content, WishType.SHARE);
+                    });
+                }).catch((error: any) => {
+                    this.setState((oldState) => {
+                        return {
+                            wishNotification: {
+                                wishName: shareName,
+                                wishType: WishType.SHARE,
+                                isNewWish: false,
+                                error: error
+                            }
+                        }
+                    });
+                });
+            });
         }
 
         this.refreshExternalWishes();
@@ -101,6 +152,15 @@ class Wishes extends React.Component<any, State> {
             return collator.compare(q1.id, q2.id);
         });
 
+        let notification: JSX.Element | undefined;
+        if (this.state.wishNotification !== undefined) {
+            // there is some notification to be shown
+            notification = (
+                <WishNotificationModal closeCallback={this.notificationCloseCallback}
+                    notification={this.state.wishNotification} />
+            );
+        }
+
         if (this.state.wishSeries === undefined
             || this.state.wish === undefined || this.state.wishPart === undefined) {
             // User is not currently working on a wish
@@ -118,6 +178,7 @@ class Wishes extends React.Component<any, State> {
                         {this.renderWishList(localWishes)}
                         {this.renderExternalWishes()}
                         <br/> <br/>
+                        {notification}
                 </Container>
             );
         } else {
@@ -140,6 +201,14 @@ class Wishes extends React.Component<any, State> {
                 </Container>
             );
         }
+    }
+
+    notificationCloseCallback() {
+        this.setState((oldState) => {
+            return {
+                wishNotification: undefined
+            }
+        });
     }
 
     isWishCompleted(wishSeries: WishSeries, wish: Wish) {
@@ -616,10 +685,39 @@ class Wishes extends React.Component<any, State> {
                 }).then(() => {
                     this.refreshStoredWishes();
                     setWishDownloaded(externalWish.fileName, true);
+                    this.setState((oldState) => {
+                        return {
+                            wishNotification: {
+                                wishName: externalWish.fileName,
+                                wishType: WishType.SERVER,
+                                isNewWish: true
+                            }
+                        }
+                    });
                 }).catch((error: any) => {
+                    this.setState((oldState) => {
+                        return {
+                            wishNotification: {
+                                wishName: externalWish.fileName,
+                                wishType: WishType.SERVER,
+                                isNewWish: false,
+                                error: error
+                            }
+                        }
+                    });
                     setWishDownloaded(externalWish.fileName, false);
                 });
             }).catch((error: any) => {
+                this.setState((oldState) => {
+                    return {
+                        wishNotification: {
+                            wishName: externalWish.fileName,
+                            wishType: WishType.SERVER,
+                            isNewWish: false,
+                            error: error
+                        }
+                    }
+                });
                 setWishDownloaded(externalWish.fileName, false);
             });
             evt.stopPropagation();
