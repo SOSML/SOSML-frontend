@@ -202,13 +202,16 @@ class Wishes extends React.Component<any, State> {
         }
     }
 
-    notificationCloseCallback() {
+    notificationCloseCallback(needsReload: boolean) {
         this.setState((oldState) => {
             return {
                 wishNotification: undefined
             }
         });
         this.props.history.push('/wishes/');
+        if (needsReload) {
+            window.location.reload();
+        }
     }
 
     isWishCompleted(wishSeries: WishSeries, wish: Wish) {

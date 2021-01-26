@@ -11,11 +11,13 @@ export interface WishNotification {
 }
 
 interface Props {
-    closeCallback: () => void;
+    closeCallback: (needsReload: boolean) => void;
     notification: WishNotification;
 }
 
 export class WishNotificationModal extends React.Component<Props, any> {
+    needsReload: boolean;
+
     constructor(props: Props) {
         super(props);
 
@@ -26,6 +28,7 @@ export class WishNotificationModal extends React.Component<Props, any> {
         if (this.props.notification.isNewWish) {
             // unhide the wish interface
             let ise: InterfaceSettings = getInterfaceSettings();
+            this.needsReload = ise.wishingHidden;
             ise.wishingHidden = false;
             localStorage.setItem('interfaceSettings', JSON.stringify(ise));
         }
@@ -77,7 +80,7 @@ export class WishNotificationModal extends React.Component<Props, any> {
     }
 
     closeWishNoticicationModal() {
-        this.props.closeCallback();
+        this.props.closeCallback(this.needsReload);
     }
 }
 
