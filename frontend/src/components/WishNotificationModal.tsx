@@ -43,7 +43,12 @@ export class WishNotificationModal extends React.Component<Props, any> {
                     </Modal.Header>
                     <Modal.Body>
                         <p className="text-justify" style={style}>
-                            The wish "{this.props.notification.wishName}" was imported successfully.
+                        {this.props.notification.isNewWish ?
+                            'The wish "' + this.props.notification.wishName
+                            + '" was imported successfully.'
+                        : 'The wish "' + this.props.notification.wishName
+                            + '" is already imported.'
+                        }
                         </p>
                     </Modal.Body>
                     <Modal.Footer>

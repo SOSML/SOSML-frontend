@@ -68,6 +68,7 @@ class Wishes extends React.Component<any, State> {
             wishNotification: undefined,
         };
 
+        this.notificationCloseCallback = this.notificationCloseCallback.bind(this);
         this.markCurrentTaskSolved = this.markCurrentTaskSolved.bind(this);
         this.checkWishComplete = this.checkWishComplete.bind(this);
         this.onWishCodeChange = this.onWishCodeChange.bind(this);
@@ -76,6 +77,11 @@ class Wishes extends React.Component<any, State> {
     }
 
     componentDidMount() {
+        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
+        this.setState({miniMode: (width < MINIMODE_LB)});
+        this.refreshExternalWishes();
+        window.addEventListener('resize', this.handleBrowserResize, {passive: true});
+
         if (this.props.history && this.props.history.location.state) {
             let state: any = this.props.history.location.state;
 
@@ -117,24 +123,17 @@ class Wishes extends React.Component<any, State> {
                         return db.saveWish(shareName, content, WishType.SHARE);
                     });
                 }).catch((error: any) => {
-                    this.setState((oldState) => {
-                        return {
-                            wishNotification: {
-                                wishName: shareName,
-                                wishType: WishType.SHARE,
-                                isNewWish: false,
-                                error: error
-                            }
+                    this.setState({
+                        wishNotification: {
+                            wishName: shareName,
+                            wishType: WishType.SHARE,
+                            isNewWish: false,
+                            error: error
                         }
                     });
                 });
             });
         }
-
-        this.refreshExternalWishes();
-        let width = (window.innerWidth > 0) ? window.innerWidth : window.screen.width;
-        this.setState({miniMode: (width < MINIMODE_LB)});
-        window.addEventListener('resize', this.handleBrowserResize, {passive: true});
     }
 
     componentWillUnmount() {
@@ -209,6 +208,7 @@ class Wishes extends React.Component<any, State> {
                 wishNotification: undefined
             }
         });
+        this.props.history.push('/wishes/');
     }
 
     isWishCompleted(wishSeries: WishSeries, wish: Wish) {
